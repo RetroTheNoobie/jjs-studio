@@ -2,12 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO v1.0.0</title>
+    <title>JJS STUDIO V1.0.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     
-    <!-- This will now load perfectly because GitHub uses HTTPS -->
-    <script src="https://cdn.jsdelivr.net/npm/fzstd@0.1.1/lib/index.min.js"></script>
-
     <style>
         :root { 
             --bg: #0a0a0a; --panel: #141414; --accent: #ffcc33; 
@@ -25,7 +22,6 @@
         .logo { font-size: 1.4rem; color: var(--accent); }
         .layout { display: grid; grid-template-columns: 380px 1fr; flex: 1; overflow: hidden; }
         
-        /* Sidebar Styling */
         .sidebar { 
             background: var(--panel); border-right: 2px solid var(--border); 
             display: flex; flex-direction: column; padding: 15px; gap: 12px; overflow-y: auto; 
@@ -35,7 +31,6 @@
             border: 2px solid #333; padding: 12px; font-size: 11px; border-radius: 8px; 
             resize: none; outline: none; transition: 0.3s;
         }
-        textarea:focus { border-color: var(--accent); }
         
         .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .btn { 
@@ -45,21 +40,18 @@
         .import-btn { background: var(--accent); color: #000; }
         .export-btn { background: #28a745; color: #fff; }
         .copy-btn { background: #007bff; color: #fff; grid-column: span 2; }
-        .btn:hover { opacity: 0.8; transform: translateY(-1px); }
-        .btn:active { transform: translateY(1px); }
 
-        /* Main Editor Styling */
         .main-view { overflow-y: auto; padding: 25px; background: #0c0c0c; }
         .node-card { 
             background: var(--node-bg); border: 2px solid var(--border); 
-            border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border-radius: 12px; margin-bottom: 25px; 
         }
         .node-header { 
             background: #252525; padding: 10px 15px; display: flex; 
             justify-content: space-between; border-radius: 10px 10px 0 0; 
             border-bottom: 2px solid var(--border);
         }
-        .node-type { color: var(--accent); font-size: 0.9rem; letter-spacing: 1px; }
+        .node-type { color: var(--accent); font-size: 0.9rem; }
         .node-body { padding: 20px; display: flex; flex-wrap: wrap; gap: 12px; }
         
         .prop-box { 
@@ -69,25 +61,23 @@
         .label { color: var(--accent); font-size: 0.65rem; display: block; opacity: 0.8; margin-bottom: 5px; }
         .prop-input { 
             background: transparent; border: none; border-bottom: 2px solid #444; 
-            color: #fff; width: 100%; font-size: 0.9rem; outline: none; transition: 0.3s;
+            color: #fff; width: 100%; font-size: 0.9rem; outline: none; 
         }
-        .prop-input:focus { border-color: var(--accent); }
 
         .container-item { 
             background: #222; padding: 12px; border-radius: 10px; 
-            cursor: pointer; border: 2px solid transparent; transition: 0.2s;
+            cursor: pointer; border: 2px solid transparent; 
         }
         .container-item.active { border-color: var(--accent); background: #2a2a2a; }
         
-        /* Hidden Debug Log (F2 to toggle) */
         #debug-console { 
             position: fixed; bottom: 20px; right: 20px; width: 450px; height: 300px; 
             background: rgba(0,0,0,0.95); border: 2px solid #ff4444; border-radius: 10px; 
-            z-index: 9999; display: none; flex-direction: column; 
+            z-index: 9999; display: flex; flex-direction: column; 
         }
         #debug-body { 
             flex: 1; padding: 15px; font-family: monospace; font-size: 11px; 
-            overflow-y: auto; color: #00ff00; line-height: 1.4;
+            overflow-y: auto; color: #00ff00; 
         }
     </style>
 </head>
@@ -95,29 +85,28 @@
 
 <header>
     <div class="logo">JJS STUDIO V1.0.0</div>
-    <div id="engine-status" style="font-size: 0.75rem; color: #ffcc33;">INITIATING ENGINE...</div>
+    <div id="engine-status" style="font-size: 0.75rem; color: #ffcc33;">LOADER ACTIVE</div>
 </header>
 
 <div class="layout">
     <div class="sidebar">
         <textarea id="io-box" placeholder="Paste KLUv code here..."></textarea>
         <div class="btn-group">
-            <button class="btn import-btn" onclick="importKLUv()">1. IMPORT</button>
-            <button class="btn export-btn" onclick="exportKLUv()">2. EXPORT</button>
-            <button class="btn copy-btn" onclick="copyResult()">3. COPY TO CLIPBOARD</button>
+            <button class="btn import-btn" onclick="importKLUv()">IMPORT</button>
+            <button class="btn export-btn" onclick="exportKLUv()">EXPORT</button>
+            <button class="btn copy-btn" onclick="copyResult()">COPY CLIPBOARD</button>
         </div>
         <div id="container-list" style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;"></div>
-        <div style="font-size: 0.65rem; color: #555; text-align: center; margin-top: auto;">Press F2 for System Logs</div>
     </div>
     <div class="main-view" id="node-editor">
-        <div id="welcome" style="display: flex; height: 100%; align-items: center; justify-content: center; color: #333; font-size: 1.2rem;">
-            Awaiting Deployment...
+        <div id="loading-msg" style="display: flex; height: 100%; align-items: center; justify-content: center; color: #333;">
+            Initializing Engine...
         </div>
     </div>
 </div>
 
 <div id="debug-console">
-    <div style="background:#ff4444; color:#000; padding:8px; font-size:11px; font-weight:bold;">CONSOLE OUTPUT</div>
+    <div style="background:#ff4444; color:#000; padding:8px; font-size:11px; font-weight:bold;">CONSOLE</div>
     <div id="debug-body"></div>
 </div>
 
@@ -125,40 +114,47 @@
     const log = (m) => {
         const b = document.getElementById('debug-body');
         if(b) { b.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${m}</div>`; b.scrollTop = b.scrollHeight; }
-        console.log(m);
     };
 
     window.currentData = [];
     window.activeIndex = 0;
 
-    // --- ENGINE VALIDATION ---
-    window.onload = () => {
-        setTimeout(() => {
-            const hasLib = typeof fzstd !== 'undefined';
-            const statusEl = document.getElementById('engine-status');
+    // --- NEW BUG-FIX: BLOB LOADING STRATEGY ---
+    async function initEngine() {
+        log("Attempting Engine Bootstrap...");
+        try {
+            const response = await fetch('https://cdn.jsdelivr.net/npm/fzstd@0.1.1/lib/index.min.js');
+            const scriptText = await response.text();
+            const blob = new Blob([scriptText], { type: 'application/javascript' });
+            const scriptUrl = URL.createObjectURL(blob);
             
-            if(hasLib && fzstd.compress && fzstd.decompress) {
-                statusEl.innerText = "ONLINE (ZSTD SECURED)";
-                statusEl.style.color = "#28a745";
-                log("Success: fzstd engine fully initialized.");
-            } else {
-                statusEl.innerText = "OFFLINE (CORS BLOCKED)";
-                statusEl.style.color = "#ff4444";
-                log("Error: Browser blocked library load. Deploy to GitHub to fix.");
-            }
-        }, 800);
-    };
+            const scriptTag = document.createElement('script');
+            scriptTag.src = scriptUrl;
+            scriptTag.onload = () => {
+                const statusEl = document.getElementById('engine-status');
+                if (typeof fzstd !== 'undefined') {
+                    statusEl.innerText = "ONLINE";
+                    statusEl.style.color = "#28a745";
+                    document.getElementById('loading-msg').innerText = "Ready for Data.";
+                    log("Engine Status: SUCCESS.");
+                }
+            };
+            document.head.appendChild(scriptTag);
+        } catch (e) {
+            log("Critical Error: " + e.message);
+            document.getElementById('engine-status').innerText = "CONNECTION FAILED";
+        }
+    }
+
+    window.onload = initEngine;
 
     window.importKLUv = function() {
         let raw = document.getElementById('io-box').value.trim();
-        if(!raw) return log("Error: No data in box.");
-        
         try {
             const binary = atob(raw);
             const bytes = new Uint8Array(binary.length);
             for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
             
-            log("Decompressing...");
             const decompressed = fzstd.decompress(bytes);
             const text = new TextDecoder().decode(decompressed);
             
@@ -167,13 +163,12 @@
             
             renderSidebar();
             loadContainer(0);
-            log("Import Successful.");
-        } catch (e) { log("IMPORT ERR: " + e.message); }
+            log("Imported successfully.");
+        } catch (e) { log("Import Error: " + e.message); }
     };
 
     window.exportKLUv = function() {
         try {
-            log("Compressing...");
             const jsonStr = JSON.stringify(window.currentData);
             const uint8 = new TextEncoder().encode(jsonStr);
             const compressed = fzstd.compress(uint8);
@@ -181,8 +176,8 @@
             let bin = "";
             for (let i = 0; i < compressed.length; i++) bin += String.fromCharCode(compressed[i]);
             document.getElementById('io-box').value = btoa(bin);
-            log("Export Successful.");
-        } catch (e) { log("EXPORT ERR: " + e.message); }
+            log("Exported successfully.");
+        } catch (e) { log("Export Error: " + e.message); }
     };
 
     window.renderSidebar = function() {
@@ -191,7 +186,7 @@
         window.currentData.forEach((c, i) => {
             const item = document.createElement('div');
             item.className = `container-item ${i === window.activeIndex ? 'active' : ''}`;
-            item.innerHTML = `<strong>${c.NAME || 'Build'}</strong><br><small style="opacity:0.5">${c.K_NAME || ''}</small>`;
+            item.innerHTML = `<strong>${c.NAME || 'Object'}</strong>`;
             item.onclick = () => loadContainer(i);
             list.appendChild(item);
         });
@@ -219,7 +214,7 @@
                 props += `<div class="prop-box"><span class="label">${k}</span>
                           <input class="prop-input" value="${node[k]}" onchange="updateVal(${nIdx},'${k}',this.value)"></div>`;
             });
-            card.innerHTML = `<div class="node-header"><span class="node-type">${node.K_NAME}</span><small>ID: ${nIdx}</small></div><div class="node-body">${props}</div>`;
+            card.innerHTML = `<div class="node-header"><span class="node-type">${node.K_NAME}</span></div><div class="node-body">${props}</div>`;
             editor.appendChild(card);
         });
     };
@@ -235,14 +230,13 @@
         } else if (container.Line) {
             container.Line[nIdx][k] = val;
         }
-        log(`Value Changed: ${k} -> ${val}`);
     };
 
     window.copyResult = function() {
         const box = document.getElementById('io-box');
         box.select();
         document.execCommand('copy');
-        alert("Copied to Clipboard!");
+        alert("Copied!");
     };
 
     window.addEventListener('keydown', (e) => { 
