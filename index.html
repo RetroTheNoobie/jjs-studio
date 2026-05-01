@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.0.0</title>
+    <title>JJS STUDIO V1.0.3</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     
-    <!-- Switched to a browser-friendly build of fzstd -->
-    <script src="https://unpkg.com/fzstd@0.1.1/lib/index.min.js"></script>
+    <!-- Using a more reliable backup provider -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fzstd/0.1.1/index.min.js"></script>
 
     <style>
         :root { 
@@ -72,7 +72,6 @@
         }
         .container-item.active { border-color: var(--accent); background: #2a2a2a; }
         
-        /* Console is now hidden by default */
         #debug-console { 
             position: fixed; bottom: 20px; right: 20px; width: 450px; height: 300px; 
             background: rgba(0,0,0,0.95); border: 2px solid var(--accent); border-radius: 10px; 
@@ -88,7 +87,7 @@
 
 <header>
     <div class="logo">JJS STUDIO V1.0.0</div>
-    <div id="engine-status" style="font-size: 0.75rem; color: #ffcc33;">WAKING UP...</div>
+    <div id="engine-status" style="font-size: 0.75rem; color: #ffcc33;">ENGINE: INITIALIZING</div>
 </header>
 
 <div class="layout">
@@ -102,8 +101,8 @@
         <div id="container-list" style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;"></div>
     </div>
     <div class="main-view" id="node-editor">
-        <div id="status-msg" style="display: flex; height: 100%; align-items: center; justify-content: center; color: #333;">
-            Waiting for Import...
+        <div id="status-msg" style="display: flex; height: 100%; align-items: center; justify-content: center; color: #444;">
+            Connecting to Decompression Engine...
         </div>
     </div>
 </div>
@@ -123,34 +122,41 @@
     window.currentData = [];
     window.activeIndex = 0;
 
-    // Simple initialization check
+    // --- REBUILT BOOTSTRAPPER ---
+    function checkEngine() {
+        const statusEl = document.getElementById('engine-status');
+        const msgEl = document.getElementById('status-msg');
+        
+        // Sometimes libraries name themselves differently in global scope
+        const engine = window.fzstd || (window.exports && window.exports.fzstd);
+
+        if (engine && engine.decompress) {
+            window.fzstd = engine; // Ensure it's reachable at window.fzstd
+            statusEl.innerText = "ENGINE: ONLINE";
+            statusEl.style.color = "#28a745";
+            msgEl.innerText = "Ready for Data Import.";
+            log("Engine Found and Verified.");
+        } else {
+            log("Engine not found yet, retrying...");
+            setTimeout(checkEngine, 500);
+        }
+    }
+
     window.onload = () => {
-        log("Booting JJS Studio...");
-        setTimeout(() => {
-            const statusEl = document.getElementById('engine-status');
-            if(typeof fzstd !== 'undefined') {
-                statusEl.innerText = "ONLINE";
-                statusEl.style.color = "#28a745";
-                log("Engine Verified: fzstd is active.");
-            } else {
-                statusEl.innerText = "ENGINE ERROR";
-                statusEl.style.color = "#ff4444";
-                log("Error: fzstd not found in global scope.");
-            }
-        }, 1000);
+        log("Booting Studio...");
+        checkEngine();
     };
 
     window.importKLUv = function() {
         let raw = document.getElementById('io-box').value.trim();
-        if(!raw) return log("No data provided.");
+        if(!raw) return log("No data.");
         
         try {
             const binary = atob(raw);
             const bytes = new Uint8Array(binary.length);
             for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
             
-            log("Attempting decompression...");
-            const decompressed = fzstd.decompress(bytes);
+            const decompressed = window.fzstd.decompress(bytes);
             const text = new TextDecoder().decode(decompressed);
             
             window.currentData = JSON.parse(text);
@@ -162,16 +168,14 @@
             document.getElementById('status-msg').style.display = 'none';
         } catch (e) { 
             log("Import Failure: " + e.message); 
-            alert("Import failed. Check the console (F2) for details.");
         }
     };
 
     window.exportKLUv = function() {
         try {
-            log("Generating Export...");
             const jsonStr = JSON.stringify(window.currentData);
             const uint8 = new TextEncoder().encode(jsonStr);
-            const compressed = fzstd.compress(uint8);
+            const compressed = window.fzstd.compress(uint8);
             
             let bin = "";
             for (let i = 0; i < compressed.length; i++) bin += String.fromCharCode(compressed[i]);
@@ -186,7 +190,7 @@
         window.currentData.forEach((c, i) => {
             const item = document.createElement('div');
             item.className = `container-item ${i === window.activeIndex ? 'active' : ''}`;
-            item.innerHTML = `<strong>${c.NAME || 'Container ' + i}</strong>`;
+            item.innerHTML = `<strong>${c.NAME || 'Object'}</strong>`;
             item.onclick = () => loadContainer(i);
             list.appendChild(item);
         });
@@ -222,7 +226,6 @@
     window.updateVal = function(nIdx, k, v) {
         const container = window.currentData[window.activeIndex];
         const val = isNaN(parseFloat(v)) ? v : parseFloat(v);
-
         if (container.DATA && typeof container.DATA === 'string') {
             let inner = JSON.parse(container.DATA);
             inner.Line[nIdx][k] = val;
@@ -236,7 +239,7 @@
         const box = document.getElementById('io-box');
         box.select();
         document.execCommand('copy');
-        log("Clipboard Updated.");
+        log("Copied to Clipboard.");
     };
 
     window.addEventListener('keydown', (e) => { 
