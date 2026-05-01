@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.2.2</title>
+    <title>JJS STUDIO V1.2.3</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #0a0a0a; --panel: #141414; --accent: #ffcc33; --text: #ffffff; --border: #333; }
@@ -24,7 +24,7 @@
 <body>
 
 <header>
-    <div style="color: var(--accent);">JJS STUDIO V1.2.2</div>
+    <div style="color: var(--accent);">JJS STUDIO V1.2.3</div>
     <div id="status">ENGINE: LOADING...</div>
 </header>
 
@@ -49,38 +49,70 @@
     window.activeIndex = 0;
     window.zstd = null;
 
-    // --- ENGINE ---
-    // zstd-wasm is browser-native: no require(), WASM loaded via fetch from CDN.
-    // We import the ESM build directly.
+    // Strategy: try multiple skypack-hosted libraries that support full compress+decompress.
+    // Skypack is confirmed working in your environment.
+
+    async function tryZstdJs() {
+        // zstd-js: pure JS/WASM port, browser-first, available on skypack
+        const mod = await import('https://cdn.skypack.dev/zstd-js');
+        // zstd-js exposes compress/decompress directly
+        if (!mod.compress || !mod.decompress) throw new Error('zstd-js missing compress/decompress');
+        return {
+            compress: (u8, level) => mod.compress(u8, level || 3),
+            decompress: (u8) => mod.decompress(u8)
+        };
+    }
+
+    async function tryZstdCodecSkypack() {
+        // zstd-codec via skypack - skypack may handle the require() shim
+        const mod = await import('https://cdn.skypack.dev/zstd-codec');
+        if (!mod.ZstdCodec) throw new Error('ZstdCodec not in module');
+        return await new Promise((resolve, reject) => {
+            mod.ZstdCodec.run(zstd => {
+                const engine = new zstd.Streaming();
+                resolve({
+                    compress: (u8, level) => engine.compress(u8, level || 3),
+                    decompress: (u8) => engine.decompress(u8)
+                });
+            });
+            setTimeout(() => reject(new Error('ZstdCodec.run timed out')), 5000);
+        });
+    }
+
+    async function tryFzstdOnly() {
+        // fzstd: decompress only - confirmed working in your env
+        const mod = await import('https://cdn.skypack.dev/fzstd@0.1.0');
+        log('WARNING: Compress engine unavailable. Export will be disabled.');
+        return {
+            compress: () => { throw new Error('No compress engine loaded. Export unavailable.'); },
+            decompress: (u8) => mod.decompress(u8)
+        };
+    }
+
     async function init() {
-        try {
-            log('Loading zstd-wasm...');
-            const { init: zstdInit, compress, decompress } = await import(
-                'https://cdn.jsdelivr.net/npm/zstd-wasm@0.0.21/dist/browser/zstd.js'
-            );
-            await zstdInit();
-            window.zstd = { compress, decompress };
-            status.innerText = 'ENGINE: ONLINE';
-            status.style.color = '#28a745';
-            log('zstd-wasm loaded. Compress + Decompress ready.');
-        } catch(e) {
-            log('zstd-wasm failed: ' + e.message);
-            log('Trying fzstd fallback (decompress only)...');
+        const engines = [
+            ['zstd-js (full)', tryZstdJs],
+            ['zstd-codec via skypack (full)', tryZstdCodecSkypack],
+            ['fzstd (decompress only)', tryFzstdOnly],
+        ];
+
+        for (const [name, loader] of engines) {
             try {
-                const mod = await import('https://cdn.skypack.dev/fzstd@0.1.0');
-                window.zstd = {
-                    decompress: mod.decompress,
-                    compress: () => { throw new Error('Compress not available in fallback mode.'); }
-                };
-                status.innerText = 'ENGINE: PARTIAL';
-                status.style.color = '#ffaa00';
-                log('fzstd fallback active. Import works, Export disabled.');
-            } catch(e2) {
-                log('All engines failed: ' + e2.message);
-                status.innerText = 'ENGINE: OFFLINE';
-                status.style.color = '#ff4444';
+                log('Trying ' + name + '...');
+                window.zstd = await loader();
+                const hasBoth = name.includes('full');
+                status.innerText = hasBoth ? 'ENGINE: ONLINE' : 'ENGINE: PARTIAL';
+                status.style.color = hasBoth ? '#28a745' : '#ffaa00';
+                log(name + ' loaded successfully.');
+                return;
+            } catch(e) {
+                log(name + ' failed: ' + e.message);
             }
         }
+
+        status.innerText = 'ENGINE: OFFLINE';
+        status.style.color = '#ff4444';
+        log('All engines failed. Cannot proceed.');
     }
 
     // --- IMPORT ---
