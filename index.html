@@ -1,355 +1,268 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>JJS STUDIO V2.0</title>
-<link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #0a0a0a; --panel: #141414; --accent: #ffcc33;
-    --text: #ffffff; --border: #2a2a2a; --green: #00ff88;
-    --red: #ff4444; --dim: #888;
-  }
-  * { font-family: 'Finger Paint', cursive; box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-
-  header {
-    background: var(--panel); padding: 10px 20px;
-    border-bottom: 3px solid var(--accent);
-    display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
-  }
-  .logo { color: var(--accent); font-size: 16px; letter-spacing: 2px; }
-  #status {
-    font-size: 11px; padding: 4px 10px; border-radius: 4px;
-    background: #1a1a1a; border: 1px solid var(--border); transition: color 0.3s;
-  }
-
-  .layout { display: grid; grid-template-columns: 320px 1fr; flex: 1; overflow: hidden; min-height: 0; }
-
-  .sidebar {
-    background: var(--panel); border-right: 2px solid var(--border);
-    padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;
-  }
-
-  textarea {
-    width: 100%; height: 110px; background: #000; color: #00ff88;
-    border: 2px solid #333; padding: 8px; font-size: 9px; border-radius: 6px;
-    resize: none; font-family: monospace; transition: border-color 0.2s;
-  }
-  textarea:focus { border-color: var(--accent); outline: none; }
-
-  .btn {
-    border: none; padding: 10px; cursor: pointer; border-radius: 6px;
-    font-weight: bold; width: 100%; font-family: 'Finger Paint', cursive;
-    font-size: 12px; transition: opacity 0.2s, transform 0.1s; letter-spacing: 1px;
-  }
-  .btn:active { transform: scale(0.97); }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .import-btn { background: var(--accent); color: #000; }
-  .export-btn { background: #1a6e35; color: #fff; border: 1px solid #28a745; }
-
-  .container-list-label {
-    font-size: 9px; color: var(--dim); letter-spacing: 2px;
-    padding: 4px 0 2px; border-top: 1px solid var(--border);
-  }
-  #container-list { display: flex; flex-direction: column; gap: 4px; }
-  .container-item {
-    background: #1c1c1c; padding: 8px 10px; cursor: pointer; font-size: 11px;
-    border-left: 3px solid transparent; border-radius: 4px; transition: all 0.15s;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .container-item:hover { background: #222; }
-  .container-item.active { border-left-color: var(--accent); color: var(--accent); background: #1f1c0f; }
-
-  .main-view { padding: 16px; background: #0c0c0c; overflow-y: auto; }
-  .empty-state {
-    display: flex; align-items: center; justify-content: center; height: 100%;
-    color: var(--dim); font-size: 13px; letter-spacing: 2px;
-    flex-direction: column; gap: 10px;
-  }
-  .empty-state .arrow { font-size: 24px; animation: pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
-
-  .node-card {
-    background: #141414; border: 1px solid #2a2a2a; border-radius: 8px;
-    margin-bottom: 12px; overflow: hidden; transition: border-color 0.2s;
-  }
-  .node-card:hover { border-color: #444; }
-  .node-card-header {
-    background: #1a1a1a; padding: 8px 12px; color: var(--accent);
-    font-size: 12px; border-bottom: 1px solid #2a2a2a; letter-spacing: 1px;
-  }
-  .node-card-body { padding: 10px 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; }
-  .prop-row { display: flex; flex-direction: column; gap: 2px; }
-  .prop-row.full-width { grid-column: 1 / -1; }
-  .prop-label { font-size: 9px; color: var(--dim); letter-spacing: 1px; }
-  .prop-input {
-    background: #0f0f0f; border: 1px solid #333; color: #fff;
-    width: 100%; padding: 5px 8px; border-radius: 4px;
-    font-family: monospace; font-size: 12px; transition: border-color 0.15s;
-  }
-  .prop-input:focus { outline: none; border-color: var(--accent); background: #141400; }
-
-  #terminal {
-    height: 100px; background: #000; border-top: 2px solid var(--border);
-    color: var(--green); font-family: monospace; font-size: 10px;
-    padding: 8px 12px; overflow-y: auto; flex-shrink: 0; line-height: 1.6;
-  }
-  .log-err { color: var(--red); }
-  .log-ok { color: var(--green); }
-  .log-info { color: #aaa; }
-</style>
+    <meta charset="UTF-8">
+    <title>JJS STUDIO V1.2.2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #0a0a0a; --panel: #141414; --accent: #ffcc33; --text: #ffffff; --border: #333; }
+        * { font-family: 'Finger Paint', cursive; box-sizing: border-box; }
+        body { background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        header { background: var(--panel); padding: 10px 20px; border-bottom: 4px solid var(--accent); display: flex; justify-content: space-between; }
+        .layout { display: grid; grid-template-columns: 350px 1fr; flex: 1; overflow: hidden; }
+        .sidebar { background: var(--panel); border-right: 2px solid var(--border); padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        textarea { width: 100%; height: 120px; background: #000; color: #00ff00; border: 2px solid #444; padding: 10px; font-size: 10px; border-radius: 5px; }
+        .btn { border: none; padding: 12px; cursor: pointer; border-radius: 5px; font-weight: bold; width: 100%; }
+        .import-btn { background: var(--accent); color: #000; }
+        .export-btn { background: #28a745; color: #fff; }
+        .main-view { padding: 20px; background: #0c0c0c; overflow-y: auto; }
+        .node-card { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; margin-bottom: 15px; padding: 15px; }
+        .prop-input { background: #222; border: 1px solid #444; color: #fff; width: 100%; padding: 5px; margin-top: 5px; border-radius: 4px; outline: none; }
+        #terminal { height: 120px; background: #000; border-top: 2px solid var(--accent); color: #00ff00; font-family: monospace; font-size: 11px; padding: 10px; overflow-y: auto; }
+    </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">⚡ JJS STUDIO V2.0</div>
-  <div id="status">ENGINE: LOADING...</div>
+    <div style="color: var(--accent);">JJS STUDIO V1.2.2</div>
+    <div id="status">ENGINE: LOADING...</div>
 </header>
 
 <div class="layout">
-  <div class="sidebar">
-    <textarea id="io-box" placeholder="PASTE KLUv STRING HERE..."></textarea>
-    <button class="btn import-btn" id="import-trigger" disabled>IMPORT</button>
-    <button class="btn export-btn" id="export-trigger" disabled>EXPORT</button>
-    <div class="container-list-label">── CONTAINERS ──</div>
-    <div id="container-list"></div>
-  </div>
-  <div class="main-view" id="node-editor">
-    <div class="empty-state">
-      <div class="arrow">←</div>
-      <div>PASTE A KLUv STRING AND IMPORT</div>
+    <div class="sidebar">
+        <textarea id="io-box" placeholder="PASTE KLUv HERE"></textarea>
+        <button class="btn import-btn" id="import-trigger">IMPORT</button>
+        <button class="btn export-btn" id="export-trigger">EXPORT</button>
+        <div id="container-list"></div>
     </div>
-  </div>
+    <div class="main-view" id="node-editor"></div>
 </div>
 
-<div id="terminal">&gt; Initializing Zstd WASM engine...<br></div>
+<div id="terminal">> Awaiting Module Engine...<br></div>
 
 <script>
-const term = document.getElementById('terminal');
-const statusEl = document.getElementById('status');
+    const term = document.getElementById('terminal');
+    const log = (m) => { term.innerHTML += `> ${m}<br>`; term.scrollTop = term.scrollHeight; };
+    const status = document.getElementById('status');
 
-function log(msg, type='info') {
-  const cls = type === 'err' ? 'log-err' : type === 'ok' ? 'log-ok' : 'log-info';
-  term.innerHTML += `<span class="${cls}">&gt; ${msg}</span><br>`;
-  term.scrollTop = term.scrollHeight;
-}
-function setStatus(text, color='#ffcc33') {
-  statusEl.textContent = text;
-  statusEl.style.color = color;
-}
+    window.currentData = [];
+    window.activeIndex = 0;
+    window.ZstdEngine = null;
+    window.fzstdLib = null;
 
-window.currentData = [];
-window.activeIndex = 0;
-window.ZstdEngine = null;
+    // --- ENGINE LOADERS ---
 
-// ── ZSTD ENGINE ───────────────────────────────────────────────────────────────
-// zstd-codec ships a self-contained UMD bundle with WASM inlined as base64.
-// No external WASM fetch = no CORS issues on GitHub Pages.
-async function loadZstd() {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/zstd-codec@0.1.4/lib/zstd-codec.js';
-    script.onload = () => {
-      if (typeof ZstdCodec === 'undefined') {
-        reject(new Error('ZstdCodec global not found'));
-        return;
-      }
-      ZstdCodec.run(zstd => {
-        window.ZstdEngine = new zstd.Streaming();
-        resolve();
-      });
+    // Primary: zstd-codec (full compress + decompress via WASM)
+    // The UMD bundle sets ZstdCodec globally but WASM init is async,
+    // so we poll until it appears rather than relying on onload timing.
+    function loadZstdCodec() {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/zstd-codec@0.1.4/lib/zstd-codec.js';
+            script.onload = () => {
+                let attempts = 0;
+                const poll = setInterval(() => {
+                    attempts++;
+                    if (typeof ZstdCodec !== 'undefined') {
+                        clearInterval(poll);
+                        ZstdCodec.run(zstd => {
+                            window.ZstdEngine = new zstd.Streaming();
+                            resolve();
+                        });
+                    } else if (attempts > 50) {
+                        clearInterval(poll);
+                        reject(new Error('ZstdCodec global never appeared'));
+                    }
+                }, 100);
+            };
+            script.onerror = () => reject(new Error('Failed to load zstd-codec script'));
+            document.head.appendChild(script);
+        });
+    }
+
+    // Fallback A: fzstd UMD (decompress only)
+    function loadFzstdUMD() {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/fzstd@0.1.0/umd/index.js';
+            script.onload = () => {
+                let attempts = 0;
+                const poll = setInterval(() => {
+                    attempts++;
+                    if (typeof fzstd !== 'undefined') {
+                        clearInterval(poll);
+                        window.fzstdLib = fzstd;
+                        resolve();
+                    } else if (attempts > 30) {
+                        clearInterval(poll);
+                        reject(new Error('fzstd UMD global never appeared'));
+                    }
+                }, 100);
+            };
+            script.onerror = () => reject(new Error('Failed to load fzstd UMD script'));
+            document.head.appendChild(script);
+        });
+    }
+
+    // Fallback B: fzstd via ESM (decompress only)
+    async function loadFzstdESM() {
+        const mod = await import('https://cdn.skypack.dev/fzstd@0.1.0');
+        window.fzstdLib = mod;
+    }
+
+    async function init() {
+        try {
+            await loadZstdCodec();
+            status.innerText = 'ENGINE: ONLINE';
+            status.style.color = '#28a745';
+            log('zstd-codec WASM loaded. Compress + Decompress ready.');
+            return;
+        } catch(e) {
+            log('Primary engine (zstd-codec) failed: ' + e.message);
+        }
+
+        try {
+            await loadFzstdUMD();
+            status.innerText = 'ENGINE: PARTIAL';
+            status.style.color = '#ffaa00';
+            log('fzstd UMD fallback loaded. Import works, Export disabled.');
+            return;
+        } catch(e) {
+            log('fzstd UMD fallback failed: ' + e.message);
+        }
+
+        try {
+            await loadFzstdESM();
+            status.innerText = 'ENGINE: PARTIAL';
+            status.style.color = '#ffaa00';
+            log('fzstd ESM fallback loaded. Import works, Export disabled.');
+            return;
+        } catch(e) {
+            log('fzstd ESM fallback failed: ' + e.message);
+            status.innerText = 'ENGINE: OFFLINE';
+            status.style.color = '#ff4444';
+            log('All engines failed. Check network/CSP headers.');
+        }
+    }
+
+    function decompress(u8) {
+        if (window.ZstdEngine) return window.ZstdEngine.decompress(u8);
+        if (window.fzstdLib) {
+            const fn = window.fzstdLib.decompress || window.fzstdLib.default?.decompress;
+            if (fn) return fn(u8);
+        }
+        throw new Error('No decompress engine available.');
+    }
+
+    function compress(u8) {
+        if (window.ZstdEngine) return window.ZstdEngine.compress(u8, 3);
+        throw new Error('Compress unavailable: zstd-codec did not load. Check CSP/network.');
+    }
+
+    // --- IMPORT ---
+    document.getElementById('import-trigger').onclick = async () => {
+        const raw = document.getElementById('io-box').value.trim();
+        if (!raw) return log('Error: Box is empty.');
+        try {
+            log('Decoding Base64...');
+            const binary = atob(raw);
+            const u8 = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) u8[i] = binary.charCodeAt(i);
+
+            log('Decompressing Zstd (' + u8.length + ' bytes)...');
+            const decompressed = decompress(u8);
+            const text = new TextDecoder().decode(decompressed);
+
+            log('Parsing JSON (' + text.length + ' chars)...');
+            window.currentData = JSON.parse(text);
+            if (!Array.isArray(window.currentData)) window.currentData = [window.currentData];
+
+            renderSidebar();
+            loadContainer(0);
+            log('Success: ' + window.currentData.length + ' container(s) loaded.');
+        } catch (e) {
+            log('Import Error: ' + e.message);
+        }
     };
-    script.onerror = () => reject(new Error('Failed to load zstd-codec from jsDelivr'));
-    document.head.appendChild(script);
-  });
-}
 
-async function init() {
-  try {
-    await loadZstd();
-    setStatus('ENGINE: ONLINE', '#00ff88');
-    log('zstd-codec WASM loaded. Compress + Decompress ready.', 'ok');
-    document.getElementById('import-trigger').disabled = false;
-    document.getElementById('export-trigger').disabled = false;
-  } catch(e) {
-    setStatus('ENGINE: FAILED', '#ff4444');
-    log('Engine load failed: ' + e.message, 'err');
-    log('Trying fzstd fallback (decompress only)...', 'info');
-    try {
-      const mod = await import('https://cdn.skypack.dev/fzstd@0.1.0');
-      window.fzstdFallback = mod;
-      log('fzstd fallback active. Import only, export disabled.', 'info');
-      setStatus('ENGINE: PARTIAL', '#ffaa00');
-      document.getElementById('import-trigger').disabled = false;
-    } catch(e2) {
-      log('All engines failed: ' + e2.message, 'err');
+    // --- EXPORT ---
+    document.getElementById('export-trigger').onclick = () => {
+        try {
+            log('Compressing Data...');
+            const json = JSON.stringify(window.currentData);
+            const u8 = new TextEncoder().encode(json);
+            const compressed = compress(u8);
+
+            let bin = '';
+            for (let i = 0; i < compressed.length; i++) bin += String.fromCharCode(compressed[i]);
+            document.getElementById('io-box').value = btoa(bin);
+            log('Success: Code Exported.');
+        } catch (e) {
+            log('Export Error: ' + e.message);
+        }
+    };
+
+    function renderSidebar() {
+        const list = document.getElementById('container-list');
+        list.innerHTML = '';
+        window.currentData.forEach((c, i) => {
+            const item = document.createElement('div');
+            item.style = `background:#222; padding:8px; margin-top:5px; cursor:pointer; font-size:12px; border-left: 3px solid ${i === window.activeIndex ? '#ffcc33' : 'transparent'}`;
+            item.innerHTML = c.NAME || 'Object';
+            item.onclick = () => loadContainer(i);
+            list.appendChild(item);
+        });
     }
-  }
-}
 
-function decompress(u8) {
-  if (window.ZstdEngine) return window.ZstdEngine.decompress(u8);
-  if (window.fzstdFallback) return window.fzstdFallback.decompress(u8);
-  throw new Error('No decompression engine available.');
-}
+    function loadContainer(index) {
+        window.activeIndex = index;
+        renderSidebar();
+        const editor = document.getElementById('node-editor');
+        editor.innerHTML = '';
+        const container = window.currentData[index];
+        let nodes = [];
+        try {
+            const inner = typeof container.DATA === 'string' ? JSON.parse(container.DATA) : container.DATA;
+            nodes = inner.Line || container.Line || [];
+        } catch(e) { nodes = container.Line || []; }
 
-function compress(u8) {
-  if (window.ZstdEngine) return window.ZstdEngine.compress(u8, 3);
-  throw new Error('Compression requires full engine. Export unavailable in fallback mode.');
-}
+        nodes.forEach((node, nIdx) => {
+            const card = document.createElement('div');
+            card.className = 'node-card';
+            card.innerHTML = `<strong style="color:#ffcc33">${node.K_NAME}</strong>`;
+            Object.keys(node).forEach(k => {
+                if (k === 'K_NAME' || k === 'Preview') return;
+                const row = document.createElement('div');
+                row.innerHTML = `<label style="font-size:10px; color:#888">${k}</label>
+                                 <input class="prop-input" value="${node[k]}" data-node="${nIdx}" data-key="${k}">`;
+                card.appendChild(row);
+            });
+            editor.appendChild(card);
+        });
 
-// ── IMPORT ────────────────────────────────────────────────────────────────────
-document.getElementById('import-trigger').onclick = async () => {
-  const raw = document.getElementById('io-box').value.trim();
-  if (!raw) return log('Error: Input box is empty.', 'err');
-  try {
-    log('Decoding Base64...');
-    const binary = atob(raw);
-    const u8 = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) u8[i] = binary.charCodeAt(i);
-
-    log(`Decompressing ${u8.length} bytes via Zstd...`);
-    const decompressed = decompress(u8);
-    const text = new TextDecoder().decode(decompressed);
-
-    log(`Parsing JSON (${text.length} chars)...`);
-    let parsed = JSON.parse(text);
-    window.currentData = Array.isArray(parsed) ? parsed : [parsed];
-
-    renderSidebar();
-    loadContainer(0);
-    log(`Success! ${window.currentData.length} container(s) loaded.`, 'ok');
-  } catch(e) {
-    log('Import Error: ' + e.message, 'err');
-    console.error(e);
-  }
-};
-
-// ── EXPORT ────────────────────────────────────────────────────────────────────
-document.getElementById('export-trigger').onclick = () => {
-  if (!window.currentData.length) return log('Nothing to export.', 'err');
-  try {
-    log('Serializing JSON...');
-    const json = JSON.stringify(window.currentData);
-    const u8 = new TextEncoder().encode(json);
-
-    log(`Compressing ${u8.length} bytes via Zstd...`);
-    const compressed = compress(u8);
-
-    log('Encoding to Base64...');
-    let bin = '';
-    for (let i = 0; i < compressed.length; i++) bin += String.fromCharCode(compressed[i]);
-    document.getElementById('io-box').value = btoa(bin);
-    log('Export complete! Copy the string from the box above.', 'ok');
-  } catch(e) {
-    log('Export Error: ' + e.message, 'err');
-    console.error(e);
-  }
-};
-
-// ── SIDEBAR ───────────────────────────────────────────────────────────────────
-function renderSidebar() {
-  const list = document.getElementById('container-list');
-  list.innerHTML = '';
-  window.currentData.forEach((c, i) => {
-    const item = document.createElement('div');
-    item.className = 'container-item' + (i === window.activeIndex ? ' active' : '');
-    item.textContent = c.NAME || `Container ${i}`;
-    item.title = c.NAME || '';
-    item.onclick = () => loadContainer(i);
-    list.appendChild(item);
-  });
-}
-
-// ── NODE EDITOR ───────────────────────────────────────────────────────────────
-function loadContainer(index) {
-  window.activeIndex = index;
-  renderSidebar();
-
-  const editor = document.getElementById('node-editor');
-  editor.innerHTML = '';
-  const container = window.currentData[index];
-
-  let nodes = [];
-  try {
-    const inner = typeof container.DATA === 'string' ? JSON.parse(container.DATA) : container.DATA;
-    nodes = (inner && inner.Line) ? inner.Line : (container.Line || []);
-  } catch(e) {
-    nodes = container.Line || [];
-  }
-
-  if (!nodes.length) {
-    editor.innerHTML = `<div class="empty-state"><div>NO NODES IN THIS CONTAINER</div></div>`;
-    return;
-  }
-
-  nodes.forEach((node, nIdx) => {
-    const card = document.createElement('div');
-    card.className = 'node-card';
-
-    const header = document.createElement('div');
-    header.className = 'node-card-header';
-    header.textContent = node.K_NAME || `Node ${nIdx}`;
-    card.appendChild(header);
-
-    const body = document.createElement('div');
-    body.className = 'node-card-body';
-
-    Object.keys(node).forEach(k => {
-      if (k === 'K_NAME' || k === 'Preview') return;
-      const val = node[k];
-      const row = document.createElement('div');
-      const isLong = typeof val === 'string' && val.length > 20;
-      row.className = 'prop-row' + (isLong ? ' full-width' : '');
-
-      const label = document.createElement('div');
-      label.className = 'prop-label';
-      label.textContent = k;
-
-      const input = document.createElement('input');
-      input.className = 'prop-input';
-      input.value = val !== null && val !== undefined ? val : '';
-      input.setAttribute('data-node', nIdx);
-      input.setAttribute('data-key', k);
-      input.onchange = (e) => updateVal(
-        parseInt(e.target.getAttribute('data-node')),
-        e.target.getAttribute('data-key'),
-        e.target.value
-      );
-
-      row.appendChild(label);
-      row.appendChild(input);
-      body.appendChild(row);
-    });
-
-    card.appendChild(body);
-    editor.appendChild(card);
-  });
-}
-
-// ── UPDATE VALUE ──────────────────────────────────────────────────────────────
-function updateVal(nIdx, k, v) {
-  const container = window.currentData[window.activeIndex];
-  const val = (v !== '' && !isNaN(parseFloat(v)) && isFinite(v)) ? parseFloat(v) : v;
-  try {
-    if (typeof container.DATA === 'string') {
-      let inner = JSON.parse(container.DATA);
-      inner.Line[nIdx][k] = val;
-      container.DATA = JSON.stringify(inner);
-    } else if (container.DATA && container.DATA.Line) {
-      container.DATA.Line[nIdx][k] = val;
-    } else if (container.Line) {
-      container.Line[nIdx][k] = val;
+        editor.querySelectorAll('.prop-input').forEach(input => {
+            input.onchange = (e) => {
+                const nIdx = e.target.getAttribute('data-node');
+                const k = e.target.getAttribute('data-key');
+                updateVal(nIdx, k, e.target.value);
+            };
+        });
     }
-    log(`Updated [${window.currentData[window.activeIndex].NAME || window.activeIndex}] node ${nIdx} → ${k} = ${val}`);
-  } catch(e) {
-    log('Update Error: ' + e.message, 'err');
-  }
-}
 
-// ── BOOT ──────────────────────────────────────────────────────────────────────
-init();
+    function updateVal(nIdx, k, v) {
+        const container = window.currentData[window.activeIndex];
+        const val = isNaN(parseFloat(v)) ? v : parseFloat(v);
+        if (container.DATA && typeof container.DATA === 'string') {
+            let inner = JSON.parse(container.DATA);
+            inner.Line[nIdx][k] = val;
+            container.DATA = JSON.stringify(inner);
+        } else {
+            container.Line[nIdx][k] = val;
+        }
+        log('Updated ' + k);
+    }
+
+    init();
 </script>
 </body>
 </html>
