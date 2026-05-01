@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.2.7</title>
+    <title>JJS STUDIO V1.2.8</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #0a0a0a; --panel: #141414; --accent: #ffcc33; --text: #ffffff; --border: #333; }
@@ -26,7 +26,7 @@
 <body>
 
 <header>
-    <div style="color: var(--accent);">JJS STUDIO V1.2.7</div>
+    <div style="color: var(--accent);">JJS STUDIO V1.2.8</div>
     <div id="status">ENGINE: LOADING...</div>
 </header>
 
@@ -40,9 +40,12 @@
     <div class="main-view" id="node-editor"></div>
 </div>
 
-<div id="terminal">> Awaiting Module Engine...<br></div>
+<div id="terminal">> Checking Global Scope...<br></div>
 
-<script type="module">
+<!-- Load the bundle as a standard script, not a module -->
+<script src="./zstd-bundle.js"></script>
+
+<script>
     const term = document.getElementById('terminal');
     const log = (m) => { term.innerHTML += `> ${m}<br>`; term.scrollTop = term.scrollHeight; };
     const status = document.getElementById('status');
@@ -52,55 +55,63 @@
     window.zstd = null;
 
     async function init() {
-        try {
-            log('Loading self-hosted zstd bundle...');
-            const zstdMod = await import('./zstd-bundle.js');
-            
-            // LOGGING THE MODULE STRUCTURE FOR DEBUGGING
-            const keys = Object.keys(zstdMod);
-            log('Module Keys found: ' + keys.join(', '));
+        log('Scanning window object for Zstd exports...');
+        
+        // We look for common names Claude's bundle might have used
+        const engine = window.ZstdWeb || window.zstd || window.Zstd || window.module;
 
-            // Logic to find the correct init function
-            const initFn = zstdMod.init || (zstdMod.default && zstdMod.default.init);
-            const compressFn = zstdMod.compress || (zstdMod.default && zstdMod.default.compress);
-            const decompressFn = zstdMod.decompress || (zstdMod.default && zstdMod.default.decompress);
-
-            if (initFn) {
-                log('Init function found. Booting WASM...');
-                await initFn();
-                window.zstd = { compress: compressFn, decompress: decompressFn };
+        if (engine && typeof engine.init === 'function') {
+            try {
+                log('Found engine: ' + (window.ZstdWeb ? 'ZstdWeb' : 'Global'));
+                await engine.init();
+                window.zstd = engine;
                 status.innerText = 'ENGINE: ONLINE';
                 status.style.color = '#28a745';
                 log('Full Zstd R/W Ready.');
-            } else {
-                throw new Error('init() not found in zstdMod exports.');
+            } catch(e) {
+                log('WASM Init Failed: ' + e.message);
             }
-
-        } catch(e) {
-            log('Bundle check failed: ' + e.message);
-            log('Attempting fzstd fallback...');
+        } else {
+            log('Bundle not found in global scope. Trying dynamic import fallback...');
             try {
-                const mod = await import('https://cdn.skypack.dev/fzstd@0.1.0');
-                window.zstd = {
-                    decompress: mod.decompress,
-                    compress: () => { throw new Error('Compression disabled in fallback mode.'); }
-                };
-                status.innerText = 'ENGINE: PARTIAL';
-                status.style.color = '#ffaa00';
-                log('Fallback active (Import only).');
-            } catch(e2) {
-                status.innerText = 'ENGINE: OFFLINE';
-                status.style.color = '#ff4444';
-                log('All engines failed.');
+                // Last ditch effort to import it as a module if script tag failed
+                const mod = await import('./zstd-bundle.js');
+                if (mod && mod.init) {
+                    await mod.init();
+                    window.zstd = mod;
+                    status.innerText = 'ENGINE: ONLINE';
+                    status.style.color = '#28a745';
+                    log('Dynamic Module Ready.');
+                } else {
+                    throw new Error('No init() found.');
+                }
+            } catch(e) {
+                log('Zstd Bundle failed. Reverting to fzstd (Import Only).');
+                loadFallback();
             }
+        }
+    }
+
+    async function loadFallback() {
+        try {
+            const mod = await import('https://cdn.skypack.dev/fzstd@0.1.0');
+            window.zstd = {
+                decompress: mod.decompress,
+                compress: () => { throw new Error('Compression disabled in fallback.'); }
+            };
+            status.innerText = 'ENGINE: PARTIAL';
+            status.style.color = '#ffaa00';
+        } catch(e) {
+            status.innerText = 'ENGINE: OFFLINE';
+            status.style.color = '#ff4444';
         }
     }
 
     document.getElementById('import-trigger').onclick = async () => {
         const raw = document.getElementById('io-box').value.trim();
-        if (!raw || !window.zstd) return log('Error: System not ready.');
+        if (!raw || !window.zstd) return log('Error: Engine not ready.');
         try {
-            log('Processing Base64...');
+            log('Decoding Base64...');
             const u8 = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
             log('Decompressing...');
             const decompressed = window.zstd.decompress(u8);
@@ -187,7 +198,8 @@
         log('Field ' + k + ' saved.');
     }
 
-    init();
+    // Small delay to ensure the script tag finishes executing
+    setTimeout(init, 500);
 </script>
 </body>
 </html>
