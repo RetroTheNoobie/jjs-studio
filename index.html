@@ -2,14 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.5.1</title>
+    <title>JJS STUDIO V1.5.2</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #050505; --panel: #0f0f0f; --accent: #ffcc33; --text: #e0e0e0; --border: #222; }
         * { font-family: 'Finger Paint', cursive; box-sizing: border-box; }
         body { background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Sidebar */
         .sidebar { width: 350px; background: var(--panel); border-right: 2px solid var(--border); display: flex; flex-direction: column; }
         .io-area { padding: 20px; border-bottom: 1px solid var(--border); }
         textarea { width: 100%; height: 80px; background: #000; color: #2ecc71; border: 1px solid #333; border-radius: 8px; font-size: 10px; resize: none; margin-bottom: 10px; padding: 8px; }
@@ -19,7 +18,6 @@
         .item.active { border-left-color: var(--accent); background: #1a1a1a; }
         .item .kname { font-size: 0.6rem; color: var(--accent); display: block; }
 
-        /* Main Editor */
         .main { flex: 1; overflow-y: auto; padding: 30px; }
         .node-container { background: #111; border: 1px solid #222; border-radius: 15px; margin-bottom: 25px; overflow: hidden; }
         .node-header { background: #1a1a1a; padding: 10px 20px; color: var(--accent); border-bottom: 1px solid #222; display: flex; justify-content: space-between; }
@@ -53,17 +51,30 @@
     let activeIdx = 0;
     let zstd = null;
 
+    // THE TERMINOLOGY FIXES
+    const PRETTY_NODES = {
+        "ULTGIB": "ADD AWAKENING",
+        "HPGIB": "ADD HEALTH",
+        "EVGIB": "ADD EVASION",
+        "ATK": "ATTACK",
+        "ANIM": "ANIMATION",
+        "VELO": "VELOCITY",
+        "PROJ": "PROJECTILE"
+    };
+
     async function init() {
         const engine = window.ZstdWeb || window.zstd || window.Zstd;
         if (engine?.init) { await engine.init(); zstd = engine; }
     }
 
     function doImport() {
-        const str = document.getElementById('io').value.trim();
-        const bin = Uint8Array.from(atob(str), c => c.charCodeAt(0));
-        rawData = JSON.parse(new TextDecoder().decode(zstd.decompress(bin)));
-        renderSidebar();
-        loadContainer(0);
+        try {
+            const str = document.getElementById('io').value.trim();
+            const bin = Uint8Array.from(atob(str), c => c.charCodeAt(0));
+            rawData = JSON.parse(new TextDecoder().decode(zstd.decompress(bin)));
+            renderSidebar();
+            loadContainer(0);
+        } catch(e) { alert("Invalid KLUv String"); }
     }
 
     function renderSidebar() {
@@ -82,7 +93,6 @@
         const container = rawData[index];
         const editor = document.getElementById('main-editor');
         
-        // 1. Identify the Node List (Support for flat OR nested 'Line')
         let nodes = [];
         if (Array.isArray(container.Line)) nodes = container.Line;
         else if (container.DATA) {
@@ -93,15 +103,15 @@
         }
 
         if (nodes.length === 0) {
-            editor.innerHTML = `<div class="empty-msg"><h3>No nodes found in this container.</h3></div>`;
+            editor.innerHTML = `<div class="empty-msg"><h3>No nodes found.</h3></div>`;
             return;
         }
 
         editor.innerHTML = nodes.map((n, ni) => `
             <div class="node-container">
                 <div class="node-header">
-                    <strong>${n.K_NAME || "ACTION"}</strong>
-                    <span style="font-size: 0.7rem; opacity: 0.5;">NODE #${ni}</span>
+                    <strong>${PRETTY_NODES[n.K_NAME] || n.K_NAME}</strong>
+                    <span style="font-size: 0.7rem; opacity: 0.5;">RAW: ${n.K_NAME}</span>
                 </div>
                 <div class="node-body">
                     ${Object.keys(n).map(k => k === 'K_NAME' ? '' : `
@@ -117,22 +127,12 @@
 
     function updateNode(nIdx, key, val) {
         const container = rawData[activeIdx];
-        let targetList = [];
-        
-        // Find where the nodes live and update them
-        if (Array.isArray(container.Line)) {
-            targetList = container.Line;
-        } else {
-            let inner = JSON.parse(container.DATA);
-            targetList = inner.Line;
-            container.DATA = JSON.stringify(inner); // Push back to string
-        }
+        let targetList = Array.isArray(container.Line) ? container.Line : JSON.parse(container.DATA).Line;
 
         const finalVal = (val === "true") ? true : (val === "false") ? false : (isNaN(val) || val === "") ? val : parseFloat(val);
         targetList[nIdx][key] = finalVal;
         
-        // If it was a stringified DATA field, we need to re-string it
-        if (!Array.isArray(container.Line) && container.DATA) {
+        if (!Array.isArray(container.Line)) {
             let inner = JSON.parse(container.DATA);
             inner.Line = targetList;
             container.DATA = JSON.stringify(inner);
