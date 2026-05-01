@@ -2,12 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.1.6</title>
+    <title>JJS STUDIO V1.1.7</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
-    
-    <!-- Using Fflate: The most reliable Browser-Native compression tool -->
-    <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/lib/browser.min.js"></script>
-
     <style>
         :root { --bg: #0a0a0a; --panel: #141414; --accent: #ffcc33; --text: #ffffff; --border: #333; --node-bg: #1a1a1a; }
         * { font-family: 'Finger Paint', cursive; box-sizing: border-box; }
@@ -37,8 +33,8 @@
 <body>
 
 <header>
-    <div class="logo">JJS STUDIO V1.1.6</div>
-    <div id="engine-status" style="font-size: 0.75rem; color: #ffcc33;">ENGINE: BOOTING...</div>
+    <div class="logo">JJS STUDIO V1.1.7</div>
+    <div id="engine-status" style="font-size: 0.75rem; color: #28a745;">ENGINE: NATIVE BROWSER (R/W)</div>
 </header>
 
 <div class="layout">
@@ -67,30 +63,37 @@
     window.currentData = [];
     window.activeIndex = 0;
 
-    window.onload = () => {
-        const statusEl = document.getElementById('engine-status');
-        // Check for Fflate (it usually attaches to window.fflate)
-        if(window.fflate) {
-            statusEl.innerText = "ENGINE: FFLATE READY (R/W)";
-            statusEl.style.color = "#28a745";
-            log("Fflate Engine Loaded. Both Zlib and Zstd logic available.");
-        } else {
-            statusEl.innerText = "ENGINE: OFFLINE";
-            statusEl.style.color = "#ff4444";
-            log("Critical: Fflate failed to load.");
-        }
-    };
+    // NATIVE DECOMPRESSION (No Libraries)
+    async function nativeDecompress(buffer) {
+        const ds = new DecompressionStream('deflate');
+        const writer = ds.writable.getWriter();
+        writer.write(buffer);
+        writer.close();
+        const response = new Response(ds.readable);
+        const arrayBuffer = await response.arrayBuffer();
+        return new Uint8Array(arrayBuffer);
+    }
 
-    window.importKLUv = function() {
+    // NATIVE COMPRESSION (No Libraries)
+    async function nativeCompress(buffer) {
+        const cs = new CompressionStream('deflate');
+        const writer = cs.writable.getWriter();
+        writer.write(buffer);
+        writer.close();
+        const response = new Response(cs.readable);
+        const arrayBuffer = await response.arrayBuffer();
+        return new Uint8Array(arrayBuffer);
+    }
+
+    window.importKLUv = async function() {
         let raw = document.getElementById('io-box').value.trim();
         try {
             const binary = atob(raw);
             const bytes = new Uint8Array(binary.length);
             for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
             
-            // Fflate automatically detects compression type in most cases, 
-            // but we'll use decompressSync for general use.
-            const decompressed = window.fflate.decompressSync(bytes);
+            log("Native Decompressing...");
+            const decompressed = await nativeDecompress(bytes);
             const text = new TextDecoder().decode(decompressed);
             
             window.currentData = JSON.parse(text);
@@ -99,31 +102,25 @@
             renderSidebar();
             loadContainer(0);
             log("Import Successful.");
-        } catch (e) { 
-            log("Import Error: " + e.message);
-            console.error(e);
-        }
+        } catch (e) { log("Import Failed: Use Deflate/Zlib format."); }
     };
 
-    window.exportKLUv = function() {
+    window.exportKLUv = async function() {
         try {
-            log("Compressing with Fflate...");
+            log("Native Compressing...");
             const jsonStr = JSON.stringify(window.currentData);
             const uint8 = new TextEncoder().encode(jsonStr);
-            
-            // zlib compression is the web standard
-            const compressed = window.fflate.zlibSync(uint8);
+            const compressed = await nativeCompress(uint8);
             
             let bin = "";
-            for (let i = 0; i < compressed.length; i++) bin += String.fromCharCode(compressed[i]);
+            const compressedArray = new Uint8Array(compressed);
+            for (let i = 0; i < compressedArray.length; i++) bin += String.fromCharCode(compressedArray[i]);
             document.getElementById('io-box').value = btoa(bin);
-            log("Export Successful. (Using Zlib/Deflate)");
-        } catch (e) { 
-            log("Export Failed: " + e.message);
-            alert("Export Error: " + e.message);
-        }
+            log("Export Successful.");
+        } catch (e) { log("Export Error: " + e.message); }
     };
 
+    // UI RENDERERS (Same as before)
     window.renderSidebar = function() {
         const list = document.getElementById('container-list');
         list.innerHTML = '';
@@ -142,7 +139,6 @@
         const editor = document.getElementById('node-editor');
         editor.innerHTML = '';
         const container = window.currentData[index];
-        
         let nodes = [];
         try {
             const inner = typeof container.DATA === 'string' ? JSON.parse(container.DATA) : container.DATA;
@@ -170,10 +166,9 @@
             let inner = JSON.parse(container.DATA);
             inner.Line[nIdx][k] = val;
             container.DATA = JSON.stringify(inner);
-        } else if (container.Line) {
+        } else {
             container.Line[nIdx][k] = val;
         }
-        log(`Updated ${k}`);
     };
 
     window.addEventListener('keydown', (e) => { 
