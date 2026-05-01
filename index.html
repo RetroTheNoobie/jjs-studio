@@ -2,30 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.1.7</title>
+    <title>JJS STUDIO V1.1.9 (ZSTD FULL)</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
+    
+    <!-- This is a high-performance ZSTD wrapper specifically for browsers -->
+    <script src="https://cdn.jsdelivr.net/npm/zstd-codec@0.1.2/dist/zstd-codec.js"></script>
+
     <style>
         :root { --bg: #0a0a0a; --panel: #141414; --accent: #ffcc33; --text: #ffffff; --border: #333; --node-bg: #1a1a1a; }
         * { font-family: 'Finger Paint', cursive; box-sizing: border-box; }
         body { background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         header { background: var(--panel); padding: 10px 20px; border-bottom: 4px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-size: 1.4rem; color: var(--accent); }
         .layout { display: grid; grid-template-columns: 380px 1fr; flex: 1; overflow: hidden; }
-        .sidebar { background: var(--panel); border-right: 2px solid var(--border); padding: 15px; gap: 12px; overflow-y: auto; }
+        .sidebar { background: var(--panel); border-right: 2px solid var(--border); padding: 15px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
         textarea { width: 100%; height: 140px; background: #000; color: #00ff00; border: 2px solid #333; padding: 12px; font-size: 11px; border-radius: 8px; resize: none; outline: none; }
         .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .btn { border: none; padding: 14px; font-size: 0.85rem; cursor: pointer; border-radius: 8px; font-weight: bold; }
         .import-btn { background: var(--accent); color: #000; }
         .export-btn { background: #28a745; color: #fff; }
         .main-view { overflow-y: auto; padding: 25px; background: #0c0c0c; }
-        .node-card { background: var(--node-bg); border: 2px solid var(--border); border-radius: 12px; margin-bottom: 25px; }
-        .node-header { background: #252525; padding: 10px 15px; border-radius: 10px 10px 0 0; border-bottom: 2px solid var(--border); color: var(--accent); }
+        .node-card { background: var(--node-bg); border: 2px solid var(--border); border-radius: 12px; margin-bottom: 25px; overflow: hidden; }
+        .node-header { background: #252525; padding: 10px 15px; border-bottom: 2px solid var(--border); color: var(--accent); }
         .node-body { padding: 20px; display: flex; flex-wrap: wrap; gap: 12px; }
         .prop-box { background: #222; border: 1px solid #333; padding: 10px; border-radius: 8px; flex: 1 1 160px; }
         .label { color: var(--accent); font-size: 0.65rem; display: block; opacity: 0.8; }
         .prop-input { background: transparent; border: none; border-bottom: 2px solid #444; color: #fff; width: 100%; font-size: 0.9rem; outline: none; }
-        #debug-console { position: fixed; bottom: 20px; right: 20px; width: 450px; height: 300px; background: rgba(0,0,0,0.95); border: 2px solid var(--accent); border-radius: 10px; z-index: 9999; display: none; flex-direction: column; }
-        #debug-body { flex: 1; padding: 15px; font-family: monospace; font-size: 11px; overflow-y: auto; color: #00ff00; }
         .container-item { background: #222; padding: 12px; border-radius: 10px; cursor: pointer; border: 2px solid transparent; margin-bottom: 5px; }
         .container-item.active { border-color: var(--accent); }
     </style>
@@ -33,8 +34,8 @@
 <body>
 
 <header>
-    <div class="logo">JJS STUDIO V1.1.7</div>
-    <div id="engine-status" style="font-size: 0.75rem; color: #28a745;">ENGINE: NATIVE BROWSER (R/W)</div>
+    <div style="font-size: 1.4rem; color: var(--accent);">JJS STUDIO V1.1.9</div>
+    <div id="engine-status" style="font-size: 0.8rem; color: #ffcc33;">WASM ENGINE: BOOTING...</div>
 </header>
 
 <div class="layout">
@@ -49,51 +50,33 @@
     <div class="main-view" id="node-editor"></div>
 </div>
 
-<div id="debug-console">
-    <div style="background:var(--accent); color:#000; padding:8px; font-size:11px; font-weight:bold;">SYSTEM LOGS</div>
-    <div id="debug-body"></div>
-</div>
-
 <script>
-    const log = (m) => {
-        const b = document.getElementById('debug-body');
-        if(b) { b.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${m}</div>`; b.scrollTop = b.scrollHeight; }
-    };
+    let zstd;
+    let zstd_compressor;
+    let zstd_decompressor;
+
+    // Initialize the WASM Engine
+    ZstdCodec.run(z => {
+        zstd = z;
+        zstd_compressor = new z.Simple();
+        zstd_decompressor = new z.Simple();
+        document.getElementById('engine-status').innerText = "WASM ENGINE: ZSTD R/W READY";
+        document.getElementById('engine-status').style.color = "#28a745";
+    });
 
     window.currentData = [];
     window.activeIndex = 0;
 
-    // NATIVE DECOMPRESSION (No Libraries)
-    async function nativeDecompress(buffer) {
-        const ds = new DecompressionStream('deflate');
-        const writer = ds.writable.getWriter();
-        writer.write(buffer);
-        writer.close();
-        const response = new Response(ds.readable);
-        const arrayBuffer = await response.arrayBuffer();
-        return new Uint8Array(arrayBuffer);
-    }
-
-    // NATIVE COMPRESSION (No Libraries)
-    async function nativeCompress(buffer) {
-        const cs = new CompressionStream('deflate');
-        const writer = cs.writable.getWriter();
-        writer.write(buffer);
-        writer.close();
-        const response = new Response(cs.readable);
-        const arrayBuffer = await response.arrayBuffer();
-        return new Uint8Array(arrayBuffer);
-    }
-
-    window.importKLUv = async function() {
-        let raw = document.getElementById('io-box').value.trim();
+    window.importKLUv = function() {
+        if(!zstd) { alert("Engine still loading..."); return; }
+        const raw = document.getElementById('io-box').value.trim();
         try {
             const binary = atob(raw);
             const bytes = new Uint8Array(binary.length);
             for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
             
-            log("Native Decompressing...");
-            const decompressed = await nativeDecompress(bytes);
+            // Explicit Zstd Decompress
+            const decompressed = zstd_decompressor.decompress(bytes);
             const text = new TextDecoder().decode(decompressed);
             
             window.currentData = JSON.parse(text);
@@ -101,26 +84,25 @@
             
             renderSidebar();
             loadContainer(0);
-            log("Import Successful.");
-        } catch (e) { log("Import Failed: Use Deflate/Zlib format."); }
+        } catch (e) { alert("Zstd Decompression Failed: " + e.message); }
     };
 
-    window.exportKLUv = async function() {
+    window.exportKLUv = function() {
+        if(!zstd) { alert("Engine still loading..."); return; }
         try {
-            log("Native Compressing...");
             const jsonStr = JSON.stringify(window.currentData);
             const uint8 = new TextEncoder().encode(jsonStr);
-            const compressed = await nativeCompress(uint8);
+            
+            // Explicit Zstd Compress (Standard Level 3)
+            const compressed = zstd_compressor.compress(uint8);
             
             let bin = "";
-            const compressedArray = new Uint8Array(compressed);
-            for (let i = 0; i < compressedArray.length; i++) bin += String.fromCharCode(compressedArray[i]);
+            for (let i = 0; i < compressed.length; i++) bin += String.fromCharCode(compressed[i]);
             document.getElementById('io-box').value = btoa(bin);
-            log("Export Successful.");
-        } catch (e) { log("Export Error: " + e.message); }
+            alert("Success! Copy code to JJS.");
+        } catch (e) { alert("Export Failed: " + e.message); }
     };
 
-    // UI RENDERERS (Same as before)
     window.renderSidebar = function() {
         const list = document.getElementById('container-list');
         list.innerHTML = '';
@@ -139,6 +121,7 @@
         const editor = document.getElementById('node-editor');
         editor.innerHTML = '';
         const container = window.currentData[index];
+        
         let nodes = [];
         try {
             const inner = typeof container.DATA === 'string' ? JSON.parse(container.DATA) : container.DATA;
@@ -166,17 +149,10 @@
             let inner = JSON.parse(container.DATA);
             inner.Line[nIdx][k] = val;
             container.DATA = JSON.stringify(inner);
-        } else {
+        } else if (container.Line) {
             container.Line[nIdx][k] = val;
         }
     };
-
-    window.addEventListener('keydown', (e) => { 
-        if(e.key === 'F2') { 
-            const c = document.getElementById('debug-console');
-            c.style.display = c.style.display === 'flex' ? 'none' : 'flex';
-        }
-    });
 </script>
 </body>
 </html>
