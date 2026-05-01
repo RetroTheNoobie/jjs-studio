@@ -2,29 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.2.5</title>
+    <title>JJS STUDIO V1.2.7</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #0a0a0a; --panel: #141414; --accent: #ffcc33; --text: #ffffff; --border: #333; }
         * { font-family: 'Finger Paint', cursive; box-sizing: border-box; }
         body { background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        header { background: var(--panel); padding: 10px 20px; border-bottom: 4px solid var(--accent); display: flex; justify-content: space-between; }
+        header { background: var(--panel); padding: 10px 20px; border-bottom: 4px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
         .layout { display: grid; grid-template-columns: 350px 1fr; flex: 1; overflow: hidden; }
         .sidebar { background: var(--panel); border-right: 2px solid var(--border); padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        textarea { width: 100%; height: 120px; background: #000; color: #00ff00; border: 2px solid #444; padding: 10px; font-size: 10px; border-radius: 5px; }
+        textarea { width: 100%; height: 120px; background: #000; color: #00ff00; border: 2px solid #444; padding: 10px; font-size: 10px; border-radius: 5px; outline: none; }
         .btn { border: none; padding: 12px; cursor: pointer; border-radius: 5px; font-weight: bold; width: 100%; }
         .import-btn { background: var(--accent); color: #000; }
         .export-btn { background: #28a745; color: #fff; }
         .main-view { padding: 20px; background: #0c0c0c; overflow-y: auto; }
         .node-card { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; margin-bottom: 15px; padding: 15px; }
         .prop-input { background: #222; border: 1px solid #444; color: #fff; width: 100%; padding: 5px; margin-top: 5px; border-radius: 4px; outline: none; }
-        #terminal { height: 120px; background: #000; border-top: 2px solid var(--accent); color: #00ff00; font-family: monospace; font-size: 11px; padding: 10px; overflow-y: auto; }
+        #terminal { height: 150px; background: #000; border-top: 2px solid var(--accent); color: #00ff00; font-family: monospace; font-size: 11px; padding: 10px; overflow-y: auto; }
+        .container-item { background: #222; padding: 8px; margin-top: 5px; cursor: pointer; font-size: 12px; border-left: 3px solid transparent; }
+        .container-item.active { border-left-color: var(--accent); background: #2a2a2a; }
     </style>
 </head>
 <body>
 
 <header>
-    <div style="color: var(--accent);">JJS STUDIO V1.2.5</div>
+    <div style="color: var(--accent);">JJS STUDIO V1.2.7</div>
     <div id="status">ENGINE: LOADING...</div>
 </header>
 
@@ -40,9 +42,6 @@
 
 <div id="terminal">> Awaiting Module Engine...<br></div>
 
-<!-- Load the self-hosted zstd bundle as a module script.
-     zstd-bundle.js is an IIFE that exposes ZstdWeb globally,
-     and fetches zstd/zstd.wasm relatively. -->
 <script type="module">
     const term = document.getElementById('terminal');
     const log = (m) => { term.innerHTML += `> ${m}<br>`; term.scrollTop = term.scrollHeight; };
@@ -55,84 +54,77 @@
     async function init() {
         try {
             log('Loading self-hosted zstd bundle...');
-
-            // Load the bundle as a module - it exposes init, compress, decompress
             const zstdMod = await import('./zstd-bundle.js');
+            
+            // LOGGING THE MODULE STRUCTURE FOR DEBUGGING
+            const keys = Object.keys(zstdMod);
+            log('Module Keys found: ' + keys.join(', '));
 
-            // init() triggers the WASM fetch of ./zstd/zstd.wasm
-            await zstdMod.init();
+            // Logic to find the correct init function
+            const initFn = zstdMod.init || (zstdMod.default && zstdMod.default.init);
+            const compressFn = zstdMod.compress || (zstdMod.default && zstdMod.default.compress);
+            const decompressFn = zstdMod.decompress || (zstdMod.default && zstdMod.default.decompress);
 
-            window.zstd = {
-                compress: zstdMod.compress,
-                decompress: zstdMod.decompress
-            };
+            if (initFn) {
+                log('Init function found. Booting WASM...');
+                await initFn();
+                window.zstd = { compress: compressFn, decompress: decompressFn };
+                status.innerText = 'ENGINE: ONLINE';
+                status.style.color = '#28a745';
+                log('Full Zstd R/W Ready.');
+            } else {
+                throw new Error('init() not found in zstdMod exports.');
+            }
 
-            status.innerText = 'ENGINE: ONLINE';
-            status.style.color = '#28a745';
-            log('zstd bundle loaded. Compress + Decompress ready.');
         } catch(e) {
-            log('zstd bundle failed: ' + e.message);
-            log('Trying fzstd fallback (decompress only)...');
+            log('Bundle check failed: ' + e.message);
+            log('Attempting fzstd fallback...');
             try {
                 const mod = await import('https://cdn.skypack.dev/fzstd@0.1.0');
                 window.zstd = {
                     decompress: mod.decompress,
-                    compress: () => { throw new Error('Compress not available in fallback mode.'); }
+                    compress: () => { throw new Error('Compression disabled in fallback mode.'); }
                 };
                 status.innerText = 'ENGINE: PARTIAL';
                 status.style.color = '#ffaa00';
-                log('fzstd fallback active. Import works, Export disabled.');
+                log('Fallback active (Import only).');
             } catch(e2) {
-                log('All engines failed: ' + e2.message);
                 status.innerText = 'ENGINE: OFFLINE';
                 status.style.color = '#ff4444';
+                log('All engines failed.');
             }
         }
     }
 
-    // --- IMPORT ---
     document.getElementById('import-trigger').onclick = async () => {
         const raw = document.getElementById('io-box').value.trim();
-        if (!raw) return log('Error: Box is empty.');
-        if (!window.zstd) return log('Error: Engine not loaded.');
+        if (!raw || !window.zstd) return log('Error: System not ready.');
         try {
-            log('Decoding Base64...');
-            const binary = atob(raw);
-            const u8 = new Uint8Array(binary.length);
-            for (let i = 0; i < binary.length; i++) u8[i] = binary.charCodeAt(i);
-
-            log('Decompressing Zstd (' + u8.length + ' bytes)...');
+            log('Processing Base64...');
+            const u8 = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
+            log('Decompressing...');
             const decompressed = window.zstd.decompress(u8);
             const text = new TextDecoder().decode(decompressed);
-
-            log('Parsing JSON (' + text.length + ' chars)...');
             window.currentData = JSON.parse(text);
             if (!Array.isArray(window.currentData)) window.currentData = [window.currentData];
-
             renderSidebar();
             loadContainer(0);
-            log('Success: ' + window.currentData.length + ' container(s) loaded.');
-        } catch(e) {
-            log('Import Error: ' + e.message);
-        }
+            log('Import Success.');
+        } catch(e) { log('Import Error: ' + e.message); }
     };
 
-    // --- EXPORT ---
     document.getElementById('export-trigger').onclick = () => {
-        if (!window.zstd) return log('Error: Engine not loaded.');
+        if (!window.zstd) return log('Error: Engine offline.');
         try {
-            log('Compressing Data...');
+            log('Compressing...');
             const json = JSON.stringify(window.currentData);
             const u8 = new TextEncoder().encode(json);
             const compressed = window.zstd.compress(u8, 3);
-
             let bin = '';
             for (let i = 0; i < compressed.length; i++) bin += String.fromCharCode(compressed[i]);
             document.getElementById('io-box').value = btoa(bin);
-            log('Success: Code Exported.');
-        } catch(e) {
-            log('Export Error: ' + e.message);
-        }
+            log('Export Success.');
+        } catch(e) { log('Export Error: ' + e.message); }
     };
 
     function renderSidebar() {
@@ -140,7 +132,7 @@
         list.innerHTML = '';
         window.currentData.forEach((c, i) => {
             const item = document.createElement('div');
-            item.style = `background:#222; padding:8px; margin-top:5px; cursor:pointer; font-size:12px; border-left: 3px solid ${i === window.activeIndex ? '#ffcc33' : 'transparent'}`;
+            item.className = `container-item ${i === window.activeIndex ? 'active' : ''}`;
             item.innerHTML = c.NAME || 'Object';
             item.onclick = () => loadContainer(i);
             list.appendChild(item);
@@ -162,11 +154,11 @@
         nodes.forEach((node, nIdx) => {
             const card = document.createElement('div');
             card.className = 'node-card';
-            card.innerHTML = `<strong style="color:#ffcc33">${node.K_NAME}</strong>`;
+            card.innerHTML = `<strong style="color:var(--accent)">${node.K_NAME}</strong>`;
             Object.keys(node).forEach(k => {
                 if (k === 'K_NAME' || k === 'Preview') return;
                 const row = document.createElement('div');
-                row.innerHTML = `<label style="font-size:10px; color:#888">${k}</label>
+                row.innerHTML = `<label style="font-size:10px;color:#888;display:block;margin-top:8px">${k}</label>
                                  <input class="prop-input" value="${node[k]}" data-node="${nIdx}" data-key="${k}">`;
                 card.appendChild(row);
             });
@@ -175,9 +167,9 @@
 
         editor.querySelectorAll('.prop-input').forEach(input => {
             input.onchange = (e) => {
-                const nIdx = e.target.getAttribute('data-node');
-                const k = e.target.getAttribute('data-key');
-                updateVal(nIdx, k, e.target.value);
+                const ni = e.target.getAttribute('data-node');
+                const ky = e.target.getAttribute('data-key');
+                updateVal(ni, ky, e.target.value);
             };
         });
     }
@@ -192,7 +184,7 @@
         } else {
             container.Line[nIdx][k] = val;
         }
-        log('Updated ' + k);
+        log('Field ' + k + ' saved.');
     }
 
     init();
