@@ -2,180 +2,123 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.3.4</title>
+    <title>JJS STUDIO V1.3.6</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --bg: #050505; --panel: #0f0f0f; --accent: #ffcc33; 
-            --text: #e0e0e0; --border: #222; --node-bg: #141414; 
-        }
-
+        :root { --bg: #050505; --panel: #0f0f0f; --accent: #ffcc33; --text: #e0e0e0; --border: #222; --node-bg: #141414; }
         * { font-family: 'Finger Paint', cursive; box-sizing: border-box; }
-        body, html { height: 100%; margin: 0; padding: 0; overflow: hidden; background: var(--bg); color: var(--text); }
-        body { display: flex; flex-direction: column; }
-        
+        body, html { height: 100%; margin: 0; padding: 0; overflow: hidden; background: var(--bg); color: var(--text); display: flex; flex-direction: column; }
         header { flex-shrink: 0; height: 70px; background: var(--panel); padding: 0 25px; border-bottom: 3px solid var(--accent); display: flex; justify-content: space-between; align-items: center; z-index: 100; }
         .layout { display: flex; height: calc(100vh - 70px); overflow: hidden; }
-        
-        .sidebar { width: 400px; flex-shrink: 0; background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; height: 100%; }
-        .sidebar-controls { padding: 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-        .container-list { flex: 1; overflow-y: scroll; padding: 15px; scrollbar-width: thin; scrollbar-color: var(--accent) #111; }
-
-        .main-view { flex: 1; overflow-y: scroll; padding: 40px; background: radial-gradient(circle at center, #111 0%, #050505 100%); }
-        .main-view-inner { padding-bottom: 400px; } 
-        
+        .sidebar { width: 380px; flex-shrink: 0; background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+        .sidebar-controls { padding: 20px; border-bottom: 1px solid var(--border); }
+        .container-list { flex: 1; overflow-y: auto; padding: 15px; }
+        .main-view { flex: 1; overflow-y: auto; padding: 40px; background: radial-gradient(circle at center, #111 0%, #050505 100%); }
+        .main-view-inner { padding-bottom: 300px; }
         textarea { width: 100%; height: 110px; background: #000; color: #2ecc71; border: 2px solid var(--border); padding: 12px; font-size: 11px; border-radius: 12px; resize: none; outline: none; margin-bottom: 15px; }
         .btn { border: none; padding: 14px; cursor: pointer; border-radius: 10px; font-weight: bold; width: 100%; margin-bottom: 10px; text-transform: uppercase; }
         .import-btn { background: var(--accent); color: #000; }
         .export-btn { background: #2ecc71; color: #fff; }
-        
-        .node-card { background: var(--node-bg); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 30px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .node-header { background: #1f1f1f; padding: 15px 20px; border-bottom: 2px solid var(--accent); color: var(--accent); display: flex; justify-content: space-between; }
-        .node-body { padding: 25px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
-        
-        .prop-box { background: #1a1a1a; border: 1px solid #333; padding: 12px; border-radius: 10px; }
-        .label { color: #888; font-size: 0.7rem; display: block; margin-bottom: 5px; }
-        .prop-input { background: transparent; border: none; border-bottom: 1px solid #444; color: #fff; width: 100%; outline: none; }
-
-        #terminal { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 180px; background: rgba(0,0,0,0.95); border: 2px solid var(--accent); border-radius: 15px; color: #2ecc71; font-family: monospace; padding: 20px; overflow-y: auto; display: none; z-index: 1000; }
-
-        .container-item { background: #111; padding: 15px; border-radius: 12px; cursor: pointer; border-left: 5px solid transparent; margin-bottom: 10px; }
+        .node-card { background: var(--node-bg); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 25px; overflow: hidden; }
+        .node-header { background: #1f1f1f; padding: 12px 20px; border-bottom: 2px solid var(--accent); color: var(--accent); display: flex; justify-content: space-between; }
+        .node-body { padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+        .prop-box { background: #1a1a1a; border: 1px solid #333; padding: 10px; border-radius: 8px; }
+        .label { color: #888; font-size: 0.65rem; display: block; margin-bottom: 4px; }
+        .prop-input { background: transparent; border: none; border-bottom: 1px solid #444; color: #fff; width: 100%; outline: none; font-size: 0.9rem; }
+        .container-item { background: #111; padding: 18px; border-radius: 12px; cursor: pointer; border-left: 5px solid transparent; margin-bottom: 8px; transition: 0.2s; }
         .container-item:hover { background: #181818; }
         .container-item.active { border-left-color: var(--accent); background: #222; }
+        #terminal { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 150px; background: rgba(0,0,0,0.9); border: 2px solid var(--accent); border-radius: 15px; color: #2ecc71; font-family: monospace; padding: 15px; overflow-y: auto; display: none; z-index: 1000; }
     </style>
 </head>
 <body>
 
 <header>
-    <div><span style="font-size: 1.6rem; color: var(--accent);">JJS STUDIO</span> <span style="font-size: 0.8rem; color: #666;">V1.3.4</span></div>
+    <div><span style="font-size: 1.5rem; color: var(--accent);">JJS STUDIO</span> <span style="font-size: 0.8rem; color: #555;">V1.3.6</span></div>
     <div id="status" style="font-size: 0.8rem;">ENGINE: CONNECTING...</div>
 </header>
 
 <div class="layout">
     <div class="sidebar">
         <div class="sidebar-controls">
-            <textarea id="io-box" placeholder="PASTE KLUv STRING..."></textarea>
-            <button class="btn import-btn" id="import-trigger">Load Data</button>
-            <button class="btn export-btn" id="export-trigger">Generate String</button>
+            <textarea id="io-box" placeholder="PASTE KLUv..."></textarea>
+            <button class="btn import-btn" id="import-trigger">Import Data</button>
+            <button class="btn export-btn" id="export-trigger">Export Data</button>
         </div>
         <div class="container-list" id="container-list"></div>
     </div>
     <div class="main-view" id="node-editor">
         <div class="main-view-inner" id="node-editor-content">
-            <div style="text-align: center; margin-top: 100px; opacity: 0.3;">
-                <h1>READY</h1>
-                <p>Import a string to begin editing</p>
-            </div>
+            <div style="text-align: center; margin-top: 100px; opacity: 0.2;"><h1>READY TO WORK</h1></div>
         </div>
     </div>
 </div>
 
-<div id="terminal">> [F2] Console Ready.</div>
+<div id="terminal">> Console Active. [F2] to Toggle.</div>
 
 <script src="./zstd-bundle.js"></script>
 
 <script>
-    // --- UPDATED DICTIONARY ---
     const PRETTY_NAMES = {
-        "SFX": "SOUND",
-        "HITCNCL": "HIT CANCEL",
-        "VELO": "VELOCITY",
-        "ULTGIB": "ADD AWAKENING",
-        "HPGIB": "ADD HEALTH",
-        "EVGIB": "ADD EVASION",
-        "ANIM": "ANIMATION",
-        "PROJ": "PROJECTILE",
-        "VISUAL": "VISUALS",
-        "ATK": "ATTACK"
+        "SFX": "SOUND", "HITCNCL": "HIT CANCEL", "VELO": "VELOCITY",
+        "ULTGIB": "ADD AWAKENING", "HPGIB": "ADD HEALTH", "EVGIB": "ADD EVASION",
+        "ANIM": "ANIMATION", "PROJ": "PROJECTILE", "VISUAL": "VISUALS", "ATK": "ATTACK"
     };
 
-    const term = document.getElementById('terminal');
-    const log = (m) => { 
-        term.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${m}</div>`; 
-        term.scrollTop = term.scrollHeight; 
-    };
-    const status = document.getElementById('status');
+    let currentData = [];
+    let activeIndex = 0;
+    let zstd = null;
 
-    window.currentData = [];
-    window.activeIndex = 0;
-    window.zstd = null;
+    // --- RECONSTRUCTED CATEGORY DETECTOR ---
+    function identifyType(c) {
+        let inner = {};
+        try { inner = typeof c.DATA === 'string' ? JSON.parse(c.DATA) : (c.DATA || {}); } catch(e){}
+        const nodes = inner.Line || c.Line || [];
+        const firstNodeName = nodes[0]?.K_NAME || "";
 
-    window.addEventListener('keydown', (e) => {
-        if (e.key === 'F2') {
-            e.preventDefault();
-            term.style.display = term.style.display === 'none' ? 'block' : 'none';
-        }
-    });
-
-    async function init() {
-        const engine = window.ZstdWeb || window.zstd || window.Zstd || window.module;
-        if (engine && engine.init) {
-            try {
-                await engine.init();
-                window.zstd = engine;
-                status.innerText = 'ENGINE: ONLINE';
-                status.style.color = '#2ecc71';
-                log('WASM Handshake Success.');
-            } catch(e) { log('WASM Error: ' + e.message); }
-        }
+        // Specific Logic for JJS Containers
+        if (nodes.some(n => n.K_NAME === "ULTGIB")) return "AWAKENING";
+        if (nodes.some(n => n.K_NAME === "ATK")) return "MELEE";
+        if (nodes.some(n => n.K_NAME === "VELO") && nodes.length < 3) return "CHASE";
+        
+        // Type-based fallback (Assumes 1=Melee, 2=Special, 3=Skill)
+        const type = c.Type || inner.Type;
+        if (type === 1) return "MELEE";
+        if (type === 2) return "SPECIAL";
+        if (type === 3) return "SKILL";
+        
+        return firstNodeName || "OBJECT";
     }
 
-    document.getElementById('import-trigger').onclick = async () => {
-        const raw = document.getElementById('io-box').value.trim();
-        if (!raw || !window.zstd) return;
-        try {
-            const u8 = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
-            const decompressed = window.zstd.decompress(u8);
-            window.currentData = JSON.parse(new TextDecoder().decode(decompressed));
-            if (!Array.isArray(window.currentData)) window.currentData = [window.currentData];
-            log('Payload loaded.');
-            renderSidebar();
-            loadContainer(0);
-        } catch(e) { log('Import Error.'); }
-    };
-
-    document.getElementById('export-trigger').onclick = () => {
-        if (!window.zstd) return;
-        try {
-            const compressed = window.zstd.compress(new TextEncoder().encode(JSON.stringify(window.currentData)), 3);
-            let bin = '';
-            for (let i = 0; i < compressed.length; i++) bin += String.fromCharCode(compressed[i]);
-            document.getElementById('io-box').value = btoa(bin);
-            log('String exported.');
-        } catch(e) { log('Export Error.'); }
-    };
+    async function init() {
+        const engine = window.ZstdWeb || window.zstd || window.Zstd;
+        if (engine?.init) { await engine.init(); zstd = engine; document.getElementById('status').innerText = 'ENGINE: ONLINE'; }
+    }
 
     function renderSidebar() {
         const list = document.getElementById('container-list');
         list.innerHTML = '';
-        window.currentData.forEach((c, i) => {
+        currentData.forEach((c, i) => {
             const item = document.createElement('div');
-            item.className = `container-item ${i === window.activeIndex ? 'active' : ''}`;
-            
-            let inner = {};
-            try { inner = typeof c.DATA === 'string' ? JSON.parse(c.DATA) : (c.DATA || {}); } catch(e){}
-            
-            const rawName = (inner.Line && inner.Line[0] ? inner.Line[0].K_NAME : null) || c.NAME;
-            const displayName = PRETTY_NAMES[rawName] || rawName || "CONTAINER " + i;
-            
-            item.innerHTML = `<strong>${displayName}</strong><span style="font-size:0.7rem; color:#666;">Index: ${i}</span>`;
+            item.className = `container-item ${i === activeIndex ? 'active' : ''}`;
+            const label = identifyType(c);
+            item.innerHTML = `<div style="color:#aaa; font-size:0.6rem;">Container ${i}</div><strong>${label}</strong>`;
             item.onclick = () => loadContainer(i);
             list.appendChild(item);
         });
     }
 
     function loadContainer(index) {
-        window.activeIndex = index;
+        activeIndex = index;
         renderSidebar();
         const editor = document.getElementById('node-editor-content');
         editor.innerHTML = '';
-        const container = window.currentData[index];
-        
+        const container = currentData[index];
         let nodes = [];
         try {
             const inner = typeof container.DATA === 'string' ? JSON.parse(container.DATA) : container.DATA;
-            nodes = (inner && inner.Line) ? inner.Line : (container.Line || []);
-        } catch(e) { nodes = container.Line || []; }
+            nodes = inner?.Line || container.Line || [];
+        } catch(e) {}
 
         nodes.forEach((node, nIdx) => {
             const card = document.createElement('div');
@@ -185,32 +128,49 @@
                 if (k === 'K_NAME' || k === 'Preview') return;
                 props += `<div class="prop-box"><span class="label">${k}</span><input class="prop-input" value="${node[k]}" data-node="${nIdx}" data-key="${k}"></div>`;
             });
-            
-            const nodeTitle = PRETTY_NAMES[node.K_NAME] || node.K_NAME || 'NODE';
-
-            card.innerHTML = `<div class="node-header"><strong>${nodeTitle}</strong><span>#${nIdx}</span></div><div class="node-body">${props}</div>`;
+            const title = PRETTY_NAMES[node.K_NAME] || node.K_NAME || 'NODE';
+            card.innerHTML = `<div class="node-header"><strong>${title}</strong><span>#${nIdx}</span></div><div class="node-body">${props}</div>`;
             editor.appendChild(card);
         });
 
-        editor.querySelectorAll('.prop-input').forEach(input => {
-            input.onchange = (e) => updateVal(e.target.getAttribute('data-node'), e.target.getAttribute('data-key'), e.target.value);
+        editor.querySelectorAll('.prop-input').forEach(inp => {
+            inp.onchange = (e) => {
+                const nIdx = e.target.dataset.node;
+                const k = e.target.dataset.key;
+                const v = isNaN(parseFloat(e.target.value)) ? e.target.value : parseFloat(e.target.value);
+                // Update internal structure
+                if (container.DATA && typeof container.DATA === 'string') {
+                    let inner = JSON.parse(container.DATA);
+                    inner.Line[nIdx][k] = v;
+                    container.DATA = JSON.stringify(inner);
+                } else {
+                    (container.Line || container.DATA.Line)[nIdx][k] = v;
+                }
+            };
         });
     }
 
-    function updateVal(nIdx, k, v) {
-        const container = window.currentData[window.activeIndex];
-        const val = isNaN(parseFloat(v)) ? v : parseFloat(v);
-        if (container.DATA && typeof container.DATA === 'string') {
-            let inner = JSON.parse(container.DATA);
-            inner.Line[nIdx][k] = val;
-            container.DATA = JSON.stringify(inner);
-        } else {
-            const target = (container.Line) ? container.Line : (container.DATA ? container.DATA.Line : null);
-            if(target) target[nIdx][k] = val;
-        }
-        log(`Update: [${k}] to ${val}`);
-    }
+    document.getElementById('import-trigger').onclick = async () => {
+        const raw = document.getElementById('io-box').value.trim();
+        if (!raw || !zstd) return;
+        try {
+            const u8 = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
+            currentData = JSON.parse(new TextDecoder().decode(zstd.decompress(u8)));
+            if (!Array.isArray(currentData)) currentData = [currentData];
+            renderSidebar();
+            loadContainer(0);
+        } catch(e) { console.error(e); }
+    };
 
+    document.getElementById('export-trigger').onclick = () => {
+        if (!zstd) return;
+        const compressed = zstd.compress(new TextEncoder().encode(JSON.stringify(currentData)), 3);
+        let bin = '';
+        for (let i = 0; i < compressed.length; i++) bin += String.fromCharCode(compressed[i]);
+        document.getElementById('io-box').value = btoa(bin);
+    };
+
+    window.addEventListener('keydown', e => { if(e.key === 'F2') document.getElementById('terminal').style.display = document.getElementById('terminal').style.display === 'none' ? 'block' : 'none'; });
     setTimeout(init, 500);
 </script>
 </body>
