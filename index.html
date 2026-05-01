@@ -2,130 +2,130 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.2.0</title>
+    <title>JJS STUDIO V1.2.1</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     
-    <!-- Using Unpkg as a more stable fallback for the Zstd WASM library -->
-    <script src="https://unpkg.com/zstd-codec@0.1.2/dist/zstd-codec.js"></script>
+    <!-- Using the combined bundle to avoid separate WASM fetch blocks -->
+    <script src="https://cdn.jsdelivr.net/npm/fzstd@0.1.1/lib/index.js"></script>
 
     <style>
-        :root { --bg: #0a0a0a; --panel: #141414; --accent: #ffcc33; --text: #ffffff; --border: #333; --node-bg: #1a1a1a; }
+        :root { --bg: #0a0a0a; --panel: #141414; --accent: #ffcc33; --text: #ffffff; --border: #333; }
         * { font-family: 'Finger Paint', cursive; box-sizing: border-box; }
         body { background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         header { background: var(--panel); padding: 10px 20px; border-bottom: 4px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
-        .layout { display: grid; grid-template-columns: 380px 1fr; flex: 1; overflow: hidden; }
-        .sidebar { background: var(--panel); border-right: 2px solid var(--border); padding: 15px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
-        textarea { width: 100%; height: 140px; background: #000; color: #00ff00; border: 2px solid #333; padding: 12px; font-size: 11px; border-radius: 8px; resize: none; outline: none; }
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn { border: none; padding: 14px; font-size: 0.85rem; cursor: pointer; border-radius: 8px; font-weight: bold; }
+        .layout { display: grid; grid-template-columns: 350px 1fr; flex: 1; overflow: hidden; }
+        .sidebar { background: var(--panel); border-right: 2px solid var(--border); padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        textarea { width: 100%; height: 120px; background: #000; color: #00ff00; border: 2px solid #444; padding: 10px; font-size: 10px; border-radius: 5px; }
+        .btn { border: none; padding: 12px; cursor: pointer; border-radius: 5px; font-weight: bold; width: 100%; margin-bottom: 5px; }
         .import-btn { background: var(--accent); color: #000; }
         .export-btn { background: #28a745; color: #fff; }
-        .main-view { padding: 25px; background: #0c0c0c; overflow-y: auto; }
-        .node-card { background: var(--node-bg); border: 2px solid var(--border); border-radius: 12px; margin-bottom: 25px; }
-        .node-header { background: #252525; padding: 10px 15px; border-bottom: 2px solid var(--border); color: var(--accent); }
-        .node-body { padding: 20px; display: flex; flex-wrap: wrap; gap: 12px; }
-        .prop-box { background: #222; border: 1px solid #333; padding: 10px; border-radius: 8px; flex: 1 1 160px; }
-        .label { color: var(--accent); font-size: 0.65rem; display: block; opacity: 0.8; }
-        .prop-input { background: transparent; border: none; border-bottom: 2px solid #444; color: #fff; width: 100%; font-size: 0.9rem; outline: none; }
-        #engine-status { font-size: 0.8rem; padding: 5px 10px; border-radius: 4px; background: #222; }
+        .main-view { padding: 20px; background: #0c0c0c; overflow-y: auto; }
+        .node-card { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; margin-bottom: 15px; padding: 15px; }
+        .prop-input { background: #222; border: 1px solid #444; color: #fff; width: 100%; padding: 5px; margin-top: 5px; border-radius: 4px; }
+        /* BUILT-IN CONSOLE */
+        #on-screen-logs { height: 150px; background: #000; border-top: 2px solid var(--accent); color: #00ff00; font-family: monospace; font-size: 11px; padding: 10px; overflow-y: scroll; }
     </style>
 </head>
 <body>
 
 <header>
-    <div style="font-size: 1.4rem; color: var(--accent);">JJS STUDIO V1.2.0</div>
-    <div id="engine-status">CHECKING ENGINE...</div>
+    <div style="color: var(--accent);">JJS STUDIO V1.2.1</div>
+    <div id="engine-status">INITIALIZING...</div>
 </header>
 
 <div class="layout">
     <div class="sidebar">
-        <textarea id="io-box" placeholder="Paste KLUv here..."></textarea>
-        <div class="btn-group">
-            <button class="btn import-btn" onclick="importKLUv()">IMPORT</button>
-            <button class="btn export-btn" onclick="exportKLUv()">EXPORT</button>
-        </div>
+        <textarea id="io-box" placeholder="PASTE CODE"></textarea>
+        <button class="btn import-btn" onclick="importKLUv()">IMPORT</button>
+        <button class="btn export-btn" onclick="exportKLUv()">EXPORT</button>
         <div id="container-list"></div>
     </div>
-    <div class="main-view" id="node-editor">
-        <h2 style="color: #444; text-align: center; margin-top: 100px;">Paste code to start editing</h2>
-    </div>
+    <div class="main-view" id="node-editor"></div>
 </div>
 
+<div id="on-screen-logs">--- SYSTEM READY ---<br></div>
+
 <script>
-    let zstdEngine = null;
-
-    // The Handshake: Only runs when the external script is actually present
-    function initEngine() {
-        const statusEl = document.getElementById('engine-status');
-        if (typeof ZstdCodec !== 'undefined') {
-            statusEl.innerText = "LOADING WASM...";
-            statusEl.style.color = "#ffcc33";
-            
-            ZstdCodec.run(z => {
-                zstdEngine = {
-                    compressor: new z.Simple(),
-                    decompressor: new z.Simple()
-                };
-                statusEl.innerText = "ZSTD ENGINE: ONLINE (R/W)";
-                statusEl.style.color = "#28a745";
-            });
-        } else {
-            statusEl.innerText = "ZSTD ENGINE: ERROR (SCRIPT BLOCKED)";
-            statusEl.style.color = "#ff4444";
-            statusEl.style.cursor = "pointer";
-            statusEl.onclick = () => window.location.reload();
-        }
+    const logEl = document.getElementById('on-screen-logs');
+    function terminal(msg) {
+        logEl.innerHTML += `> ${msg}<br>`;
+        logEl.scrollTop = logEl.scrollHeight;
     }
-
-    // Attempt initialization after 500ms to ensure script tags are processed
-    setTimeout(initEngine, 500);
 
     window.currentData = [];
     window.activeIndex = 0;
 
+    // Check for fzstd
+    window.onload = () => {
+        const status = document.getElementById('engine-status');
+        if (window.fzstd) {
+            status.innerText = "ZSTD: ONLINE";
+            status.style.color = "#28a745";
+            terminal("Engine Handshake Success.");
+            terminal("Ready for Import.");
+        } else {
+            status.innerText = "ZSTD: OFFLINE";
+            status.style.color = "#ff4444";
+            terminal("ERROR: Library fzstd not found in window object.");
+        }
+    };
+
     window.importKLUv = function() {
-        if(!zstdEngine) return alert("Engine not ready. Wait for green status.");
         const raw = document.getElementById('io-box').value.trim();
+        if(!raw) return terminal("Error: Input is empty.");
         try {
+            terminal("Attempting Base64 Decode...");
             const binary = atob(raw);
             const u8 = new Uint8Array(binary.length);
             for (let i = 0; i < binary.length; i++) u8[i] = binary.charCodeAt(i);
             
-            const decompressed = zstdEngine.decompressor.decompress(u8);
+            terminal("Attempting Zstd Decompress...");
+            const decompressed = window.fzstd.decompress(u8);
             const text = new TextDecoder().decode(decompressed);
+            
             window.currentData = JSON.parse(text);
             if (!Array.isArray(window.currentData)) window.currentData = [window.currentData];
+            
             renderSidebar();
             loadContainer(0);
-        } catch (e) { alert("Import Error: " + e.message); }
+            terminal("SUCCESS: Data Loaded.");
+        } catch (e) { 
+            terminal("IMPORT FAILED: " + e.message); 
+            console.error(e);
+        }
     };
 
     window.exportKLUv = function() {
-        if(!zstdEngine) return alert("Engine not ready.");
         try {
+            terminal("Generating JSON...");
             const json = JSON.stringify(window.currentData);
             const u8 = new TextEncoder().encode(json);
-            const compressed = zstdEngine.compressor.compress(u8);
+            
+            terminal("Compressing Zstd...");
+            const compressed = window.fzstd.compress(u8);
+            
             let bin = "";
             for (let i = 0; i < compressed.length; i++) bin += String.fromCharCode(compressed[i]);
             document.getElementById('io-box').value = btoa(bin);
-            alert("Export Complete.");
-        } catch (e) { alert("Export Error: " + e.message); }
+            terminal("SUCCESS: Exported to text box.");
+        } catch (e) { 
+            terminal("EXPORT FAILED: " + e.message); 
+        }
     };
 
-    window.renderSidebar = function() {
+    function renderSidebar() {
         const list = document.getElementById('container-list');
         list.innerHTML = '';
         window.currentData.forEach((c, i) => {
             const item = document.createElement('div');
-            item.style = `background:#222; padding:10px; margin-top:5px; border-radius:5px; cursor:pointer; border:1px solid ${i === window.activeIndex ? '#ffcc33' : '#333'}`;
-            item.innerHTML = `<strong>${c.NAME || 'Object'}</strong>`;
+            item.style = `background:#222; padding:8px; margin-top:5px; cursor:pointer; font-size:12px; border-left: 3px solid ${i === window.activeIndex ? '#ffcc33' : 'transparent'}`;
+            item.innerHTML = c.NAME || 'Object';
             item.onclick = () => loadContainer(i);
             list.appendChild(item);
         });
-    };
+    }
 
-    window.loadContainer = function(index) {
+    function loadContainer(index) {
         window.activeIndex = index;
         renderSidebar();
         const editor = document.getElementById('node-editor');
@@ -140,16 +140,17 @@
         nodes.forEach((node, nIdx) => {
             const card = document.createElement('div');
             card.className = 'node-card';
-            let props = '';
+            card.innerHTML = `<strong style="color:#ffcc33">${node.K_NAME}</strong>`;
             Object.keys(node).forEach(k => {
                 if (k === 'K_NAME' || k === 'Preview') return;
-                props += `<div class="prop-box"><span class="label">${k}</span>
-                          <input class="prop-input" value="${node[k]}" onchange="updateVal(${nIdx},'${k}',this.value)"></div>`;
+                const row = document.createElement('div');
+                row.innerHTML = `<label style="font-size:10px; color:#888">${k}</label>
+                                 <input class="prop-input" value="${node[k]}" onchange="updateVal(${nIdx},'${k}',this.value)">`;
+                card.appendChild(row);
             });
-            card.innerHTML = `<div class="node-header"><strong>${node.K_NAME}</strong></div><div class="node-body">${props}</div>`;
             editor.appendChild(card);
         });
-    };
+    }
 
     window.updateVal = function(nIdx, k, v) {
         const container = window.currentData[window.activeIndex];
@@ -158,9 +159,10 @@
             let inner = JSON.parse(container.DATA);
             inner.Line[nIdx][k] = val;
             container.DATA = JSON.stringify(inner);
-        } else if (container.Line) {
+        } else {
             container.Line[nIdx][k] = val;
         }
+        terminal(`Updated ${k}`);
     };
 </script>
 </body>
