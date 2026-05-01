@@ -2,88 +2,165 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.3.0</title>
+    <title>JJS STUDIO V1.3.1</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #0a0a0a; --panel: #141414; --accent: #ffcc33; --text: #ffffff; --border: #333; --node-bg: #1a1a1a; }
-        * { font-family: 'Finger Paint', cursive; box-sizing: border-box; }
-        body { background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        
-        header { background: var(--panel); padding: 10px 20px; border-bottom: 4px solid var(--accent); display: flex; justify-content: space-between; align-items: center; z-index: 10; }
-        
-        .layout { display: grid; grid-template-columns: 380px 1fr; flex: 1; overflow: hidden; }
-        
-        /* Sidebar with internal scrolling */
-        .sidebar { background: var(--panel); border-right: 2px solid var(--border); display: flex; flex-direction: column; height: 100%; }
-        .sidebar-controls { padding: 15px; border-bottom: 2px solid var(--border); flex-shrink: 0; }
-        .container-list { flex: 1; overflow-y: auto; padding: 15px; }
-
-        textarea { width: 100%; height: 120px; background: #000; color: #00ff00; border: 2px solid #333; padding: 12px; font-size: 11px; border-radius: 8px; resize: none; outline: none; margin-bottom: 10px; }
-        
-        .btn { border: none; padding: 12px; font-size: 0.85rem; cursor: pointer; border-radius: 8px; font-weight: bold; width: 100%; margin-bottom: 8px; }
-        .import-btn { background: var(--accent); color: #000; }
-        .export-btn { background: #28a745; color: #fff; }
-        
-        /* Main view scrolling */
-        .main-view { overflow-y: auto; padding: 25px; background: #0c0c0c; }
-        
-        .node-card { background: var(--node-bg); border: 2px solid var(--border); border-radius: 12px; margin-bottom: 25px; overflow: hidden; }
-        .node-header { background: #252525; padding: 10px 15px; border-bottom: 2px solid var(--border); color: var(--accent); }
-        .node-body { padding: 20px; display: flex; flex-wrap: wrap; gap: 12px; }
-        
-        .prop-box { background: #222; border: 1px solid #333; padding: 10px; border-radius: 8px; flex: 1 1 160px; }
-        .label { color: var(--accent); font-size: 0.65rem; display: block; opacity: 0.8; }
-        .prop-input { background: transparent; border: none; border-bottom: 2px solid #444; color: #fff; width: 100%; font-size: 0.9rem; outline: none; }
-        
-        /* Floating Console (F2) */
-        #terminal { 
-            position: fixed; bottom: 0; left: 0; right: 0; height: 200px; 
-            background: rgba(0,0,0,0.9); border-top: 4px solid var(--accent); 
-            color: #00ff00; font-family: monospace; font-size: 12px; padding: 15px; 
-            overflow-y: auto; display: none; z-index: 1000; 
+        :root { 
+            --bg: #050505; 
+            --panel: #0f0f0f; 
+            --accent: #ffcc33; 
+            --accent-glow: rgba(255, 204, 51, 0.3);
+            --text: #e0e0e0; 
+            --border: #222; 
+            --node-bg: #141414; 
+            --success: #2ecc71;
         }
 
-        .container-item { background: #222; padding: 12px; border-radius: 10px; cursor: pointer; border: 2px solid transparent; margin-bottom: 8px; transition: 0.2s; }
-        .container-item:hover { background: #282828; }
-        .container-item.active { border-color: var(--accent); background: #2a2a2a; }
+        * { font-family: 'Finger Paint', cursive; box-sizing: border-box; transition: all 0.2s ease; }
+        
+        body { background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        /* Header Upgrade */
+        header { 
+            background: var(--panel); 
+            padding: 15px 25px; 
+            border-bottom: 3px solid var(--accent); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            z-index: 100;
+        }
+
+        .layout { display: grid; grid-template-columns: 400px 1fr; flex: 1; overflow: hidden; }
+        
+        /* Sidebar Polish */
+        .sidebar { background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; height: 100%; box-shadow: 5px 0 15px rgba(0,0,0,0.3); }
+        .sidebar-controls { padding: 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; background: #0a0a0a; }
+        .container-list { flex: 1; overflow-y: auto; padding: 15px; scrollbar-width: thin; scrollbar-color: var(--accent) transparent; }
+
+        textarea { 
+            width: 100%; height: 130px; background: #000; color: var(--success); 
+            border: 2px solid var(--border); padding: 12px; font-size: 11px; 
+            border-radius: 12px; resize: none; outline: none; margin-bottom: 15px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.8);
+        }
+        textarea:focus { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+        
+        /* Buttons */
+        .btn { 
+            border: none; padding: 14px; font-size: 0.9rem; cursor: pointer; 
+            border-radius: 10px; font-weight: bold; width: 100%; margin-bottom: 10px;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .import-btn { background: var(--accent); color: #000; box-shadow: 0 4px 0 #b38f1d; }
+        .import-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #b38f1d; }
+        
+        .export-btn { background: var(--success); color: #fff; box-shadow: 0 4px 0 #219150; }
+        .export-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #219150; }
+        
+        /* Main Workspace */
+        .main-view { overflow-y: auto; padding: 40px; background: radial-gradient(circle at center, #111 0%, #050505 100%); }
+        
+        /* Node Cards Restoration */
+        .node-card { 
+            background: var(--node-bg); border: 1px solid var(--border); 
+            border-radius: 16px; margin-bottom: 30px; overflow: hidden; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .node-header { 
+            background: linear-gradient(90deg, #1f1f1f, #141414); 
+            padding: 15px 20px; border-bottom: 2px solid var(--accent); 
+            color: var(--accent); display: flex; justify-content: space-between;
+        }
+        .node-body { padding: 25px; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+        
+        /* Property Inputs */
+        .prop-box { 
+            background: #1a1a1a; border: 1px solid #333; padding: 12px; 
+            border-radius: 10px; position: relative;
+        }
+        .prop-box:hover { border-color: var(--accent); background: #222; }
+        .label { color: #888; font-size: 0.7rem; display: block; margin-bottom: 5px; }
+        .prop-input { 
+            background: transparent; border: none; border-bottom: 1px solid #444; 
+            color: #fff; width: 100%; font-size: 1rem; outline: none; 
+        }
+        .prop-input:focus { border-color: var(--accent); }
+        
+        /* Floating Console */
+        #terminal { 
+            position: fixed; bottom: 20px; left: 20px; right: 20px; height: 180px; 
+            background: rgba(0,0,0,0.95); border: 2px solid var(--accent); 
+            border-radius: 15px; color: var(--success); font-family: monospace; 
+            font-size: 13px; padding: 20px; overflow-y: auto; display: none; 
+            z-index: 1000; box-shadow: 0 0 40px rgba(0,0,0,1);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Container List Items */
+        .container-item { 
+            background: #111; padding: 15px; border-radius: 12px; cursor: pointer; 
+            border-left: 5px solid transparent; margin-bottom: 10px; transition: 0.3s;
+        }
+        .container-item:hover { background: #1a1a1a; transform: translateX(5px); }
+        .container-item.active { 
+            border-left-color: var(--accent); background: #222; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+        .container-item strong { display: block; font-size: 0.9rem; }
+        .container-item span { font-size: 0.7rem; color: #666; }
     </style>
 </head>
 <body>
 
 <header>
-    <div style="font-size: 1.4rem; color: var(--accent);">JJS STUDIO V1.3.0</div>
-    <div style="font-size: 0.7rem; opacity: 0.6;">PRESS F2 FOR CONSOLE</div>
-    <div id="status">WASM: INITIALIZING...</div>
+    <div>
+        <span style="font-size: 1.6rem; color: var(--accent); text-shadow: 0 0 10px var(--accent-glow);">JJS STUDIO</span>
+        <span style="margin-left: 10px; font-size: 0.8rem; color: #666;">V1.3.1</span>
+    </div>
+    <div style="text-align: right;">
+        <div id="status" style="font-size: 0.8rem; letter-spacing: 1px;">SYSTEM: OFFLINE</div>
+        <div style="font-size: 0.6rem; opacity: 0.4;">[F2] CONSOLE</div>
+    </div>
 </header>
 
 <div class="layout">
     <div class="sidebar">
         <div class="sidebar-controls">
-            <textarea id="io-box" placeholder="PASTE KLUv HERE"></textarea>
-            <button class="btn import-btn" id="import-trigger">IMPORT</button>
-            <button class="btn export-btn" id="export-trigger">EXPORT</button>
+            <textarea id="io-box" placeholder="PASTE RAW STRING HERE..."></textarea>
+            <button class="btn import-btn" id="import-trigger">Load Data</button>
+            <button class="btn export-btn" id="export-trigger">Generate String</button>
         </div>
-        <div class="container-list" id="container-list"></div>
+        <div class="container-list" id="container-list">
+            <!-- Items injected here -->
+        </div>
     </div>
     <div class="main-view" id="node-editor">
-        <h2 style="color: #444; text-align: center; margin-top: 100px;">Import code to begin</h2>
+        <div style="text-align: center; margin-top: 150px; opacity: 0.2;">
+            <h1 style="font-size: 3rem;">STUDIO IDLE</h1>
+            <p>Import a KLUv string to begin editing</p>
+        </div>
     </div>
 </div>
 
-<div id="terminal">> Console Ready. Press F2 to hide/show.<br></div>
+<div id="terminal">> System Initialized... Ready for Handshake.</div>
 
 <script src="./zstd-bundle.js"></script>
 
 <script>
     const term = document.getElementById('terminal');
-    const log = (m) => { term.innerHTML += `> ${m}<br>`; term.scrollTop = term.scrollHeight; };
+    const log = (m) => { 
+        const time = new Date().toLocaleTimeString().split(' ')[0];
+        term.innerHTML += `<div style="margin-bottom:4px"><span style="color:#666">[${time}]</span> ${m}</div>`; 
+        term.scrollTop = term.scrollHeight; 
+    };
     const status = document.getElementById('status');
 
     window.currentData = [];
     window.activeIndex = 0;
     window.zstd = null;
 
-    // F2 Toggle Logic
     window.addEventListener('keydown', (e) => {
         if (e.key === 'F2') {
             e.preventDefault();
@@ -97,18 +174,18 @@
             try {
                 await engine.init();
                 window.zstd = engine;
-                status.innerText = 'ENGINE: ONLINE';
-                status.style.color = '#28a745';
-                log('Zstd WASM Engine Handshake Success.');
-            } catch(e) { log('WASM Init Error: ' + e.message); }
+                status.innerText = 'SYSTEM: ONLINE';
+                status.style.color = '#2ecc71';
+                log('WASM Handshake Successful.');
+            } catch(e) { log('WASM Error: ' + e.message); }
         }
     }
 
     document.getElementById('import-trigger').onclick = async () => {
         const raw = document.getElementById('io-box').value.trim();
-        if (!raw || !window.zstd) return log('Error: System not ready.');
+        if (!raw || !window.zstd) return log('Error: Missing data or engine.');
         try {
-            log('Decompressing...');
+            log('Decompressing payload...');
             const u8 = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
             const decompressed = window.zstd.decompress(u8);
             const text = new TextDecoder().decode(decompressed);
@@ -116,23 +193,23 @@
             window.currentData = JSON.parse(text);
             if (!Array.isArray(window.currentData)) window.currentData = [window.currentData];
             
-            log('Import Success. Found ' + window.currentData.length + ' containers.');
+            log(`Success. ${window.currentData.length} containers loaded.`);
             renderSidebar();
             loadContainer(0);
-        } catch(e) { log('Import Error: ' + e.message); }
+        } catch(e) { log('Import Failed: Check string validity.'); }
     };
 
     document.getElementById('export-trigger').onclick = () => {
-        if (!window.zstd) return log('Error: Engine offline.');
+        if (!window.zstd) return;
         try {
-            log('Compressing...');
+            log('Compressing modifications...');
             const json = JSON.stringify(window.currentData);
             const u8 = new TextEncoder().encode(json);
             const compressed = window.zstd.compress(u8, 3);
             let bin = '';
             for (let i = 0; i < compressed.length; i++) bin += String.fromCharCode(compressed[i]);
             document.getElementById('io-box').value = btoa(bin);
-            log('EXPORT SUCCESSFUL.');
+            log('Export complete. String copied to text box.');
         } catch(e) { log('Export Error: ' + e.message); }
     };
 
@@ -143,13 +220,14 @@
             const item = document.createElement('div');
             item.className = `container-item ${i === window.activeIndex ? 'active' : ''}`;
             
-            // Fix: Logic to identify container by name or its content type
             let innerData = {};
             try { innerData = typeof c.DATA === 'string' ? JSON.parse(c.DATA) : (c.DATA || {}); } catch(e){}
             
-            let displayName = c.NAME || (innerData.Line && innerData.Line[0] ? innerData.Line[0].K_NAME : null) || "Container " + i;
+            // Fixed Naming Logic
+            let label = c.NAME || (innerData.Line && innerData.Line[0] ? innerData.Line[0].K_NAME : null) || "Object " + i;
+            let typeLabel = innerData.Line ? innerData.Line.length + " Nodes" : "Data Object";
             
-            item.innerHTML = `<strong>${displayName}</strong>`;
+            item.innerHTML = `<strong>${label}</strong><span>${typeLabel}</span>`;
             item.onclick = () => loadContainer(i);
             list.appendChild(item);
         });
@@ -181,7 +259,10 @@
                           </div>`;
             });
 
-            card.innerHTML = `<div class="node-header"><strong>${node.K_NAME || 'Node'}</strong></div>
+            card.innerHTML = `<div class="node-header">
+                                <strong>${node.K_NAME || 'NODE'}</strong>
+                                <span style="font-size:0.6rem;opacity:0.5">#${nIdx}</span>
+                              </div>
                               <div class="node-body">${props}</div>`;
             editor.appendChild(card);
         });
@@ -206,7 +287,7 @@
         } else if (container.DATA && container.DATA.Line) {
             container.DATA.Line[nIdx][k] = val;
         }
-        log(`Field [${k}] updated.`);
+        log(`Modified: ${k} → ${val}`);
     }
 
     setTimeout(init, 500);
