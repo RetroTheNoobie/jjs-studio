@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.2.4</title>
+    <title>JJS STUDIO V1.2.5</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #0a0a0a; --panel: #141414; --accent: #ffcc33; --text: #ffffff; --border: #333; }
@@ -24,7 +24,7 @@
 <body>
 
 <header>
-    <div style="color: var(--accent);">JJS STUDIO V1.2.4</div>
+    <div style="color: var(--accent);">JJS STUDIO V1.2.5</div>
     <div id="status">ENGINE: LOADING...</div>
 </header>
 
@@ -40,6 +40,9 @@
 
 <div id="terminal">> Awaiting Module Engine...<br></div>
 
+<!-- Load the self-hosted zstd bundle as a module script.
+     zstd-bundle.js is an IIFE that exposes ZstdWeb globally,
+     and fetches zstd/zstd.wasm relatively. -->
 <script type="module">
     const term = document.getElementById('terminal');
     const log = (m) => { term.innerHTML += `> ${m}<br>`; term.scrollTop = term.scrollHeight; };
@@ -51,15 +54,24 @@
 
     async function init() {
         try {
-            log('Loading self-hosted zstd engine...');
-            const { init: zstdInit, compress, decompress } = await import('./zstd/index.web.js');
-            await zstdInit();
-            window.zstd = { compress, decompress };
+            log('Loading self-hosted zstd bundle...');
+
+            // Load the bundle as a module - it exposes init, compress, decompress
+            const zstdMod = await import('./zstd-bundle.js');
+
+            // init() triggers the WASM fetch of ./zstd/zstd.wasm
+            await zstdMod.init();
+
+            window.zstd = {
+                compress: zstdMod.compress,
+                decompress: zstdMod.decompress
+            };
+
             status.innerText = 'ENGINE: ONLINE';
             status.style.color = '#28a745';
-            log('zstd loaded. Compress + Decompress ready.');
+            log('zstd bundle loaded. Compress + Decompress ready.');
         } catch(e) {
-            log('zstd engine failed: ' + e.message);
+            log('zstd bundle failed: ' + e.message);
             log('Trying fzstd fallback (decompress only)...');
             try {
                 const mod = await import('https://cdn.skypack.dev/fzstd@0.1.0');
