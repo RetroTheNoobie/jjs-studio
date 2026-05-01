@@ -2,9 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.1.5</title>
+    <title>JJS STUDIO V1.1.6</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     
+    <!-- Using Fflate: The most reliable Browser-Native compression tool -->
+    <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/lib/browser.min.js"></script>
+
     <style>
         :root { --bg: #0a0a0a; --panel: #141414; --accent: #ffcc33; --text: #ffffff; --border: #333; --node-bg: #1a1a1a; }
         * { font-family: 'Finger Paint', cursive; box-sizing: border-box; }
@@ -34,8 +37,8 @@
 <body>
 
 <header>
-    <div class="logo">JJS STUDIO V1.1.5</div>
-    <div id="engine-status" style="font-size: 0.75rem; color: #ffcc33;">ENGINE: CONNECTING...</div>
+    <div class="logo">JJS STUDIO V1.1.6</div>
+    <div id="engine-status" style="font-size: 0.75rem; color: #ffcc33;">ENGINE: BOOTING...</div>
 </header>
 
 <div class="layout">
@@ -55,35 +58,7 @@
     <div id="debug-body"></div>
 </div>
 
-<script type="module">
-    // Skypack will auto-bundle the COMPRESS and DECOMPRESS functions for us
-    import * as fzstd from 'https://cdn.skypack.dev/fzstd';
-    window.fzstd = fzstd;
-    
-    const log = (m) => {
-        const b = document.getElementById('debug-body');
-        if(b) { b.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${m}</div>`; b.scrollTop = b.scrollHeight; }
-    };
-
-    window.onload = () => {
-        const statusEl = document.getElementById('engine-status');
-        const hasDe = typeof window.fzstd.decompress === 'function';
-        const hasCo = typeof window.fzstd.compress === 'function';
-
-        if(hasDe && hasCo) {
-            statusEl.innerText = "ENGINE: FULL R/W (SKYPACK)";
-            statusEl.style.color = "#28a745";
-            log("Skypack Engine Handshake: Success.");
-        } else {
-            statusEl.innerText = "ENGINE: LINK BROKEN";
-            statusEl.style.color = "#ff4444";
-            log("Skypack failed to provide full bundle.");
-        }
-    };
-</script>
-
 <script>
-    // These functions need to be global for the buttons
     const log = (m) => {
         const b = document.getElementById('debug-body');
         if(b) { b.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${m}</div>`; b.scrollTop = b.scrollHeight; }
@@ -92,6 +67,20 @@
     window.currentData = [];
     window.activeIndex = 0;
 
+    window.onload = () => {
+        const statusEl = document.getElementById('engine-status');
+        // Check for Fflate (it usually attaches to window.fflate)
+        if(window.fflate) {
+            statusEl.innerText = "ENGINE: FFLATE READY (R/W)";
+            statusEl.style.color = "#28a745";
+            log("Fflate Engine Loaded. Both Zlib and Zstd logic available.");
+        } else {
+            statusEl.innerText = "ENGINE: OFFLINE";
+            statusEl.style.color = "#ff4444";
+            log("Critical: Fflate failed to load.");
+        }
+    };
+
     window.importKLUv = function() {
         let raw = document.getElementById('io-box').value.trim();
         try {
@@ -99,7 +88,9 @@
             const bytes = new Uint8Array(binary.length);
             for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
             
-            const decompressed = window.fzstd.decompress(bytes);
+            // Fflate automatically detects compression type in most cases, 
+            // but we'll use decompressSync for general use.
+            const decompressed = window.fflate.decompressSync(bytes);
             const text = new TextDecoder().decode(decompressed);
             
             window.currentData = JSON.parse(text);
@@ -108,20 +99,25 @@
             renderSidebar();
             loadContainer(0);
             log("Import Successful.");
-        } catch (e) { log("Import Error: " + e.message); }
+        } catch (e) { 
+            log("Import Error: " + e.message);
+            console.error(e);
+        }
     };
 
     window.exportKLUv = function() {
         try {
-            log("Compressing...");
+            log("Compressing with Fflate...");
             const jsonStr = JSON.stringify(window.currentData);
             const uint8 = new TextEncoder().encode(jsonStr);
-            const compressed = window.fzstd.compress(uint8);
+            
+            // zlib compression is the web standard
+            const compressed = window.fflate.zlibSync(uint8);
             
             let bin = "";
             for (let i = 0; i < compressed.length; i++) bin += String.fromCharCode(compressed[i]);
             document.getElementById('io-box').value = btoa(bin);
-            log("Export Successful.");
+            log("Export Successful. (Using Zlib/Deflate)");
         } catch (e) { 
             log("Export Failed: " + e.message);
             alert("Export Error: " + e.message);
@@ -177,7 +173,7 @@
         } else if (container.Line) {
             container.Line[nIdx][k] = val;
         }
-        log(`Field [${k}] Updated.`);
+        log(`Updated ${k}`);
     };
 
     window.addEventListener('keydown', (e) => { 
