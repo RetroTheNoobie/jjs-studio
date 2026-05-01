@@ -2,85 +2,74 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.2.1</title>
+    <title>JJS STUDIO V1.2.2</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
-    
-    <!-- Using the combined bundle to avoid separate WASM fetch blocks -->
-    <script src="https://cdn.jsdelivr.net/npm/fzstd@0.1.1/lib/index.js"></script>
-
     <style>
         :root { --bg: #0a0a0a; --panel: #141414; --accent: #ffcc33; --text: #ffffff; --border: #333; }
         * { font-family: 'Finger Paint', cursive; box-sizing: border-box; }
         body { background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        header { background: var(--panel); padding: 10px 20px; border-bottom: 4px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
+        header { background: var(--panel); padding: 10px 20px; border-bottom: 4px solid var(--accent); display: flex; justify-content: space-between; }
         .layout { display: grid; grid-template-columns: 350px 1fr; flex: 1; overflow: hidden; }
         .sidebar { background: var(--panel); border-right: 2px solid var(--border); padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         textarea { width: 100%; height: 120px; background: #000; color: #00ff00; border: 2px solid #444; padding: 10px; font-size: 10px; border-radius: 5px; }
-        .btn { border: none; padding: 12px; cursor: pointer; border-radius: 5px; font-weight: bold; width: 100%; margin-bottom: 5px; }
+        .btn { border: none; padding: 12px; cursor: pointer; border-radius: 5px; font-weight: bold; width: 100%; }
         .import-btn { background: var(--accent); color: #000; }
         .export-btn { background: #28a745; color: #fff; }
         .main-view { padding: 20px; background: #0c0c0c; overflow-y: auto; }
         .node-card { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; margin-bottom: 15px; padding: 15px; }
-        .prop-input { background: #222; border: 1px solid #444; color: #fff; width: 100%; padding: 5px; margin-top: 5px; border-radius: 4px; }
-        /* BUILT-IN CONSOLE */
-        #on-screen-logs { height: 150px; background: #000; border-top: 2px solid var(--accent); color: #00ff00; font-family: monospace; font-size: 11px; padding: 10px; overflow-y: scroll; }
+        .prop-input { background: #222; border: 1px solid #444; color: #fff; width: 100%; padding: 5px; margin-top: 5px; border-radius: 4px; outline: none; }
+        #terminal { height: 120px; background: #000; border-top: 2px solid var(--accent); color: #00ff00; font-family: monospace; font-size: 11px; padding: 10px; overflow-y: auto; }
     </style>
 </head>
 <body>
 
 <header>
-    <div style="color: var(--accent);">JJS STUDIO V1.2.1</div>
-    <div id="engine-status">INITIALIZING...</div>
+    <div style="color: var(--accent);">JJS STUDIO V1.2.2</div>
+    <div id="status">ENGINE: LOADING...</div>
 </header>
 
 <div class="layout">
     <div class="sidebar">
-        <textarea id="io-box" placeholder="PASTE CODE"></textarea>
-        <button class="btn import-btn" onclick="importKLUv()">IMPORT</button>
-        <button class="btn export-btn" onclick="exportKLUv()">EXPORT</button>
+        <textarea id="io-box" placeholder="PASTE KLUv HERE"></textarea>
+        <button class="btn import-btn" id="import-trigger">IMPORT</button>
+        <button class="btn export-btn" id="export-trigger">EXPORT</button>
         <div id="container-list"></div>
     </div>
     <div class="main-view" id="node-editor"></div>
 </div>
 
-<div id="on-screen-logs">--- SYSTEM READY ---<br></div>
+<div id="terminal">> Awaiting Module Engine...<br></div>
 
-<script>
-    const logEl = document.getElementById('on-screen-logs');
-    function terminal(msg) {
-        logEl.innerHTML += `> ${msg}<br>`;
-        logEl.scrollTop = logEl.scrollHeight;
-    }
+<script type="module">
+    // Direct ES Module Import
+    import * as fzstd from 'https://cdn.skypack.dev/fzstd';
+
+    const term = document.getElementById('terminal');
+    const log = (m) => { term.innerHTML += `> ${m}<br>`; term.scrollTop = term.scrollHeight; };
+    const status = document.getElementById('status');
 
     window.currentData = [];
     window.activeIndex = 0;
 
-    // Check for fzstd
-    window.onload = () => {
-        const status = document.getElementById('engine-status');
-        if (window.fzstd) {
-            status.innerText = "ZSTD: ONLINE";
-            status.style.color = "#28a745";
-            terminal("Engine Handshake Success.");
-            terminal("Ready for Import.");
-        } else {
-            status.innerText = "ZSTD: OFFLINE";
-            status.style.color = "#ff4444";
-            terminal("ERROR: Library fzstd not found in window object.");
-        }
-    };
+    // Initialize
+    if (fzstd) {
+        status.innerText = "ENGINE: MODULE ONLINE";
+        status.style.color = "#28a745";
+        log("fzstd Module Loaded Successfully.");
+    }
 
-    window.importKLUv = function() {
+    // Import Logic
+    document.getElementById('import-trigger').onclick = async () => {
         const raw = document.getElementById('io-box').value.trim();
-        if(!raw) return terminal("Error: Input is empty.");
+        if(!raw) return log("Error: Box is empty.");
         try {
-            terminal("Attempting Base64 Decode...");
+            log("Decoding Base64...");
             const binary = atob(raw);
             const u8 = new Uint8Array(binary.length);
             for (let i = 0; i < binary.length; i++) u8[i] = binary.charCodeAt(i);
             
-            terminal("Attempting Zstd Decompress...");
-            const decompressed = window.fzstd.decompress(u8);
+            log("Decompressing Zstd...");
+            const decompressed = fzstd.decompress(u8);
             const text = new TextDecoder().decode(decompressed);
             
             window.currentData = JSON.parse(text);
@@ -88,28 +77,26 @@
             
             renderSidebar();
             loadContainer(0);
-            terminal("SUCCESS: Data Loaded.");
-        } catch (e) { 
-            terminal("IMPORT FAILED: " + e.message); 
-            console.error(e);
+            log("Success: Container Loaded.");
+        } catch (e) {
+            log("Import Error: " + e.message);
         }
     };
 
-    window.exportKLUv = function() {
+    // Export Logic
+    document.getElementById('export-trigger').onclick = () => {
         try {
-            terminal("Generating JSON...");
+            log("Compressing Data...");
             const json = JSON.stringify(window.currentData);
             const u8 = new TextEncoder().encode(json);
-            
-            terminal("Compressing Zstd...");
-            const compressed = window.fzstd.compress(u8);
+            const compressed = fzstd.compress(u8);
             
             let bin = "";
             for (let i = 0; i < compressed.length; i++) bin += String.fromCharCode(compressed[i]);
             document.getElementById('io-box').value = btoa(bin);
-            terminal("SUCCESS: Exported to text box.");
-        } catch (e) { 
-            terminal("EXPORT FAILED: " + e.message); 
+            log("Success: Code Exported.");
+        } catch (e) {
+            log("Export Error: " + e.message);
         }
     };
 
@@ -145,14 +132,24 @@
                 if (k === 'K_NAME' || k === 'Preview') return;
                 const row = document.createElement('div');
                 row.innerHTML = `<label style="font-size:10px; color:#888">${k}</label>
-                                 <input class="prop-input" value="${node[k]}" onchange="updateVal(${nIdx},'${k}',this.value)">`;
+                                 <input class="prop-input" value="${node[k]}" data-node="${nIdx}" data-key="${k}">`;
                 card.appendChild(row);
             });
             editor.appendChild(card);
         });
+
+        // Event delegation for inputs
+        editor.querySelectorAll('.prop-input').forEach(input => {
+            input.onchange = (e) => {
+                const nIdx = e.target.getAttribute('data-node');
+                const k = e.target.getAttribute('data-key');
+                const v = e.target.value;
+                updateVal(nIdx, k, v);
+            };
+        });
     }
 
-    window.updateVal = function(nIdx, k, v) {
+    function updateVal(nIdx, k, v) {
         const container = window.currentData[window.activeIndex];
         const val = isNaN(parseFloat(v)) ? v : parseFloat(v);
         if (container.DATA && typeof container.DATA === 'string') {
@@ -162,8 +159,8 @@
         } else {
             container.Line[nIdx][k] = val;
         }
-        terminal(`Updated ${k}`);
-    };
+        log(`Updated ${k}`);
+    }
 </script>
 </body>
 </html>
