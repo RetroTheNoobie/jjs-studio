@@ -40,129 +40,54 @@
 
 <div id="terminal">> Awaiting Module Engine...<br></div>
 
-<script>
+<script type="module">
     const term = document.getElementById('terminal');
     const log = (m) => { term.innerHTML += `> ${m}<br>`; term.scrollTop = term.scrollHeight; };
     const status = document.getElementById('status');
 
     window.currentData = [];
     window.activeIndex = 0;
-    window.ZstdEngine = null;
-    window.fzstdLib = null;
+    window.zstd = null;
 
-    // --- ENGINE LOADERS ---
-
-    // Primary: zstd-codec (full compress + decompress via WASM)
-    // The UMD bundle sets ZstdCodec globally but WASM init is async,
-    // so we poll until it appears rather than relying on onload timing.
-    function loadZstdCodec() {
-        return new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/zstd-codec@0.1.4/lib/zstd-codec.js';
-            script.onload = () => {
-                let attempts = 0;
-                const poll = setInterval(() => {
-                    attempts++;
-                    if (typeof ZstdCodec !== 'undefined') {
-                        clearInterval(poll);
-                        ZstdCodec.run(zstd => {
-                            window.ZstdEngine = new zstd.Streaming();
-                            resolve();
-                        });
-                    } else if (attempts > 50) {
-                        clearInterval(poll);
-                        reject(new Error('ZstdCodec global never appeared'));
-                    }
-                }, 100);
-            };
-            script.onerror = () => reject(new Error('Failed to load zstd-codec script'));
-            document.head.appendChild(script);
-        });
-    }
-
-    // Fallback A: fzstd UMD (decompress only)
-    function loadFzstdUMD() {
-        return new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/fzstd@0.1.0/umd/index.js';
-            script.onload = () => {
-                let attempts = 0;
-                const poll = setInterval(() => {
-                    attempts++;
-                    if (typeof fzstd !== 'undefined') {
-                        clearInterval(poll);
-                        window.fzstdLib = fzstd;
-                        resolve();
-                    } else if (attempts > 30) {
-                        clearInterval(poll);
-                        reject(new Error('fzstd UMD global never appeared'));
-                    }
-                }, 100);
-            };
-            script.onerror = () => reject(new Error('Failed to load fzstd UMD script'));
-            document.head.appendChild(script);
-        });
-    }
-
-    // Fallback B: fzstd via ESM (decompress only)
-    async function loadFzstdESM() {
-        const mod = await import('https://cdn.skypack.dev/fzstd@0.1.0');
-        window.fzstdLib = mod;
-    }
-
+    // --- ENGINE ---
+    // zstd-wasm is browser-native: no require(), WASM loaded via fetch from CDN.
+    // We import the ESM build directly.
     async function init() {
         try {
-            await loadZstdCodec();
+            log('Loading zstd-wasm...');
+            const { init: zstdInit, compress, decompress } = await import(
+                'https://cdn.jsdelivr.net/npm/zstd-wasm@0.0.21/dist/browser/zstd.js'
+            );
+            await zstdInit();
+            window.zstd = { compress, decompress };
             status.innerText = 'ENGINE: ONLINE';
             status.style.color = '#28a745';
-            log('zstd-codec WASM loaded. Compress + Decompress ready.');
-            return;
+            log('zstd-wasm loaded. Compress + Decompress ready.');
         } catch(e) {
-            log('Primary engine (zstd-codec) failed: ' + e.message);
+            log('zstd-wasm failed: ' + e.message);
+            log('Trying fzstd fallback (decompress only)...');
+            try {
+                const mod = await import('https://cdn.skypack.dev/fzstd@0.1.0');
+                window.zstd = {
+                    decompress: mod.decompress,
+                    compress: () => { throw new Error('Compress not available in fallback mode.'); }
+                };
+                status.innerText = 'ENGINE: PARTIAL';
+                status.style.color = '#ffaa00';
+                log('fzstd fallback active. Import works, Export disabled.');
+            } catch(e2) {
+                log('All engines failed: ' + e2.message);
+                status.innerText = 'ENGINE: OFFLINE';
+                status.style.color = '#ff4444';
+            }
         }
-
-        try {
-            await loadFzstdUMD();
-            status.innerText = 'ENGINE: PARTIAL';
-            status.style.color = '#ffaa00';
-            log('fzstd UMD fallback loaded. Import works, Export disabled.');
-            return;
-        } catch(e) {
-            log('fzstd UMD fallback failed: ' + e.message);
-        }
-
-        try {
-            await loadFzstdESM();
-            status.innerText = 'ENGINE: PARTIAL';
-            status.style.color = '#ffaa00';
-            log('fzstd ESM fallback loaded. Import works, Export disabled.');
-            return;
-        } catch(e) {
-            log('fzstd ESM fallback failed: ' + e.message);
-            status.innerText = 'ENGINE: OFFLINE';
-            status.style.color = '#ff4444';
-            log('All engines failed. Check network/CSP headers.');
-        }
-    }
-
-    function decompress(u8) {
-        if (window.ZstdEngine) return window.ZstdEngine.decompress(u8);
-        if (window.fzstdLib) {
-            const fn = window.fzstdLib.decompress || window.fzstdLib.default?.decompress;
-            if (fn) return fn(u8);
-        }
-        throw new Error('No decompress engine available.');
-    }
-
-    function compress(u8) {
-        if (window.ZstdEngine) return window.ZstdEngine.compress(u8, 3);
-        throw new Error('Compress unavailable: zstd-codec did not load. Check CSP/network.');
     }
 
     // --- IMPORT ---
     document.getElementById('import-trigger').onclick = async () => {
         const raw = document.getElementById('io-box').value.trim();
         if (!raw) return log('Error: Box is empty.');
+        if (!window.zstd) return log('Error: Engine not loaded.');
         try {
             log('Decoding Base64...');
             const binary = atob(raw);
@@ -170,7 +95,7 @@
             for (let i = 0; i < binary.length; i++) u8[i] = binary.charCodeAt(i);
 
             log('Decompressing Zstd (' + u8.length + ' bytes)...');
-            const decompressed = decompress(u8);
+            const decompressed = window.zstd.decompress(u8);
             const text = new TextDecoder().decode(decompressed);
 
             log('Parsing JSON (' + text.length + ' chars)...');
@@ -187,11 +112,12 @@
 
     // --- EXPORT ---
     document.getElementById('export-trigger').onclick = () => {
+        if (!window.zstd) return log('Error: Engine not loaded.');
         try {
             log('Compressing Data...');
             const json = JSON.stringify(window.currentData);
             const u8 = new TextEncoder().encode(json);
-            const compressed = compress(u8);
+            const compressed = window.zstd.compress(u8, 3);
 
             let bin = '';
             for (let i = 0; i < compressed.length; i++) bin += String.fromCharCode(compressed[i]);
