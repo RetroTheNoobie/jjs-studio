@@ -2,64 +2,92 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.5.2</title>
+    <title>JJS STUDIO V1.6.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #050505; --panel: #0f0f0f; --accent: #ffcc33; --text: #e0e0e0; --border: #222; }
-        * { font-family: 'Finger Paint', cursive; box-sizing: border-box; }
+        :root { 
+            --bg: #050505; --panel: #0d0d0d; --accent: #ffcc33; 
+            --text: #e0e0e0; --border: #252525; --node-card: #161616;
+        }
+
+        * { font-family: 'Finger Paint', cursive; box-sizing: border-box; outline: none; }
         body { background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        .sidebar { width: 350px; background: var(--panel); border-right: 2px solid var(--border); display: flex; flex-direction: column; }
-        .io-area { padding: 20px; border-bottom: 1px solid var(--border); }
-        textarea { width: 100%; height: 80px; background: #000; color: #2ecc71; border: 1px solid #333; border-radius: 8px; font-size: 10px; resize: none; margin-bottom: 10px; padding: 8px; }
-        .btn { width: 100%; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 5px; text-transform: uppercase; }
-        .list { flex: 1; overflow-y: auto; padding: 15px; }
-        .item { padding: 12px; background: #111; margin-bottom: 8px; border-radius: 10px; cursor: pointer; border-left: 4px solid transparent; }
-        .item.active { border-left-color: var(--accent); background: #1a1a1a; }
-        .item .kname { font-size: 0.6rem; color: var(--accent); display: block; }
+        /* Sidebar Styling */
+        .sidebar { width: 380px; background: var(--panel); border-right: 3px solid var(--accent); display: flex; flex-direction: column; z-index: 10; }
+        .sidebar-header { padding: 25px; border-bottom: 1px solid var(--border); text-align: center; }
+        .io-container { padding: 20px; background: #000; margin: 15px; border-radius: 15px; border: 1px solid var(--border); }
+        textarea { width: 100%; height: 100px; background: transparent; color: #2ecc71; border: none; font-size: 10px; resize: none; margin-bottom: 10px; font-family: monospace; }
+        
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.2s; margin-bottom: 8px; }
+        .btn-load { background: var(--accent); color: #000; }
+        .btn-save { background: #2ecc71; color: #fff; }
+        .btn:hover { filter: brightness(1.2); transform: scale(1.02); }
 
-        .main { flex: 1; overflow-y: auto; padding: 30px; }
-        .node-container { background: #111; border: 1px solid #222; border-radius: 15px; margin-bottom: 25px; overflow: hidden; }
-        .node-header { background: #1a1a1a; padding: 10px 20px; color: var(--accent); border-bottom: 1px solid #222; display: flex; justify-content: space-between; }
-        .node-body { padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+        .container-list { flex: 1; overflow-y: auto; padding: 15px; scrollbar-width: thin; scrollbar-color: var(--accent) #000; }
+        .item { padding: 18px; background: #111; margin-bottom: 12px; border-radius: 12px; cursor: pointer; border-left: 6px solid transparent; transition: 0.2s; position: relative; }
+        .item:hover { background: #1a1a1a; }
+        .item.active { border-left-color: var(--accent); background: #222; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+        .item .type-tag { font-size: 0.65rem; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+        .item .move-name { display: block; font-size: 1.2rem; color: #fff; }
+
+        /* Main View Styling */
+        .main { flex: 1; overflow-y: auto; padding: 40px; background: radial-gradient(circle at top right, #111 0%, #050505 100%); }
+        .editor-title { border-left: 6px solid var(--accent); padding-left: 20px; margin-bottom: 40px; }
         
-        .prop-box { background: #080808; padding: 8px; border-radius: 6px; border: 1px solid #1a1a1a; }
-        .prop-box label { font-size: 10px; color: #555; display: block; margin-bottom: 3px; }
-        .prop-box input { background: transparent; border: none; color: #fff; width: 100%; outline: none; border-bottom: 1px solid #333; }
+        .node-card { background: var(--node-card); border: 1px solid var(--border); border-radius: 18px; margin-bottom: 30px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .node-head { background: #1f1f1f; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #222; }
+        .node-head strong { color: var(--accent); font-size: 1rem; }
+        .node-head .raw-id { font-size: 0.7rem; color: #555; }
         
-        .empty-msg { text-align: center; margin-top: 100px; opacity: 0.3; }
+        .node-grid { padding: 25px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+        .field { background: #0c0c0c; border: 1px solid #222; padding: 12px; border-radius: 10px; transition: 0.2s; }
+        .field:focus-within { border-color: var(--accent); }
+        .field label { display: block; font-size: 0.65rem; color: #666; text-transform: uppercase; margin-bottom: 5px; }
+        .field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 1px solid #333; }
+        .field input:focus { border-bottom-color: var(--accent); }
+
+        .empty-state { text-align: center; margin-top: 150px; opacity: 0.15; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <div class="io-area">
-        <textarea id="io" placeholder="PASTE KLUV..."></textarea>
-        <button class="btn" style="background: var(--accent);" onclick="doImport()">LOAD CHARACTER</button>
-        <button class="btn" style="background: #2ecc71; color:#fff;" onclick="doExport()">SAVE KLUV</button>
+    <div class="sidebar-header">
+        <h2 style="margin:0; color: var(--accent);">JJS STUDIO</h2>
+        <span style="font-size:0.7rem; color:#555;">BUILD V1.6.0 // STABLE</span>
     </div>
-    <div class="list" id="sidebar-list"></div>
+    
+    <div class="io-container">
+        <textarea id="kluv-io" placeholder="PASTE RAW KLUV DATA..."></textarea>
+        <button class="btn btn-load" onclick="importData()">Load Character</button>
+        <button class="btn btn-save" onclick="exportData()">Generate String</button>
+    </div>
+
+    <div class="container-list" id="sidebar-list"></div>
 </div>
 
-<div class="main" id="main-editor">
-    <div class="empty-msg"><h1>SELECT A CONTAINER</h1></div>
+<div class="main" id="editor-view">
+    <div class="empty-state"><h1>AWAITING DATA</h1></div>
 </div>
 
 <script src="./zstd-bundle.js"></script>
 <script>
-    let rawData = [];
-    let activeIdx = 0;
+    let currentMoves = [];
+    let activeIndex = -1;
     let zstd = null;
 
-    // THE TERMINOLOGY FIXES
-    const PRETTY_NODES = {
+    // THE DEFINITIVE DICTIONARY
+    const TRANSLATIONS = {
         "ULTGIB": "ADD AWAKENING",
         "HPGIB": "ADD HEALTH",
         "EVGIB": "ADD EVASION",
+        "HITCNCL": "HIT CANCEL",
         "ATK": "ATTACK",
         "ANIM": "ANIMATION",
         "VELO": "VELOCITY",
-        "PROJ": "PROJECTILE"
+        "PROJ": "PROJECTILE",
+        "SFX": "SOUND EFFECT"
     };
 
     async function init() {
@@ -67,83 +95,85 @@
         if (engine?.init) { await engine.init(); zstd = engine; }
     }
 
-    function doImport() {
+    function importData() {
         try {
-            const str = document.getElementById('io').value.trim();
-            const bin = Uint8Array.from(atob(str), c => c.charCodeAt(0));
-            rawData = JSON.parse(new TextDecoder().decode(zstd.decompress(bin)));
+            const raw = document.getElementById('kluv-io').value.trim();
+            if(!raw) return;
+            const bin = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
+            currentMoves = JSON.parse(new TextDecoder().decode(zstd.decompress(bin)));
             renderSidebar();
-            loadContainer(0);
-        } catch(e) { alert("Invalid KLUv String"); }
+            loadMove(0);
+        } catch(e) { alert("Import Failed: Data Format Invalid"); }
     }
 
     function renderSidebar() {
         const list = document.getElementById('sidebar-list');
-        list.innerHTML = rawData.map((c, i) => `
-            <div class="item ${i === activeIdx ? 'active' : ''}" onclick="loadContainer(${i})">
-                <span class="kname">${c.K_NAME || "CATEGORY"}</span>
-                <strong>${c.NAME || "Entry " + i}</strong>
+        list.innerHTML = currentMoves.map((m, i) => `
+            <div class="item ${i === activeIndex ? 'active' : ''}" onclick="loadMove(${i})">
+                <span class="type-tag">${m.K_NAME || "Container"}</span>
+                <span class="move-name">${m.NAME || "Unnamed Entry"}</span>
             </div>
         `).join('');
     }
 
-    function loadContainer(index) {
-        activeIdx = index;
+    function loadMove(idx) {
+        activeIndex = idx;
         renderSidebar();
-        const container = rawData[index];
-        const editor = document.getElementById('main-editor');
+        const move = currentMoves[idx];
+        const editor = document.getElementById('editor-view');
         
+        // Find Nodes (Support both nested and flat)
         let nodes = [];
-        if (Array.isArray(container.Line)) nodes = container.Line;
-        else if (container.DATA) {
-            try {
-                const parsed = typeof container.DATA === 'string' ? JSON.parse(container.DATA) : container.DATA;
-                nodes = parsed.Line || [];
-            } catch(e) { nodes = []; }
+        if (Array.isArray(move.Line)) nodes = move.Line;
+        else if (move.DATA) {
+            const parsed = typeof move.DATA === 'string' ? JSON.parse(move.DATA) : move.DATA;
+            nodes = parsed.Line || [];
         }
 
-        if (nodes.length === 0) {
-            editor.innerHTML = `<div class="empty-msg"><h3>No nodes found.</h3></div>`;
-            return;
-        }
-
-        editor.innerHTML = nodes.map((n, ni) => `
-            <div class="node-container">
-                <div class="node-header">
-                    <strong>${PRETTY_NODES[n.K_NAME] || n.K_NAME}</strong>
-                    <span style="font-size: 0.7rem; opacity: 0.5;">RAW: ${n.K_NAME}</span>
-                </div>
-                <div class="node-body">
-                    ${Object.keys(n).map(k => k === 'K_NAME' ? '' : `
-                        <div class="prop-box">
-                            <label>${k}</label>
-                            <input value="${n[k]}" onchange="updateNode(${ni}, '${k}', this.value)">
-                        </div>
-                    `).join('')}
-                </div>
+        editor.innerHTML = `
+            <div class="editor-title">
+                <span style="color: var(--accent); text-transform: uppercase; font-size: 0.8rem;">${move.K_NAME || 'Move'}</span>
+                <h1 style="margin:0; font-size: 2.5rem; color: #fff;">${move.NAME || 'Unnamed'}</h1>
             </div>
-        `).join('');
+            ${nodes.map((n, ni) => `
+                <div class="node-card">
+                    <div class="node-head">
+                        <strong>${TRANSLATIONS[n.K_NAME] || n.K_NAME}</strong>
+                        <span class="raw-id">NODE_TYPE: ${n.K_NAME}</span>
+                    </div>
+                    <div class="node-grid">
+                        ${Object.keys(n).map(k => k === 'K_NAME' ? '' : `
+                            <div class="field">
+                                <label>${k}</label>
+                                <input value="${n[k]}" onchange="updateVal(${ni}, '${k}', this.value)">
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('')}
+        `;
     }
 
-    function updateNode(nIdx, key, val) {
-        const container = rawData[activeIdx];
-        let targetList = Array.isArray(container.Line) ? container.Line : JSON.parse(container.DATA).Line;
+    function updateVal(nodeIdx, key, val) {
+        const move = currentMoves[activeIndex];
+        let targetList = Array.isArray(move.Line) ? move.Line : JSON.parse(move.DATA).Line;
 
-        const finalVal = (val === "true") ? true : (val === "false") ? false : (isNaN(val) || val === "") ? val : parseFloat(val);
-        targetList[nIdx][key] = finalVal;
-        
-        if (!Array.isArray(container.Line)) {
-            let inner = JSON.parse(container.DATA);
+        // Auto-type conversion
+        let final = (val === "true") ? true : (val === "false") ? false : (isNaN(val) || val === "") ? val : parseFloat(val);
+        targetList[nodeIdx][key] = final;
+
+        if (!Array.isArray(move.Line)) {
+            let inner = JSON.parse(move.DATA);
             inner.Line = targetList;
-            container.DATA = JSON.stringify(inner);
+            move.DATA = JSON.stringify(inner);
         }
     }
 
-    function doExport() {
-        const bin = zstd.compress(new TextEncoder().encode(JSON.stringify(rawData)), 3);
+    function exportData() {
+        const bin = zstd.compress(new TextEncoder().encode(JSON.stringify(currentMoves)), 3);
         let str = "";
         for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
-        document.getElementById('io').value = btoa(str);
+        document.getElementById('kluv-io').value = btoa(str);
     }
 
     setTimeout(init, 500);
