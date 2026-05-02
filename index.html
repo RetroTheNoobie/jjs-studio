@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.6.4</title>
+    <title>JJS STUDIO V1.6.5</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -35,7 +35,8 @@
         
         .node-card { background: var(--node-card); border: 1px solid var(--border); border-radius: 18px; margin-bottom: 30px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
         .node-head { background: #1f1f1f; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #222; }
-        .node-head strong { color: var(--accent); font-size: 1.1rem; letter-spacing: 2px; }
+        .node-head strong { color: var(--accent); font-size: 1rem; letter-spacing: 1px; }
+        .node-head .label-ref { color: #666; font-size: 0.75rem; margin-left: 10px; text-transform: uppercase; }
         
         .node-grid { padding: 25px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
         .field { background: #0c0c0c; border: 1px solid #222; padding: 12px; border-radius: 10px; }
@@ -51,7 +52,7 @@
 <div class="sidebar">
     <div class="sidebar-header">
         <h2 style="margin:0; color: var(--accent);">JJS STUDIO</h2>
-        <span style="font-size:0.7rem; color:#555;">V1.6.4 // ENGINE ACCURATE</span>
+        <span style="font-size:0.7rem; color:#555;">V1.6.5 // RESTORED LABELS</span>
     </div>
     <div class="io-container">
         <textarea id="kluv-io" placeholder="PASTE RAW KLUV DATA..."></textarea>
@@ -70,6 +71,17 @@
     let currentMoves = [];
     let activeIndex = -1;
     let zstd = null;
+
+    // RESTORED DICTIONARY
+    const TRANSLATIONS = {
+        "ULTGIB": "Add Awakening", "HPGIB": "Add Health", "EVGIB": "Add Evasion",
+        "HITCNCL": "Hit Cancel", "ATK": "Attack", "ANIM": "Animation",
+        "VELO": "Velocity", "PROJ": "Projectile", "SFX": "Sound Effect",
+        "WAIT": "Wait / Delay", "SKILL": "Skill", "SPECIAL": "Special",
+        "CONNECT": "Signal Connect", "HITBOX": "Hitbox Detector", "BRANCH": "Branch",
+        "VISUAL": "Visual Effect", "GRAB": "Grab / Latch", "COUNTER": "Counter",
+        "TAG": "Tag System", "STATE": "State Effect", "LOOP": "Loop"
+    };
 
     const NODE_TEMPLATES = {
         WAIT: ["TIME"],
@@ -158,9 +170,12 @@
             </div>
             ${nodes.map((n, ni) => {
                 const template = NODE_TEMPLATES[n.K_NAME] || Object.keys(n);
+                const friendly = TRANSLATIONS[n.K_NAME] ? `(${TRANSLATIONS[n.K_NAME]})` : "";
                 return `
                 <div class="node-card">
-                    <div class="node-head"><strong>${n.K_NAME}</strong></div>
+                    <div class="node-head">
+                        <strong>${n.K_NAME} <span class="label-ref">${friendly}</span></strong>
+                    </div>
                     <div class="node-grid">
                         ${template.map(k => k === 'K_NAME' ? '' : `
                             <div class="field">
