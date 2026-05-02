@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.6.2</title>
+    <title>JJS STUDIO V1.6.3</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -16,7 +16,7 @@
         .sidebar { width: 380px; background: var(--panel); border-right: 3px solid var(--accent); display: flex; flex-direction: column; z-index: 10; }
         .sidebar-header { padding: 25px; border-bottom: 1px solid var(--border); text-align: center; }
         .io-container { padding: 20px; background: #000; margin: 15px; border-radius: 15px; border: 1px solid var(--border); }
-        textarea { width: 100%; height: 100px; background: transparent; color: #2ecc71; border: none; font-size: 10px; resize: none; margin-bottom: 10px; font-family: monospace; }
+        textarea { width: 100%; height: 100px; background: #050505; color: #2ecc71; border: 1px solid #333; font-size: 10px; resize: none; margin-bottom: 10px; padding: 8px; font-family: monospace; }
         
         .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.2s; margin-bottom: 8px; }
         .btn-load { background: var(--accent); color: #000; }
@@ -51,7 +51,7 @@
 <div class="sidebar">
     <div class="sidebar-header">
         <h2 style="margin:0; color: var(--accent);">JJS STUDIO</h2>
-        <span style="font-size:0.7rem; color:#555;">V1.6.2 // FULL HYDRATION</span>
+        <span style="font-size:0.7rem; color:#555;">V1.6.3 // FIXED HYDRATION</span>
     </div>
     <div class="io-container">
         <textarea id="kluv-io" placeholder="PASTE RAW KLUV DATA..."></textarea>
@@ -81,7 +81,6 @@
         "TAG": "TAG SYSTEM", "STATE": "STATE EFFECT", "LOOP": "LOOP"
     };
 
-    // YOUR VERIFIED DEFAULTS BY NODE TYPE (To know which keys to show)
     const NODE_TEMPLATES = {
         WAIT: ["TIME"],
         SKILL: ["SPEED", "START", "ENABLE VARIANTS", "HOLD FOR", "MOVE", "CANCEL LAST"],
@@ -115,11 +114,22 @@
         "360 BLOCK": false, "HIT USER": false, "CLEAR KNOCKBACK": false, RANDOM: "",
         OPACITY: 0.0, TEXTURE: 0.0, "EASING STYLE": "Linear", "EASING DIRECTION": "In",
         "BODY PART": "HumanoidRootPart", "BODY PART2": "HumanoidRootPart",
-        EFFECT: "Slash", STATE: "Stun", AMOUNT: 5.0, FLIP: false, ENDLAG: 1.0,
+        EFFECT: "Slash", STATE: "Stun", AMOUNT: 1.0, FLIP: false, ENDLAG: 1.0,
         "LOOP BACK": 1.0, HOLD: false, "LOOP AMOUNT": 3.0, POSITION: "0.0, 0.0, 0.0", 
         ROTATION: "0.0, 0.0, 0.0", "RELATIVE FROM BRANCH": false, "CAN COLLIDE": false,
         COLOR: "255, 255, 255", "ALT COLOR": "255, 255, 255", "ALT SIZE": 1.0, "ALT POSITION": "0.0, 0.0, 0.0",
-        "ALT ROTATION": "0.0, 0.0, 0.0", "ALT OPACITY": 0.0, AMOUNT: 1.0
+        "ALT ROTATION": "0.0, 0.0, 0.0", "ALT OPACITY": 0.0, "BRANCH FINISHER": "nil", 
+        "STUN ANIM": false, "RUN ON SERVER": false, "VISUAL TAG": "nil", "FILTER INTERVAL": 1.0,
+        "CACHE": true, "REFLECT COUNT": 0.0, "BRANCH COLLIDED": "nil", "AIM LAST HIT": -1.0,
+        "REMOVE ON HIT": true, "ADD/REMOVE": true, "CHECK": false, "SET": true,
+        "DISABLE BURST": false, "CANCEL ON END": false, "VALUE": "nil", "TEXTURE": 0.0,
+        "CONTINUE": false, "ANIM_USE": [1, 1.9]
+    };
+
+    // Specific Overrides for specific node types
+    const TYPE_OVERRIDES = {
+        ULTGIB: { AMOUNT: 5.0 }, HPGIB: { AMOUNT: 5.0 }, EVGIB: { AMOUNT: 5.0 },
+        HITBOX: { PREVIEW: [0, 15] }
     };
 
     async function init() {
@@ -166,7 +176,7 @@
                         ${template.map(k => k === 'K_NAME' ? '' : `
                             <div class="field">
                                 <label>${k}</label>
-                                <input value='${getValue(n, k)}' onchange="updateVal(${ni}, '${k}', this.value)">
+                                <input value='${getValue(n, k, n.K_NAME)}' onchange="updateVal(${ni}, '${k}', this.value)">
                             </div>
                         `).join('')}
                     </div>
@@ -175,9 +185,21 @@
         `;
     }
 
-    function getValue(node, key) {
+    function getValue(node, key, nodeType) {
         let val = node[key];
-        if (val === undefined) val = DEFAULTS_LIB[key];
+        
+        // Check if node has the value, otherwise check overrides, then generic library
+        if (val === undefined) {
+            if (TYPE_OVERRIDES[nodeType] && TYPE_OVERRIDES[nodeType][key] !== undefined) {
+                val = TYPE_OVERRIDES[nodeType][key];
+            } else {
+                val = DEFAULTS_LIB[key];
+            }
+        }
+        
+        // Safety for truly missing keys
+        if (val === undefined) return "";
+        
         return Array.isArray(val) ? JSON.stringify(val) : val;
     }
 
@@ -187,11 +209,12 @@
         
         let final;
         try {
-            if (val.trim().startsWith('[') || val.trim().startsWith('{')) final = JSON.parse(val);
-            else if (val === "true") final = true;
-            else if (val === "false") final = false;
-            else if (isNaN(val) || val.trim() === "") final = val;
-            else final = parseFloat(val);
+            const trimmed = val.trim();
+            if (trimmed.startsWith('[') || trimmed.startsWith('{')) final = JSON.parse(trimmed);
+            else if (trimmed === "true") final = true;
+            else if (trimmed === "false") final = false;
+            else if (isNaN(trimmed) || trimmed === "") final = val;
+            else final = parseFloat(trimmed);
         } catch(e) { final = val; }
 
         targetList[nodeIdx][key] = final;
@@ -209,7 +232,14 @@
             if (data.Line) {
                 data.Line.forEach(node => {
                     Object.keys(node).forEach(key => {
-                        if (key !== "K_NAME" && JSON.stringify(node[key]) === JSON.stringify(DEFAULTS_LIB[key])) {
+                        if (key === "K_NAME") return;
+                        
+                        // Check against overrides first, then generic
+                        let defVal = (TYPE_OVERRIDES[node.K_NAME] && TYPE_OVERRIDES[node.K_NAME][key] !== undefined) 
+                                     ? TYPE_OVERRIDES[node.K_NAME][key] 
+                                     : DEFAULTS_LIB[key];
+                        
+                        if (JSON.stringify(node[key]) === JSON.stringify(defVal)) {
                             delete node[key];
                         }
                     });
@@ -222,7 +252,7 @@
         let str = "";
         for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
         document.getElementById('kluv-io').value = btoa(str);
-        alert("Generated Clean String!");
+        alert("Clean String Generated!");
     }
 
     setTimeout(init, 500);
