@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.6.3</title>
+    <title>JJS STUDIO V1.6.4</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -35,7 +35,7 @@
         
         .node-card { background: var(--node-card); border: 1px solid var(--border); border-radius: 18px; margin-bottom: 30px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
         .node-head { background: #1f1f1f; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #222; }
-        .node-head strong { color: var(--accent); font-size: 1rem; }
+        .node-head strong { color: var(--accent); font-size: 1.1rem; letter-spacing: 2px; }
         
         .node-grid { padding: 25px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
         .field { background: #0c0c0c; border: 1px solid #222; padding: 12px; border-radius: 10px; }
@@ -51,7 +51,7 @@
 <div class="sidebar">
     <div class="sidebar-header">
         <h2 style="margin:0; color: var(--accent);">JJS STUDIO</h2>
-        <span style="font-size:0.7rem; color:#555;">V1.6.3 // FIXED HYDRATION</span>
+        <span style="font-size:0.7rem; color:#555;">V1.6.4 // ENGINE ACCURATE</span>
     </div>
     <div class="io-container">
         <textarea id="kluv-io" placeholder="PASTE RAW KLUV DATA..."></textarea>
@@ -70,16 +70,6 @@
     let currentMoves = [];
     let activeIndex = -1;
     let zstd = null;
-
-    const TRANSLATIONS = {
-        "ULTGIB": "ADD AWAKENING", "HPGIB": "ADD HEALTH", "EVGIB": "ADD EVASION",
-        "HITCNCL": "HIT CANCEL", "ATK": "ATTACK", "ANIM": "ANIMATION",
-        "VELO": "VELOCITY", "PROJ": "PROJECTILE", "SFX": "SOUND EFFECT",
-        "WAIT": "WAIT / DELAY", "SKILL": "SKILL", "SPECIAL": "SPECIAL",
-        "CONNECT": "SIGNAL CONNECT", "HITBOX": "HITBOX DETECTOR", "BRANCH": "BRANCH",
-        "VISUAL": "VISUAL EFFECT", "GRAB": "GRAB / LATCH", "COUNTER": "COUNTER MEASURE",
-        "TAG": "TAG SYSTEM", "STATE": "STATE EFFECT", "LOOP": "LOOP"
-    };
 
     const NODE_TEMPLATES = {
         WAIT: ["TIME"],
@@ -122,11 +112,10 @@
         "STUN ANIM": false, "RUN ON SERVER": false, "VISUAL TAG": "nil", "FILTER INTERVAL": 1.0,
         "CACHE": true, "REFLECT COUNT": 0.0, "BRANCH COLLIDED": "nil", "AIM LAST HIT": -1.0,
         "REMOVE ON HIT": true, "ADD/REMOVE": true, "CHECK": false, "SET": true,
-        "DISABLE BURST": false, "CANCEL ON END": false, "VALUE": "nil", "TEXTURE": 0.0,
-        "CONTINUE": false, "ANIM_USE": [1, 1.9]
+        "DISABLE BURST": false, "CANCEL ON END": false, "VALUE": "nil", "CONTINUE": false,
+        "ANIM_USE": [1, 1.9], "CANCEL LAST": false
     };
 
-    // Specific Overrides for specific node types
     const TYPE_OVERRIDES = {
         ULTGIB: { AMOUNT: 5.0 }, HPGIB: { AMOUNT: 5.0 }, EVGIB: { AMOUNT: 5.0 },
         HITBOX: { PREVIEW: [0, 15] }
@@ -171,7 +160,7 @@
                 const template = NODE_TEMPLATES[n.K_NAME] || Object.keys(n);
                 return `
                 <div class="node-card">
-                    <div class="node-head"><strong>${TRANSLATIONS[n.K_NAME] || n.K_NAME}</strong></div>
+                    <div class="node-head"><strong>${n.K_NAME}</strong></div>
                     <div class="node-grid">
                         ${template.map(k => k === 'K_NAME' ? '' : `
                             <div class="field">
@@ -187,19 +176,12 @@
 
     function getValue(node, key, nodeType) {
         let val = node[key];
-        
-        // Check if node has the value, otherwise check overrides, then generic library
         if (val === undefined) {
-            if (TYPE_OVERRIDES[nodeType] && TYPE_OVERRIDES[nodeType][key] !== undefined) {
-                val = TYPE_OVERRIDES[nodeType][key];
-            } else {
-                val = DEFAULTS_LIB[key];
-            }
+            val = (TYPE_OVERRIDES[nodeType] && TYPE_OVERRIDES[nodeType][key] !== undefined) 
+                  ? TYPE_OVERRIDES[nodeType][key] 
+                  : DEFAULTS_LIB[key];
         }
-        
-        // Safety for truly missing keys
         if (val === undefined) return "";
-        
         return Array.isArray(val) ? JSON.stringify(val) : val;
     }
 
@@ -233,12 +215,9 @@
                 data.Line.forEach(node => {
                     Object.keys(node).forEach(key => {
                         if (key === "K_NAME") return;
-                        
-                        // Check against overrides first, then generic
                         let defVal = (TYPE_OVERRIDES[node.K_NAME] && TYPE_OVERRIDES[node.K_NAME][key] !== undefined) 
                                      ? TYPE_OVERRIDES[node.K_NAME][key] 
                                      : DEFAULTS_LIB[key];
-                        
                         if (JSON.stringify(node[key]) === JSON.stringify(defVal)) {
                             delete node[key];
                         }
