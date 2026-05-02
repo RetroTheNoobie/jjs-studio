@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.6.0</title>
+    <title>JJS STUDIO V1.6.1</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -13,7 +13,6 @@
         * { font-family: 'Finger Paint', cursive; box-sizing: border-box; outline: none; }
         body { background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Sidebar Styling */
         .sidebar { width: 380px; background: var(--panel); border-right: 3px solid var(--accent); display: flex; flex-direction: column; z-index: 10; }
         .sidebar-header { padding: 25px; border-bottom: 1px solid var(--border); text-align: center; }
         .io-container { padding: 20px; background: #000; margin: 15px; border-radius: 15px; border: 1px solid var(--border); }
@@ -25,24 +24,21 @@
         .btn:hover { filter: brightness(1.2); transform: scale(1.02); }
 
         .container-list { flex: 1; overflow-y: auto; padding: 15px; scrollbar-width: thin; scrollbar-color: var(--accent) #000; }
-        .item { padding: 18px; background: #111; margin-bottom: 12px; border-radius: 12px; cursor: pointer; border-left: 6px solid transparent; transition: 0.2s; position: relative; }
+        .item { padding: 18px; background: #111; margin-bottom: 12px; border-radius: 12px; cursor: pointer; border-left: 6px solid transparent; transition: 0.2s; }
         .item:hover { background: #1a1a1a; }
-        .item.active { border-left-color: var(--accent); background: #222; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
-        .item .type-tag { font-size: 0.65rem; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+        .item.active { border-left-color: var(--accent); background: #222; }
+        .item .type-tag { font-size: 0.65rem; color: var(--accent); text-transform: uppercase; }
         .item .move-name { display: block; font-size: 1.2rem; color: #fff; }
 
-        /* Main View Styling */
         .main { flex: 1; overflow-y: auto; padding: 40px; background: radial-gradient(circle at top right, #111 0%, #050505 100%); }
         .editor-title { border-left: 6px solid var(--accent); padding-left: 20px; margin-bottom: 40px; }
         
         .node-card { background: var(--node-card); border: 1px solid var(--border); border-radius: 18px; margin-bottom: 30px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
         .node-head { background: #1f1f1f; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #222; }
         .node-head strong { color: var(--accent); font-size: 1rem; }
-        .node-head .raw-id { font-size: 0.7rem; color: #555; }
         
         .node-grid { padding: 25px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
-        .field { background: #0c0c0c; border: 1px solid #222; padding: 12px; border-radius: 10px; transition: 0.2s; }
-        .field:focus-within { border-color: var(--accent); }
+        .field { background: #0c0c0c; border: 1px solid #222; padding: 12px; border-radius: 10px; }
         .field label { display: block; font-size: 0.65rem; color: #666; text-transform: uppercase; margin-bottom: 5px; }
         .field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 1px solid #333; }
         .field input:focus { border-bottom-color: var(--accent); }
@@ -55,16 +51,14 @@
 <div class="sidebar">
     <div class="sidebar-header">
         <h2 style="margin:0; color: var(--accent);">JJS STUDIO</h2>
-        <span style="font-size:0.7rem; color:#555;">BUILD V1.6.0 // STABLE</span>
+        <span style="font-size:0.7rem; color:#555;">V1.6.1 // SMART EXPORT</span>
     </div>
-    
     <div class="io-container">
         <textarea id="kluv-io" placeholder="PASTE RAW KLUV DATA..."></textarea>
         <button class="btn btn-load" onclick="importData()">Load Character</button>
-        <button class="btn btn-save" onclick="exportData()">Generate String</button>
+        <button class="btn btn-save" onclick="exportData()">Generate Clean String</button>
     </div>
-
-    <div class="container-list" id="sidebar-list"></div>
+    <div id="sidebar-list" class="container-list"></div>
 </div>
 
 <div class="main" id="editor-view">
@@ -77,17 +71,27 @@
     let activeIndex = -1;
     let zstd = null;
 
-    // THE DEFINITIVE DICTIONARY
     const TRANSLATIONS = {
-        "ULTGIB": "ADD AWAKENING",
-        "HPGIB": "ADD HEALTH",
-        "EVGIB": "ADD EVASION",
-        "HITCNCL": "HIT CANCEL",
-        "ATK": "ATTACK",
-        "ANIM": "ANIMATION",
-        "VELO": "VELOCITY",
-        "PROJ": "PROJECTILE",
-        "SFX": "SOUND EFFECT"
+        "ULTGIB": "ADD AWAKENING", "HPGIB": "ADD HEALTH", "EVGIB": "ADD EVASION",
+        "HITCNCL": "HIT CANCEL", "ATK": "ATTACK", "ANIM": "ANIMATION",
+        "VELO": "VELOCITY", "PROJ": "PROJECTILE", "SFX": "SOUND EFFECT"
+    };
+
+    // YOUR VERIFIED DEFAULTS
+    const DEFAULTS = {
+        TIME: 1.0, SPEED: 1.0, START: 0.0, "ENABLE VARIANTS": true, "HOLD FOR": 0.0,
+        MOVE: "Divergent Fist", SPEC: "Limitless", "FADE IN": 0.1, PREVIEW: [0, 3.59],
+        "FADE OUT": 0.0, "LAST HIT": -1.0, END: 500.0, GLOBAL: false, VOLUME: 0.5,
+        "PROJECTILE TAG": "nil", ID: 12222253, CANCEL: false, "TRUE RAGDOLL": false,
+        RAGDOLL: 0.0, FADE: false, SIGNAL: "Nothing", SIZE: "6.0, 6.0, 6.0",
+        "SINGLE TARGET": true, "CAN KILL": true, BLOCKABLE: true, "ATTACK TYPE": "Melee",
+        "ATTACK TYPE2": "Melee", STUN: 1.0, DEBREE: 0.0, "BRANCH TARGET": "nil",
+        "HIT RAGDOLL": false, BRANCH: "nil", DAMAGE: 1.0, "CANCEL ENEMY": true,
+        "360 BLOCK": false, "HIT USER": false, "CLEAR KNOCKBACK": false, RANDOM: "",
+        OPACITY: 0.0, TEXTURE: 0.0, "EASING STYLE": "Linear", "EASING DIRECTION": "In",
+        "BODY PART": "HumanoidRootPart", "BODY PART2": "HumanoidRootPart",
+        EFFECT: "Slash", STATE: "Stun", AMOUNT: 5.0, FLIP: false, ENDLAG: 1.0,
+        "LOOP BACK": 1.0, HOLD: false, "LOOP AMOUNT": 3.0
     };
 
     async function init() {
@@ -98,12 +102,11 @@
     function importData() {
         try {
             const raw = document.getElementById('kluv-io').value.trim();
-            if(!raw) return;
             const bin = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
             currentMoves = JSON.parse(new TextDecoder().decode(zstd.decompress(bin)));
             renderSidebar();
             loadMove(0);
-        } catch(e) { alert("Import Failed: Data Format Invalid"); }
+        } catch(e) { alert("Import Failed"); }
     }
 
     function renderSidebar() {
@@ -111,7 +114,7 @@
         list.innerHTML = currentMoves.map((m, i) => `
             <div class="item ${i === activeIndex ? 'active' : ''}" onclick="loadMove(${i})">
                 <span class="type-tag">${m.K_NAME || "Container"}</span>
-                <span class="move-name">${m.NAME || "Unnamed Entry"}</span>
+                <span class="move-name">${m.NAME || "Unnamed"}</span>
             </div>
         `).join('');
     }
@@ -120,32 +123,20 @@
         activeIndex = idx;
         renderSidebar();
         const move = currentMoves[idx];
-        const editor = document.getElementById('editor-view');
-        
-        // Find Nodes (Support both nested and flat)
-        let nodes = [];
-        if (Array.isArray(move.Line)) nodes = move.Line;
-        else if (move.DATA) {
-            const parsed = typeof move.DATA === 'string' ? JSON.parse(move.DATA) : move.DATA;
-            nodes = parsed.Line || [];
-        }
+        const nodes = Array.isArray(move.Line) ? move.Line : JSON.parse(move.DATA).Line || [];
 
-        editor.innerHTML = `
+        document.getElementById('editor-view').innerHTML = `
             <div class="editor-title">
-                <span style="color: var(--accent); text-transform: uppercase; font-size: 0.8rem;">${move.K_NAME || 'Move'}</span>
                 <h1 style="margin:0; font-size: 2.5rem; color: #fff;">${move.NAME || 'Unnamed'}</h1>
             </div>
             ${nodes.map((n, ni) => `
                 <div class="node-card">
-                    <div class="node-head">
-                        <strong>${TRANSLATIONS[n.K_NAME] || n.K_NAME}</strong>
-                        <span class="raw-id">NODE_TYPE: ${n.K_NAME}</span>
-                    </div>
+                    <div class="node-head"><strong>${TRANSLATIONS[n.K_NAME] || n.K_NAME}</strong></div>
                     <div class="node-grid">
                         ${Object.keys(n).map(k => k === 'K_NAME' ? '' : `
                             <div class="field">
                                 <label>${k}</label>
-                                <input value="${n[k]}" onchange="updateVal(${ni}, '${k}', this.value)">
+                                <input value="${Array.isArray(n[k]) ? JSON.stringify(n[k]) : n[k]}" onchange="updateVal(${ni}, '${k}', this.value)">
                             </div>
                         `).join('')}
                     </div>
@@ -157,11 +148,10 @@
     function updateVal(nodeIdx, key, val) {
         const move = currentMoves[activeIndex];
         let targetList = Array.isArray(move.Line) ? move.Line : JSON.parse(move.DATA).Line;
-
-        // Auto-type conversion
-        let final = (val === "true") ? true : (val === "false") ? false : (isNaN(val) || val === "") ? val : parseFloat(val);
+        let final = (val === "true") ? true : (val === "false") ? false : 
+                    (val.startsWith('[') ? JSON.parse(val) : (isNaN(val) || val === "" ? val : parseFloat(val)));
+        
         targetList[nodeIdx][key] = final;
-
         if (!Array.isArray(move.Line)) {
             let inner = JSON.parse(move.DATA);
             inner.Line = targetList;
@@ -170,10 +160,29 @@
     }
 
     function exportData() {
-        const bin = zstd.compress(new TextEncoder().encode(JSON.stringify(currentMoves)), 3);
+        // Deep copy to avoid mutating the working state
+        const exportCopy = JSON.parse(JSON.stringify(currentMoves));
+        
+        exportCopy.forEach(move => {
+            let data = typeof move.DATA === 'string' ? JSON.parse(move.DATA) : move;
+            if (data.Line) {
+                data.Line.forEach(node => {
+                    Object.keys(node).forEach(key => {
+                        // Strip if value matches our verified defaults
+                        if (key !== "K_NAME" && JSON.stringify(node[key]) === JSON.stringify(DEFAULTS[key])) {
+                            delete node[key];
+                        }
+                    });
+                });
+            }
+            if (typeof move.DATA === 'string') move.DATA = JSON.stringify(data);
+        });
+
+        const bin = zstd.compress(new TextEncoder().encode(JSON.stringify(exportCopy)), 3);
         let str = "";
         for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
         document.getElementById('kluv-io').value = btoa(str);
+        alert("Clean String Generated!");
     }
 
     setTimeout(init, 500);
