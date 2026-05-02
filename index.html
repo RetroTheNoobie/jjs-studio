@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.6.1</title>
+    <title>JJS STUDIO V1.6.2</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -51,7 +51,7 @@
 <div class="sidebar">
     <div class="sidebar-header">
         <h2 style="margin:0; color: var(--accent);">JJS STUDIO</h2>
-        <span style="font-size:0.7rem; color:#555;">V1.6.1 // SMART EXPORT</span>
+        <span style="font-size:0.7rem; color:#555;">V1.6.2 // FULL HYDRATION</span>
     </div>
     <div class="io-container">
         <textarea id="kluv-io" placeholder="PASTE RAW KLUV DATA..."></textarea>
@@ -74,11 +74,36 @@
     const TRANSLATIONS = {
         "ULTGIB": "ADD AWAKENING", "HPGIB": "ADD HEALTH", "EVGIB": "ADD EVASION",
         "HITCNCL": "HIT CANCEL", "ATK": "ATTACK", "ANIM": "ANIMATION",
-        "VELO": "VELOCITY", "PROJ": "PROJECTILE", "SFX": "SOUND EFFECT"
+        "VELO": "VELOCITY", "PROJ": "PROJECTILE", "SFX": "SOUND EFFECT",
+        "WAIT": "WAIT / DELAY", "SKILL": "SKILL", "SPECIAL": "SPECIAL",
+        "CONNECT": "SIGNAL CONNECT", "HITBOX": "HITBOX DETECTOR", "BRANCH": "BRANCH",
+        "VISUAL": "VISUAL EFFECT", "GRAB": "GRAB / LATCH", "COUNTER": "COUNTER MEASURE",
+        "TAG": "TAG SYSTEM", "STATE": "STATE EFFECT", "LOOP": "LOOP"
     };
 
-    // YOUR VERIFIED DEFAULTS
-    const DEFAULTS = {
+    // YOUR VERIFIED DEFAULTS BY NODE TYPE (To know which keys to show)
+    const NODE_TEMPLATES = {
+        WAIT: ["TIME"],
+        SKILL: ["SPEED", "START", "ENABLE VARIANTS", "HOLD FOR", "MOVE", "CANCEL LAST"],
+        SPECIAL: ["SPEED", "SPEC", "ENABLE VARIANTS", "CANCEL LAST"],
+        ANIM: ["FADE IN", "PREVIEW", "FADE OUT", "LAST HIT", "SPEED", "ANIM_USE"],
+        SFX: ["END", "GLOBAL", "VOLUME", "PROJECTILE TAG", "ID", "START", "CANCEL", "SPEED"],
+        VELO: ["RELATIVE FROM BRANCH", "TRACK", "TIME", "TRUE RAGDOLL", "FORCE", "RAGDOLL", "LAST HIT", "FADE"],
+        CONNECT: ["SIGNAL", "TIME"],
+        HITBOX: ["SIZE", "SINGLE TARGET", "CAN KILL", "BLOCKABLE", "ATTACK TYPE", "PREVIEW", "STUN", "DEBREE", "POSITION", "BRANCH TARGET", "HIT RAGDOLL", "BRANCH FINISHER", "STUN ANIM", "BRANCH", "DAMAGE", "ROTATION", "CANCEL ENEMY", "PROJECTILE TAG", "360 BLOCK", "HIT USER", "CLEAR KNOCKBACK"],
+        BRANCH: ["LAST HIT", "BRANCH", "RANDOM"],
+        VISUAL: ["SIZE", "RELATIVE FROM BRANCH", "CAN COLLIDE", "OPACITY", "TEXTURE", "ALT COLOR", "COLOR", "EASING STYLE", "AMOUNT", "ALT ROTATION", "POSITION", "EASING DIRECTION", "CANCEL ON INTERRUPT", "VISUAL TAG", "ALT SIZE", "TIME", "RUN ON SERVER", "PROJECTILE TAG", "BODY PART", "ROTATION", "LAST HIT", "EFFECT", "ALT POSITION", "ALT OPACITY"],
+        GRAB: ["POSITION", "BODY PART", "ROTATION", "LAST HIT", "TIME", "BODY PART2"],
+        PROJECTILE: ["DAMAGE", "SPEED", "CAN KILL", "BLOCKABLE", "ATTACK TYPE", "CONTINUE", "CLEAR KNOCKBACK", "FILTER INTERVAL", "STUN", "CANCEL ENEMY", "DEBREE", "CACHE", "POSITION", "REFLECT COUNT", "BRANCH TARGET", "HIT RAGDOLL", "BRANCH", "BRANCH COLLIDED", "TIME", "HIT USER", "SIZE", "ROTATION", "PROJECTILE TAG", "360 BLOCK", "STUN ANIM", "AIM LAST HIT"],
+        COUNTER: ["BRANCH", "CANCEL ENEMY", "BRANCH TARGET", "STUN", "REMOVE ON HIT", "TIME", "ATTACK TYPE2"],
+        TAG: ["ADD/REMOVE", "TIME", "TAG", "CHECK", "LAST HIT", "BRANCH", "VALUE", "SET"],
+        STATE: ["DISABLE BURST", "CANCEL ON END", "LAST HIT", "STATE", "TIME", "VALUE"],
+        ULTGIB: ["AMOUNT"], HPGIB: ["AMOUNT"], EVGIB: ["AMOUNT"],
+        HITCNCL: ["FLIP", "BRANCH", "TIME", "ENDLAG"],
+        LOOP: ["LOOP BACK", "HOLD", "LOOP AMOUNT"]
+    };
+
+    const DEFAULTS_LIB = {
         TIME: 1.0, SPEED: 1.0, START: 0.0, "ENABLE VARIANTS": true, "HOLD FOR": 0.0,
         MOVE: "Divergent Fist", SPEC: "Limitless", "FADE IN": 0.1, PREVIEW: [0, 3.59],
         "FADE OUT": 0.0, "LAST HIT": -1.0, END: 500.0, GLOBAL: false, VOLUME: 0.5,
@@ -91,7 +116,10 @@
         OPACITY: 0.0, TEXTURE: 0.0, "EASING STYLE": "Linear", "EASING DIRECTION": "In",
         "BODY PART": "HumanoidRootPart", "BODY PART2": "HumanoidRootPart",
         EFFECT: "Slash", STATE: "Stun", AMOUNT: 5.0, FLIP: false, ENDLAG: 1.0,
-        "LOOP BACK": 1.0, HOLD: false, "LOOP AMOUNT": 3.0
+        "LOOP BACK": 1.0, HOLD: false, "LOOP AMOUNT": 3.0, POSITION: "0.0, 0.0, 0.0", 
+        ROTATION: "0.0, 0.0, 0.0", "RELATIVE FROM BRANCH": false, "CAN COLLIDE": false,
+        COLOR: "255, 255, 255", "ALT COLOR": "255, 255, 255", "ALT SIZE": 1.0, "ALT POSITION": "0.0, 0.0, 0.0",
+        "ALT ROTATION": "0.0, 0.0, 0.0", "ALT OPACITY": 0.0, AMOUNT: 1.0
     };
 
     async function init() {
@@ -123,34 +151,49 @@
         activeIndex = idx;
         renderSidebar();
         const move = currentMoves[idx];
-        const nodes = Array.isArray(move.Line) ? move.Line : JSON.parse(move.DATA).Line || [];
+        let nodes = Array.isArray(move.Line) ? move.Line : JSON.parse(move.DATA).Line || [];
 
         document.getElementById('editor-view').innerHTML = `
             <div class="editor-title">
                 <h1 style="margin:0; font-size: 2.5rem; color: #fff;">${move.NAME || 'Unnamed'}</h1>
             </div>
-            ${nodes.map((n, ni) => `
+            ${nodes.map((n, ni) => {
+                const template = NODE_TEMPLATES[n.K_NAME] || Object.keys(n);
+                return `
                 <div class="node-card">
                     <div class="node-head"><strong>${TRANSLATIONS[n.K_NAME] || n.K_NAME}</strong></div>
                     <div class="node-grid">
-                        ${Object.keys(n).map(k => k === 'K_NAME' ? '' : `
+                        ${template.map(k => k === 'K_NAME' ? '' : `
                             <div class="field">
                                 <label>${k}</label>
-                                <input value="${Array.isArray(n[k]) ? JSON.stringify(n[k]) : n[k]}" onchange="updateVal(${ni}, '${k}', this.value)">
+                                <input value='${getValue(n, k)}' onchange="updateVal(${ni}, '${k}', this.value)">
                             </div>
                         `).join('')}
                     </div>
-                </div>
-            `).join('')}
+                </div>`;
+            }).join('')}
         `;
+    }
+
+    function getValue(node, key) {
+        let val = node[key];
+        if (val === undefined) val = DEFAULTS_LIB[key];
+        return Array.isArray(val) ? JSON.stringify(val) : val;
     }
 
     function updateVal(nodeIdx, key, val) {
         const move = currentMoves[activeIndex];
         let targetList = Array.isArray(move.Line) ? move.Line : JSON.parse(move.DATA).Line;
-        let final = (val === "true") ? true : (val === "false") ? false : 
-                    (val.startsWith('[') ? JSON.parse(val) : (isNaN(val) || val === "" ? val : parseFloat(val)));
         
+        let final;
+        try {
+            if (val.trim().startsWith('[') || val.trim().startsWith('{')) final = JSON.parse(val);
+            else if (val === "true") final = true;
+            else if (val === "false") final = false;
+            else if (isNaN(val) || val.trim() === "") final = val;
+            else final = parseFloat(val);
+        } catch(e) { final = val; }
+
         targetList[nodeIdx][key] = final;
         if (!Array.isArray(move.Line)) {
             let inner = JSON.parse(move.DATA);
@@ -160,16 +203,13 @@
     }
 
     function exportData() {
-        // Deep copy to avoid mutating the working state
         const exportCopy = JSON.parse(JSON.stringify(currentMoves));
-        
         exportCopy.forEach(move => {
             let data = typeof move.DATA === 'string' ? JSON.parse(move.DATA) : move;
             if (data.Line) {
                 data.Line.forEach(node => {
                     Object.keys(node).forEach(key => {
-                        // Strip if value matches our verified defaults
-                        if (key !== "K_NAME" && JSON.stringify(node[key]) === JSON.stringify(DEFAULTS[key])) {
+                        if (key !== "K_NAME" && JSON.stringify(node[key]) === JSON.stringify(DEFAULTS_LIB[key])) {
                             delete node[key];
                         }
                     });
@@ -182,7 +222,7 @@
         let str = "";
         for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
         document.getElementById('kluv-io').value = btoa(str);
-        alert("Clean String Generated!");
+        alert("Generated Clean String!");
     }
 
     setTimeout(init, 500);
