@@ -20,6 +20,10 @@
         .process-btn { width: 100%; background: var(--accent); color: #000; border: var(--thickness) solid #000; padding: 20px; font-size: 1.2rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .process-btn:hover { background: #fff; transform: translate(-2px, -2px); box-shadow: 5px 5px 0 #000; }
         .back-link { display: inline-block; margin-bottom: 20px; color: #666; text-decoration: none; font-size: 0.8rem; }
+        
+        /* New Toggle Style */
+        .toggle-group { display: flex; align-items: center; gap: 10px; background: #222; padding: 10px; border: 2px solid #000; margin-bottom: 10px; cursor: pointer; }
+        .toggle-group input { width: 20px; height: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -46,6 +50,11 @@
                 <input type="number" id="speed-val" value="1.0" step="0.1">
             </div>
         </div>
+
+        <label class="toggle-group">
+            <input type="checkbox" id="convert-all">
+            <span>Convert All Nodes</span>
+        </label>
 
         <textarea id="io-area" placeholder="PASTE KLUv DATA HERE..."></textarea>
         <button class="process-btn" onclick="runChoppify()">PROCESS & RE-COMPRESS</button>
@@ -94,39 +103,61 @@
             let innerData = JSON.parse(move.DATA);
             let lines = innerData.Line;
             
-            let animIndex = lines.findIndex(l => l.K_NAME === "ANIM");
-            if(animIndex === -1) return alert("No ANIM node found in 'Choppy'!");
-
-            let targetAnim = lines[animIndex];
-            let start = fix(targetAnim.PREVIEW[0]);
-            let end = fix(targetAnim.PREVIEW[1]);
-            let animId = targetAnim.ANIM_USE;
-
             const isFPS = document.querySelector('input[name="mode"][value="fps"]').checked;
             const speed = parseFloat(document.getElementById('speed-val').value) || 1;
+            const convertAll = document.getElementById('convert-all').checked;
             
             let interval = isFPS ? fix(1 / parseFloat(document.getElementById('fps-val').value)) : fix(parseFloat(document.getElementById('set-val').value));
             let waitTime = fix(interval / speed);
 
-            let newNodes = [];
-            for(let t = start; t < end; t = fix(t + interval)) {
-                let fEnd = fix(Math.min(t + interval, end));
+            let totalAddedNodes = 0;
+            let newLines = [];
+
+            // Process nodes
+            for (let i = 0; i < lines.length; i++) {
+                let node = lines[i];
                 
-                newNodes.push({
-                    "PREVIEW": [fix(t), fEnd],
-                    "K_NAME": "ANIM",
-                    "ANIM_USE": animId,
-                    "SPEED": 0
-                });
+                // If it's an ANIM node AND (it's the first one OR convertAll is true)
+                const isFirstAnim = lines.slice(0, i).findIndex(l => l.K_NAME === "ANIM") === -1;
                 
-                newNodes.push({
-                    "K_NAME": "WAIT",
-                    "TIME": waitTime
-                });
+                if (node.K_NAME === "ANIM" && (convertAll || isFirstAnim)) {
+                    let start = fix(node.PREVIEW[0]);
+                    let end = fix(node.PREVIEW[1]);
+                    let animId = node.ANIM_USE;
+
+                    for(let t = start; t < end; t = fix(t + interval)) {
+                        let fEnd = fix(Math.min(t + interval, end));
+                        newLines.push({
+                            "PREVIEW": [fix(t), fEnd],
+                            "K_NAME": "ANIM",
+                            "ANIM_USE": animId,
+                            "SPEED": 0
+                        });
+                        newLines.push({
+                            "K_NAME": "WAIT",
+                            "TIME": waitTime
+                        });
+                        totalAddedNodes += 2;
+                    }
+                    
+                    // If we only wanted the first one, stop checking for more ANIMs but finish the loop for other nodes
+                    if (!convertAll) {
+                        // After converting the first anim, just push the rest of the original nodes
+                        newLines = newLines.concat(lines.slice(i + 1));
+                        break;
+                    }
+                } else {
+                    newLines.push(node);
+                }
             }
 
-            lines.splice(animIndex, 1, ...newNodes);
-            innerData.Line = lines;
+            // Check for performance warning
+            // More than 10 nodes and finalnum < 0.5 OR more than 30 nodes and finalnum < 2
+            if ((totalAddedNodes > 10 && interval < 0.5) || (totalAddedNodes > 30 && interval < 2)) {
+                alert("Notice: the converted nodes make the move a lot bigger, please be careful as it might cause skillbuilder lag when opening");
+            }
+
+            innerData.Line = newLines;
             move.DATA = JSON.stringify(innerData);
 
             if (isCompressed) {
