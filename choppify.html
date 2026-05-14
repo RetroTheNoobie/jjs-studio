@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS - CHOPPIFY</title>
+    <title>JJS - CHOPPIFY ENGINE</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #1a1a1a; --thickness: 4px; --accent: #ffcc33; --btn-bg: #252525; }
@@ -16,7 +16,7 @@
         label { font-size: 0.9rem; color: var(--accent); }
         input, textarea { background: #000; border: var(--thickness) solid #000; color: #fff; padding: 12px; font-size: 1rem; outline: none; }
         input:disabled { color: #444; border-color: #222; }
-        textarea { width: 100%; height: 250px; resize: vertical; font-family: monospace; font-size: 0.75rem; color: #0f0; }
+        textarea { width: 100%; height: 250px; resize: vertical; font-family: monospace; font-size: 0.75rem; color: #2ecc71; }
         .process-btn { width: 100%; background: var(--accent); color: #000; border: var(--thickness) solid #000; padding: 20px; font-size: 1.2rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .process-btn:hover { background: #fff; transform: translate(-2px, -2px); box-shadow: 5px 5px 0 #000; }
         .back-link { display: inline-block; margin-bottom: 20px; color: #666; text-decoration: none; font-size: 0.8rem; }
@@ -29,7 +29,7 @@
         <h1>ANIM CHOPPIFY</h1>
 
         <div class="guide">
-            <strong>GUIDE:</strong> This tool finds the <strong>"Choppy"</strong> container and takes the <strong>first</strong> ANIM node it sees. It then splits that animation into static frames based on your FPS/Interval and Speed. All other nodes in the container are preserved in their original order.
+            <strong>CHOPPIFY ENGINE:</strong> Paste your compressed string below. This tool finds the <strong>"Choppy"</strong> container, takes the <strong>first</strong> ANIM node, and converts it into a frame-by-frame sequence. Everything else is preserved.
         </div>
 
         <div class="row">
@@ -47,11 +47,20 @@
             </div>
         </div>
 
-        <textarea id="io-area" placeholder="Paste Compressed or Decompressed code here..."></textarea>
-        <button class="process-btn" onclick="runChoppify()">CHOPPIFY ANIMATION</button>
+        <textarea id="io-area" placeholder="PASTE KLUv DATA HERE..."></textarea>
+        <button class="process-btn" onclick="runChoppify()">PROCESS & RE-COMPRESS</button>
     </div>
 
+    <!-- USING YOUR STUDIO ENGINE -->
+    <script src="./zstd-bundle.js"></script>
     <script>
+        let zstd = null;
+        async function init() {
+            const engine = window.ZstdWeb || window.zstd || window.Zstd;
+            if (engine?.init) { await engine.init(); zstd = engine; }
+        }
+        init();
+
         function toggle() {
             const isFPS = document.querySelector('input[name="mode"][value="fps"]').checked;
             document.getElementById('fps-val').disabled = !isFPS;
@@ -59,42 +68,41 @@
         }
 
         function runChoppify() {
+            if (!zstd) return alert("Zstd Engine not loaded yet!");
             let rawInput = document.getElementById('io-area').value.trim();
             if(!rawInput) return;
 
-            let data;
+            let currentMoves;
+            let isCompressed = false;
+
             try {
-                // Check if compressed (usually starts with KLUv or similar, or isn't valid JSON)
                 if (rawInput.startsWith('[') || rawInput.startsWith('{')) {
-                    data = JSON.parse(rawInput);
+                    currentMoves = JSON.parse(rawInput);
                 } else {
-                    // Placeholder for decompression logic if needed
-                    // For now, let's assume the user pastes the JSON for testing
-                    alert("Please paste the Decompressed (JSON) version for this build.");
-                    return;
+                    // DECOMPRESS (Studio Logic)
+                    const bin = Uint8Array.from(atob(rawInput), c => c.charCodeAt(0));
+                    currentMoves = JSON.parse(new TextDecoder().decode(zstd.decompress(bin)));
+                    isCompressed = true;
                 }
             } catch(e) {
-                alert("Invalid Format!");
-                return;
+                return alert("Import Failed: Make sure this is a valid JJS string.");
             }
 
-            // Find "Choppy" container
-            let container = data.find(item => item.NAME === "Choppy");
-            if(!container) return alert("No container named 'Choppy' found!");
+            // FIND "CHOPPY"
+            let move = currentMoves.find(m => m.NAME === "Choppy");
+            if(!move) return alert("No container named 'Choppy' found!");
 
-            let innerData = JSON.parse(container.DATA);
+            let innerData = JSON.parse(move.DATA);
             let lines = innerData.Line;
             
-            // Find first ANIM
             let animIndex = lines.findIndex(l => l.K_NAME === "ANIM");
-            if(animIndex === -1) return alert("No ANIM node found inside 'Choppy'!");
+            if(animIndex === -1) return alert("No ANIM node found in 'Choppy'!");
 
             let targetAnim = lines[animIndex];
             let start = targetAnim.PREVIEW[0];
             let end = targetAnim.PREVIEW[1];
             let animId = targetAnim.ANIM_USE;
 
-            // Math
             const isFPS = document.querySelector('input[name="mode"][value="fps"]').checked;
             const speed = parseFloat(document.getElementById('speed-val').value) || 1;
             let interval = isFPS ? (1 / parseFloat(document.getElementById('fps-val').value)) : parseFloat(document.getElementById('set-val').value);
@@ -102,33 +110,35 @@
 
             let newNodes = [];
             for(let t = start; t < end; t += interval) {
-                let frameEnd = Math.min(t + interval, end);
-                
-                // Static Anim Frame
+                let fEnd = Math.min(t + interval, end);
                 newNodes.push({
-                    "PREVIEW": [t, frameEnd],
+                    "PREVIEW": [t, fEnd],
                     "K_NAME": "ANIM",
                     "ANIM_USE": animId,
-                    "SPEED": 0 // Force static
+                    "SPEED": 0
                 });
-
-                // Wait Node
                 newNodes.push({
                     "K_NAME": "WAIT",
-                    "WAIT": [waitTime] // Formatting based on typical JJS wait structure
+                    "TIME": waitTime // Standard JJS wait key
                 });
             }
 
-            // Replace the original ANIM node with our generated array
+            // Replace original ANIM with the chopped sequence
             lines.splice(animIndex, 1, ...newNodes);
-
-            // Re-pack
             innerData.Line = lines;
-            container.DATA = JSON.stringify(innerData);
+            move.DATA = JSON.stringify(innerData);
 
-            // Output
-            document.getElementById('io-area').value = JSON.stringify(data);
-            alert("Success! The code in the box has been updated.");
+            // COMPRESS (Studio Logic)
+            if (isCompressed) {
+                const bin = zstd.compress(new TextEncoder().encode(JSON.stringify(currentMoves)), 3);
+                let str = "";
+                for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
+                document.getElementById('io-area').value = btoa(str);
+                alert("Choppified and Re-Compressed!");
+            } else {
+                document.getElementById('io-area').value = JSON.stringify(currentMoves);
+                alert("Choppified JSON generated!");
+            }
         }
     </script>
 </body>
