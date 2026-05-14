@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JJS TOOLBOX - MAIN MENU</title>
+    <title>JJS HUB</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -11,109 +11,71 @@
             --thickness: 4px;
             --accent: #ffcc33;
             --btn-bg: #252525;
-            --btn-hover: #333;
-            --wip-red: #ff4444;
         }
 
-        /* Global Reset to maintain the chunky engine look */
-        * { 
-            box-sizing: border-box; 
-            font-family: 'Finger Paint', cursive; 
-            border-radius: 0 !important; 
-        }
+        * { box-sizing: border-box; font-family: 'Finger Paint', cursive; border-radius: 0 !important; }
 
         body { 
             margin: 0; 
-            background: var(--bg); 
+            background-color: var(--bg);
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.3) 2px, transparent 2px),
+                linear-gradient(90deg, rgba(0,0,0,0.3) 2px, transparent 2px);
+            background-size: 50px 50px;
             color: #fff; 
             display: flex; 
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
-            overflow: hidden;
         }
 
-        /* Menu Container */
         .menu-container {
             width: 90%;
-            max-width: 550px;
+            max-width: 500px;
             background: #111;
             border: var(--thickness) solid #000;
-            padding: 40px;
-            box-shadow: 15px 15px 0px rgba(0,0,0,0.8);
+            padding: 30px;
+            box-shadow: 15px 15px 0px #000;
         }
 
         .header {
             text-align: center;
             border-bottom: var(--thickness) solid #000;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
         }
 
-        .header h1 {
-            margin: 0;
-            font-size: 2.8rem;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
+        .header h1 { margin: 0; font-size: 2.2rem; color: var(--accent); text-transform: uppercase; }
 
-        .tool-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        /* Tool Buttons - Stretched and Flat */
         .tool-btn {
+            display: block;
             background: var(--btn-bg);
             border: var(--thickness) solid #000;
-            padding: 20px;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            text-decoration: none; /* Remove link underline */
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            text-decoration: none;
             transition: 0.1s;
             position: relative;
         }
 
         .tool-btn:hover {
-            background: var(--btn-hover);
-            transform: translate(-3px, -3px);
+            background: #333;
+            transform: translate(-4px, -4px);
             box-shadow: 8px 8px 0px #000;
         }
 
-        .tool-btn:active {
-            transform: translate(0, 0);
-            box-shadow: 0px 0px 0px #000;
-        }
+        .tool-name { display: block; font-size: 1.3rem; color: #fff; font-weight: bold; }
+        .tool-desc { font-size: 0.75rem; color: #888; text-transform: uppercase; }
 
-        .tool-name {
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: #fff;
-            text-transform: uppercase;
-        }
-
-        .tool-desc {
-            font-size: 0.8rem;
-            color: #888;
-            margin-top: 5px;
-            text-transform: uppercase;
-        }
-
-        /* WIP Badge Styling */
-        .wip-tag {
+        .tag {
             position: absolute;
-            top: -12px;
-            right: 15px;
-            background: var(--wip-red);
+            top: -10px;
+            right: 10px;
+            background: #ff4444;
             color: #000;
-            font-size: 0.7rem;
-            padding: 2px 10px;
-            border: var(--thickness) solid #000;
-            font-weight: 900;
+            font-size: 0.6rem;
+            padding: 2px 8px;
+            border: 2px solid #000;
         }
     </style>
 </head>
@@ -125,32 +87,17 @@
         </div>
 
         <div class="tool-list">
-            
-            <!-- LINK TO JJS STUDIO -->
             <a href="studio.html" class="tool-btn">
-                <div class="wip-tag">W.I.P</div>
+                <div class="tag">WIP</div>
                 <span class="tool-name">JJS STUDIO</span>
-                <span class="tool-desc">Move & Data Editor (Highly Work in Progress)</span>
+                <span class="tool-desc">Move & Data Editor</span>
             </a>
 
-            <!-- LINK TO CHOPPIFY -->
             <a href="choppify.html" class="tool-btn">
-                <span class="tool-name">ANIM FRAME REMOVER</span>
-                <span class="tool-desc">"CHOPPIFY" - Optimize animation frame rates</span>
+                <span class="tool-name">ANIM CHOPPIFY</span>
+                <span class="tool-desc">Frame Remover Tool</span>
             </a>
-
-            <!-- PLACEHOLDER FOR FUTURE TOOLS -->
-            <div class="tool-btn" style="opacity: 0.3; cursor: not-allowed;">
-                <span class="tool-name">???</span>
-                <span class="tool-desc">More tools coming soon...</span>
-            </div>
-
         </div>
-    </div>
-
-    <!-- Background text for vibe -->
-    <div style="position:fixed; bottom:10px; right:15px; font-size:0.8rem; color:#444; pointer-events:none;">
-        BUILD V1.0.0
     </div>
 
 </body>
