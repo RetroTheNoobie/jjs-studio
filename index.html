@@ -12,9 +12,7 @@
             --accent: #ffcc33;
             --btn-bg: #252525;
         }
-
         * { box-sizing: border-box; font-family: 'Finger Paint', cursive; border-radius: 0 !important; }
-
         body { 
             margin: 0; 
             background-color: var(--bg);
@@ -28,7 +26,6 @@
             justify-content: center;
             height: 100vh;
         }
-
         .menu-container {
             width: 90%;
             max-width: 500px;
@@ -37,16 +34,13 @@
             padding: 30px;
             box-shadow: 15px 15px 0px #000;
         }
-
         .header {
             text-align: center;
             border-bottom: var(--thickness) solid #000;
             margin-bottom: 25px;
             padding-bottom: 15px;
         }
-
         .header h1 { margin: 0; font-size: 2.2rem; color: var(--accent); text-transform: uppercase; }
-
         .tool-btn {
             display: block;
             background: var(--btn-bg);
@@ -57,16 +51,13 @@
             transition: 0.1s;
             position: relative;
         }
-
         .tool-btn:hover {
             background: #333;
             transform: translate(-4px, -4px);
             box-shadow: 8px 8px 0px #000;
         }
-
         .tool-name { display: block; font-size: 1.3rem; color: #fff; font-weight: bold; }
         .tool-desc { font-size: 0.75rem; color: #888; text-transform: uppercase; }
-
         .tag {
             position: absolute;
             top: -10px;
@@ -77,28 +68,38 @@
             padding: 2px 8px;
             border: 2px solid #000;
         }
+        .credits {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #222;
+            font-size: 0.65rem;
+            color: #555;
+            text-align: center;
+            line-height: 1.4;
+        }
+        .credits span { color: var(--accent); }
     </style>
 </head>
 <body>
-
     <div class="menu-container">
         <div class="header">
             <h1>JJS TOOLS</h1>
         </div>
-
         <div class="tool-list">
             <a href="studio.html" class="tool-btn">
                 <div class="tag">WIP</div>
                 <span class="tool-name">JJS STUDIO</span>
                 <span class="tool-desc">Move & Data Editor</span>
             </a>
-
             <a href="choppify.html" class="tool-btn">
                 <span class="tool-name">ANIM CHOPPIFY</span>
                 <span class="tool-desc">Frame Remover Tool</span>
             </a>
         </div>
+        <div class="credits">
+            MADE UTILIZING CHATGPT,<br>
+            PROMPTED AND DIRECTED BY <span>RETRO_THE_NOOBIE</span>
+        </div>
     </div>
-
 </body>
 </html>
