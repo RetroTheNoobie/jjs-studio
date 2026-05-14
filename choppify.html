@@ -29,7 +29,7 @@
         <h1>ANIM CHOPPIFY</h1>
 
         <div class="guide">
-            <strong>CHOPPIFY ENGINE:</strong> Paste your compressed string below. This tool finds the <strong>"Choppy"</strong> container, takes the <strong>first</strong> ANIM node, and converts it into a frame-by-frame sequence. Everything else is preserved.
+            <strong>CHOPPIFY ENGINE:</strong> Paste your export code below. The export code must contain a skill node/container called <strong>"Choppy"</strong>, inside of it it should have atleast 1 animation node, it will take the <strong>first</strong> ANIM node, and converts it into low fps 8 bit anim
         </div>
 
         <div class="row">
@@ -51,7 +51,6 @@
         <button class="process-btn" onclick="runChoppify()">PROCESS & RE-COMPRESS</button>
     </div>
 
-    <!-- USING YOUR STUDIO ENGINE -->
     <script src="./zstd-bundle.js"></script>
     <script>
         let zstd = null;
@@ -67,6 +66,8 @@
             document.getElementById('set-val').disabled = isFPS;
         }
 
+        const fix = (num) => parseFloat(num.toFixed(5));
+
         function runChoppify() {
             if (!zstd) return alert("Zstd Engine not loaded yet!");
             let rawInput = document.getElementById('io-area').value.trim();
@@ -79,16 +80,14 @@
                 if (rawInput.startsWith('[') || rawInput.startsWith('{')) {
                     currentMoves = JSON.parse(rawInput);
                 } else {
-                    // DECOMPRESS (Studio Logic)
                     const bin = Uint8Array.from(atob(rawInput), c => c.charCodeAt(0));
                     currentMoves = JSON.parse(new TextDecoder().decode(zstd.decompress(bin)));
                     isCompressed = true;
                 }
             } catch(e) {
-                return alert("Import Failed: Make sure this is a valid JJS string.");
+                return alert("Import Failed: Check your data.");
             }
 
-            // FIND "CHOPPY"
             let move = currentMoves.find(m => m.NAME === "Choppy");
             if(!move) return alert("No container named 'Choppy' found!");
 
@@ -99,45 +98,46 @@
             if(animIndex === -1) return alert("No ANIM node found in 'Choppy'!");
 
             let targetAnim = lines[animIndex];
-            let start = targetAnim.PREVIEW[0];
-            let end = targetAnim.PREVIEW[1];
+            let start = fix(targetAnim.PREVIEW[0]);
+            let end = fix(targetAnim.PREVIEW[1]);
             let animId = targetAnim.ANIM_USE;
 
             const isFPS = document.querySelector('input[name="mode"][value="fps"]').checked;
             const speed = parseFloat(document.getElementById('speed-val').value) || 1;
-            let interval = isFPS ? (1 / parseFloat(document.getElementById('fps-val').value)) : parseFloat(document.getElementById('set-val').value);
-            let waitTime = interval / speed;
+            
+            let interval = isFPS ? fix(1 / parseFloat(document.getElementById('fps-val').value)) : fix(parseFloat(document.getElementById('set-val').value));
+            let waitTime = fix(interval / speed);
 
             let newNodes = [];
-            for(let t = start; t < end; t += interval) {
-                let fEnd = Math.min(t + interval, end);
+            for(let t = start; t < end; t = fix(t + interval)) {
+                let fEnd = fix(Math.min(t + interval, end));
+                
                 newNodes.push({
-                    "PREVIEW": [t, fEnd],
+                    "PREVIEW": [fix(t), fEnd],
                     "K_NAME": "ANIM",
                     "ANIM_USE": animId,
                     "SPEED": 0
                 });
+                
                 newNodes.push({
                     "K_NAME": "WAIT",
-                    "TIME": waitTime // Standard JJS wait key
+                    "TIME": waitTime
                 });
             }
 
-            // Replace original ANIM with the chopped sequence
             lines.splice(animIndex, 1, ...newNodes);
             innerData.Line = lines;
             move.DATA = JSON.stringify(innerData);
 
-            // COMPRESS (Studio Logic)
             if (isCompressed) {
                 const bin = zstd.compress(new TextEncoder().encode(JSON.stringify(currentMoves)), 3);
                 let str = "";
                 for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
                 document.getElementById('io-area').value = btoa(str);
-                alert("Choppified and Re-Compressed!");
+                alert("Success: 5-decimal precision applied!");
             } else {
-                document.getElementById('io-area').value = JSON.stringify(currentMoves);
-                alert("Choppified JSON generated!");
+                document.getElementById('io-area').value = JSON.stringify(currentMoves, null, 2);
+                alert("Success: JSON updated!");
             }
         }
     </script>
