@@ -20,8 +20,6 @@
         .process-btn { width: 100%; background: var(--accent); color: #000; border: var(--thickness) solid #000; padding: 20px; font-size: 1.2rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .process-btn:hover { background: #fff; transform: translate(-2px, -2px); box-shadow: 5px 5px 0 #000; }
         .back-link { display: inline-block; margin-bottom: 20px; color: #666; text-decoration: none; font-size: 0.8rem; }
-        
-        /* New Toggle Style */
         .toggle-group { display: flex; align-items: center; gap: 10px; background: #222; padding: 10px; border: 2px solid #000; margin-bottom: 10px; cursor: pointer; }
         .toggle-group input { width: 20px; height: 20px; cursor: pointer; }
     </style>
@@ -113,11 +111,8 @@
             let totalAddedNodes = 0;
             let newLines = [];
 
-            // Process nodes
             for (let i = 0; i < lines.length; i++) {
                 let node = lines[i];
-                
-                // If it's an ANIM node AND (it's the first one OR convertAll is true)
                 const isFirstAnim = lines.slice(0, i).findIndex(l => l.K_NAME === "ANIM") === -1;
                 
                 if (node.K_NAME === "ANIM" && (convertAll || isFirstAnim)) {
@@ -139,10 +134,7 @@
                         });
                         totalAddedNodes += 2;
                     }
-                    
-                    // If we only wanted the first one, stop checking for more ANIMs but finish the loop for other nodes
                     if (!convertAll) {
-                        // After converting the first anim, just push the rest of the original nodes
                         newLines = newLines.concat(lines.slice(i + 1));
                         break;
                     }
@@ -151,9 +143,8 @@
                 }
             }
 
-            // Check for performance warning
-            // More than 10 nodes and finalnum < 0.5 OR more than 30 nodes and finalnum < 2
-            if ((totalAddedNodes > 10 && interval < 0.5) || (totalAddedNodes > 30 && interval < 2)) {
+            // Updated check: Notice appears if more than 50 nodes are added
+            if (totalAddedNodes > 50) {
                 alert("Notice: the converted nodes make the move a lot bigger, please be careful as it might cause skillbuilder lag when opening");
             }
 
