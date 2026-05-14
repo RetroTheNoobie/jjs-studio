@@ -134,7 +134,7 @@
                 let str = "";
                 for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
                 document.getElementById('io-area').value = btoa(str);
-                alert("Success: 5-decimal precision applied!");
+                alert("Success: code can be found in the import box");
             } else {
                 document.getElementById('io-area').value = JSON.stringify(currentMoves, null, 2);
                 alert("Success: JSON updated!");
