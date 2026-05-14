@@ -1,1 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JJS - CHOPPIFY</title>
+    <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #1a1a1a;
+            --thickness: 4px;
+            --accent: #ffcc33;
+            --btn-bg: #252525;
+            --disabled: #444;
+        }
 
+        * { box-sizing: border-box; font-family: 'Finger Paint', cursive; border-radius: 0 !important; }
+        body { margin: 0; background: var(--bg); color: #fff; padding: 40px; display: flex; flex-direction: column; align-items: center; }
+
+        .container { width: 100%; max-width: 800px; background: #111; border: var(--thickness) solid #000; padding: 30px; box-shadow: 12px 12px 0 #000; }
+        h1 { color: var(--accent); text-align: center; margin-top: 0; }
+        
+        .guide { background: #000; padding: 15px; border: 2px solid #333; font-size: 0.85rem; color: #bbb; margin-bottom: 25px; line-height: 1.5; }
+        
+        .row { display: flex; gap: 20px; margin-bottom: 20px; align-items: center; }
+        .input-group { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+        
+        label { font-size: 0.9rem; color: var(--accent); }
+        input, textarea { background: #000; border: var(--thickness) solid #000; color: #fff; padding: 12px; font-size: 1rem; outline: none; }
+        input:disabled { color: var(--disabled); border-color: #222; cursor: not-allowed; }
+        
+        .radio-box { width: 20px; height: 20px; cursor: pointer; border: 2px solid var(--accent); }
+
+        textarea { width: 100%; height: 200px; resize: vertical; font-family: monospace; font-size: 0.8rem; }
+        
+        .process-btn {
+            width: 100%; background: var(--accent); color: #000; border: var(--thickness) solid #000;
+            padding: 20px; font-size: 1.2rem; font-weight: bold; cursor: pointer; margin-top: 10px;
+        }
+        .process-btn:hover { background: #fff; transform: translate(-2px, -2px); box-shadow: 5px 5px 0 #000; }
+        
+        .back-link { display: inline-block; margin-bottom: 20px; color: #666; text-decoration: none; font-size: 0.8rem; }
+        .back-link:hover { color: #fff; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <a href="index.html" class="back-link">< BACK TO HUB</a>
+        <h1>ANIM CHOPPIFY</h1>
+
+        <div class="guide">
+            <strong>HOW TO USE:</strong><br>
+            1. Paste your Export Code into the box below.<br>
+            2. Ensure you have a Skill Container named <strong>"Choppy"</strong>.<br>
+            3. Inside that container, have an <strong>Anim Node</strong> with your target animation and preview time.<br>
+            4. Choose your FPS or a specific interval and hit "CHOPPIFY". The tool will slice the animation into static steps.
+        </div>
+
+        <div class="row">
+            <div class="input-group">
+                <label>
+                    <input type="radio" name="mode" value="fps" checked onclick="toggleInputs()"> FPS MODE
+                </label>
+                <input type="number" id="fps-val" value="24" placeholder="e.g. 24">
+            </div>
+            <div class="input-group">
+                <label>
+                    <input type="radio" name="mode" value="set" onclick="toggleInputs()"> SET AMOUNT
+                </label>
+                <input type="number" id="set-val" value="0.05" step="0.01" disabled>
+            </div>
+            <div class="input-group">
+                <label>PLAYBACK SPEED</label>
+                <input type="number" id="speed-val" value="1.0" step="0.1">
+            </div>
+        </div>
+
+        <label style="display:block; margin-bottom:10px; color:var(--accent);">EXPORT CODE</label>
+        <textarea id="io-area" placeholder="Paste data here..."></textarea>
+
+        <button class="process-btn" onclick="runChoppify()">CHOPPIFY ANIMATION</button>
+    </div>
+
+    <script>
+        function toggleInputs() {
+            const isFPS = document.querySelector('input[name="mode"][value="fps"]').checked;
+            document.getElementById('fps-val').disabled = !isFPS;
+            document.getElementById('set-val').disabled = isFPS;
+        }
+
+        function runChoppify() {
+            const input = document.getElementById('io-area').value;
+            if(!input) return alert("Paste some code first!");
+
+            // 1. Determine FinalNumber
+            const isFPS = document.querySelector('input[name="mode"][value="fps"]').checked;
+            const speed = parseFloat(document.getElementById('speed-val').value) || 1;
+            let finalNumber = isFPS 
+                ? (1 / parseFloat(document.getElementById('fps-val').value)) 
+                : parseFloat(document.getElementById('set-val').value);
+
+            const waitTime = finalNumber / speed;
+
+            // Simple Logic Simulation (Since I don't have your specific JSON/String structure)
+            // This is where we would parse the string, find "Choppy", and loop the creation
+            alert(`Logic Ready!\nInterval: ${finalNumber.toFixed(4)}\nWait: ${waitTime.toFixed(4)}`);
+            
+            /* 
+               TODO: Add the string-parser here once you provide 
+               the exact format of the 'Export Code' 
+            */
+        }
+    </script>
+</body>
+</html>
