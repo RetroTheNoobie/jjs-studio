@@ -50,6 +50,7 @@
             text-decoration: none;
             transition: 0.1s;
             position: relative;
+            cursor: pointer;
         }
         .tool-btn:hover {
             background: #333;
@@ -86,7 +87,7 @@
             <h1>JJS TOOLS</h1>
         </div>
         <div class="tool-list">
-            <a href="studio.html" class="tool-btn">
+            <a href="#" class="tool-btn" onclick="showWipNotice()">
                 <div class="tag">WIP</div>
                 <span class="tool-name">JJS STUDIO</span>
                 <span class="tool-desc">Move & Data Editor</span>
@@ -101,5 +102,11 @@
             PROMPTED AND DIRECTED BY <span>RETRO_THE_NOOBIE</span>
         </div>
     </div>
+
+    <script>
+        function showWipNotice() {
+            alert("This is HIGHLY work in progress, its currently useless since im planning to make smaller tools, and later merge them all into one");
+        }
+    </script>
 </body>
 </html>
