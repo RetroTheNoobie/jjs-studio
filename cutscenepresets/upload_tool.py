@@ -185,17 +185,17 @@ def append_result(name, image_id):
         f.write(f"{name} -- {image_id}\n")
 
 def process_single_image(img_filename):
+    # Add this line to create the full path to the file
+    full_path = os.path.join("frames", img_filename)
+    
     name = os.path.splitext(img_filename)[0]
     print(f"📡 [START] Uploading: {img_filename}")
     try:
-        res = upload_image(img_filename)
+        
+        res = upload_image(full_path) 
+        
         if res.status_code not in (200, 201):
             return f"✖ [FAIL] {img_filename} - Upload HTTP Error: {res.status_code}"
-
-        initial_data = res.json()
-        operation_path = initial_data.get("path")
-        if not operation_path:
-            return f"✖ [FAIL] {img_filename} - Failed to yield backend tracking handle."
 
         decal_id = None
         for _ in range(15):
