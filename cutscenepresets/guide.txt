@@ -1,7 +1,10 @@
-Heya! 50th time i mention i made this tool with ai, but oh well
+Heya! 100th time i mention i made this tool with ai, but oh well
 
 Heres your guide to actually, well use it:
-firstly, go to https://create.roblox.com/dashboard/credentials 
+firstly make sure that you extracted this zip file first, then
+
+if this is your first time using this tool:
+go to https://create.roblox.com/dashboard/credentials 
 where you should find an option to create an api key, give it these permissions: 
 
 ASSETS:
@@ -11,4 +14,16 @@ asset:write
 LEGACY-ASSETS:
 legacy-asset:manage
 
-(hold up writing more soon)
+NOTE: for security reasons, (if you're sketched out about this) you can give roblox's api key an ip range or a set ip, so that
+even if someone somehow got your api key, they wouldnt be able to use it anyway
+
+------------- If you've already used this tool, or finished setting that up ---------------------
+
+Look at the "preview.gif" file, which should showcase how the cutscene will look, if theres anything you dont like with this, simply delete the zip file, and 
+generate a new one thru the website
+
+its all pretty straight forward, copy your api key, then open "run_uploader.bat" which will install python (if missing), and pip install requests (if missing), 
+which is the minimum necessary for the uploading to work, after it deletes itself, run the upload_tool.py, and simply type in the information requested,
+you'll only have to do this once, and it can be changed at any time
+
+after you're done, simply keep the .py file open till its done doing its thing, and when its done, it should've uploaded all the images to your account, and given you an uploaded image ids.txt file 
