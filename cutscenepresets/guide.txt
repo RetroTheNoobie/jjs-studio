@@ -1,1 +1,14 @@
+Heya! 50th time i mention i made this tool with ai, but oh well
 
+Heres your guide to actually, well use it:
+firstly, go to https://create.roblox.com/dashboard/credentials 
+where you should find an option to create an api key, give it these permissions: 
+
+ASSETS:
+asset:read
+asset:write
+
+LEGACY-ASSETS:
+legacy-asset:manage
+
+(hold up writing more soon)
