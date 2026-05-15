@@ -3,16 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="JJS Tools Hub - Developed by retro_the_noobie">
     <title>JJS HUB</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --bg: #1a1a1a;
             --thickness: 4px;
             --accent: #ffcc33;
             --btn-bg: #252525;
+            --btn-hover: #333;
         }
-        * { box-sizing: border-box; font-family: 'Finger Paint', cursive; border-radius: 0 !important; }
+
+        * { 
+            box-sizing: border-box; 
+            font-family: 'Finger Paint', cursive; 
+            border-radius: 0 !important; 
+        }
+
         body { 
             margin: 0; 
             background-color: var(--bg);
@@ -24,41 +34,73 @@
             display: flex; 
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
+            padding: 20px;
         }
+
         .menu-container {
-            width: 90%;
+            width: 100%;
             max-width: 500px;
             background: #111;
             border: var(--thickness) solid #000;
             padding: 30px;
             box-shadow: 15px 15px 0px #000;
+            position: relative;
         }
+
         .header {
             text-align: center;
             border-bottom: var(--thickness) solid #000;
             margin-bottom: 25px;
             padding-bottom: 15px;
         }
-        .header h1 { margin: 0; font-size: 2.2rem; color: var(--accent); text-transform: uppercase; }
+
+        .header h1 { 
+            margin: 0; 
+            font-size: 2.2rem; 
+            color: var(--accent); 
+            text-transform: uppercase; 
+            letter-spacing: 2px;
+        }
+
+        .tool-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
         .tool-btn {
             display: block;
             background: var(--btn-bg);
             border: var(--thickness) solid #000;
             padding: 15px 20px;
-            margin-bottom: 12px;
             text-decoration: none;
-            transition: 0.1s;
+            transition: transform 0.1s, box-shadow 0.1s;
             position: relative;
             cursor: pointer;
         }
+
         .tool-btn:hover {
-            background: #333;
+            background: var(--btn-hover);
             transform: translate(-4px, -4px);
             box-shadow: 8px 8px 0px #000;
         }
-        .tool-name { display: block; font-size: 1.3rem; color: #fff; font-weight: bold; }
-        .tool-desc { font-size: 0.75rem; color: #888; text-transform: uppercase; }
+
+        .tool-name { 
+            display: block; 
+            font-size: 1.3rem; 
+            color: #fff; 
+            font-weight: bold; 
+            margin-bottom: 4px;
+        }
+
+        .tool-desc { 
+            font-size: 0.75rem; 
+            color: #888; 
+            text-transform: uppercase; 
+            display: block;
+        }
+
         .tag {
             position: absolute;
             top: -10px;
@@ -68,39 +110,56 @@
             font-size: 0.6rem;
             padding: 2px 8px;
             border: 2px solid #000;
+            font-weight: bold;
+            z-index: 10;
         }
+
         .credits {
-            margin-top: 20px;
+            margin-top: 25px;
             padding-top: 15px;
             border-top: 2px solid #222;
             font-size: 0.65rem;
             color: #555;
             text-align: center;
-            line-height: 1.4;
+            line-height: 1.6;
+            text-transform: uppercase;
         }
-        .credits span { color: var(--accent); }
+
+        .credits span { 
+            color: var(--accent); 
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
+
     <div class="menu-container">
         <div class="header">
             <h1>JJS TOOLS</h1>
         </div>
-        <div class="tool-list">
+
+        <nav class="tool-list">
             <a href="javascript:void(0)" class="tool-btn" onclick="showWipNotice()">
                 <div class="tag">WIP</div>
                 <span class="tool-name">JJS STUDIO</span>
                 <span class="tool-desc">Move & Data Editor</span>
             </a>
+
             <a href="choppify.html" class="tool-btn">
                 <span class="tool-name">ANIM CHOPPIFY</span>
                 <span class="tool-desc">Frame Remover Tool</span>
             </a>
-        </div>
-        <div class="credits">
+
+            <a href="mp4_to_cutscene.html" class="tool-btn">
+                <span class="tool-name">MP4 CUTSCENE</span>
+                <span class="tool-desc">Video to Overlay Sequence</span>
+            </a>
+        </nav>
+
+        <footer class="credits">
             MADE UTILIZING GEMINI,<br>
             PROMPTED AND DIRECTED BY <span>RETRO_THE_NOOBIE</span>
-        </div>
+        </footer>
     </div>
 
     <script>
@@ -109,5 +168,6 @@
             window.location.href = "studio.html";
         }
     </script>
+
 </body>
 </html>
