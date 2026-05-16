@@ -10,33 +10,22 @@
         * { box-sizing: border-box; font-family: 'Finger Paint', cursive; border-radius: 0 !important; }
         body { margin: 0; background: var(--bg); color: #fff; padding: 40px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 850px; background: #111; border: var(--thickness) solid #000; padding: 30px; box-shadow: 12px 12px 0 #000; margin-bottom: 30px; position: relative; }
-        
-        /* Main Title Styling */
         .main-title { color: var(--accent); text-align: center; margin: 0 0 30px 0; text-transform: uppercase; font-size: 2.5rem; text-shadow: 4px 4px 0px #000; }
-        
         h2 { color: var(--accent); text-align: center; margin-top: 0; text-transform: uppercase; font-size: 1.5rem; }
-        
         .section { background: #000; border: 2px solid #333; padding: 20px; margin-bottom: 20px; }
         .section-title { color: var(--accent); font-size: 0.8rem; margin-bottom: 15px; display: block; border-left: 4px solid var(--accent); padding-left: 10px; text-transform: uppercase; letter-spacing: 1px; }
-        
         .row { display: flex; gap: 20px; margin-bottom: 15px; }
         .input-group { flex: 1; display: flex; flex-direction: column; gap: 8px; }
         label { font-size: 0.7rem; color: #888; text-transform: uppercase; }
-        
         input[type="text"], input[type="number"] { background: #111; border: 2px solid #333; color: #fff; padding: 12px; font-size: 1rem; outline: none; width: 100%; }
         input:focus { border-color: var(--accent); }
-        
         .btn { width: 100%; background: var(--accent); color: #000; border: var(--thickness) solid #000; padding: 18px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.1s; }
         .btn:hover { background: #fff; transform: translate(-2px, -2px); box-shadow: 4px 4px 0 #000; }
         .btn:disabled { background: #444; cursor: not-allowed; }
-        
         #log { font-family: monospace; font-size: 11px; color: #2ecc71; height: 100px; overflow-y: auto; background: #050505; padding: 10px; border: 1px solid #222; margin-top: 10px; }
         textarea { width: 100%; height: 200px; background: #000; border: 2px solid #333; color: #2ecc71; font-family: monospace; padding: 15px; font-size: 0.8rem; outline: none; }
-        
         .toggle-group { display: flex; align-items: center; gap: 10px; background: #1a1a1a; padding: 12px; border: 2px solid #333; margin-bottom: 10px; cursor: pointer; font-size: 0.75rem; transition: 0.2s; }
         .toggle-group:hover { border-color: var(--accent); }
-        .toggle-group input { cursor: pointer; }
-
         .step-tag { background: var(--accent); color: #000; padding: 2px 10px; font-size: 0.7rem; font-weight: bold; margin-bottom: 10px; display: inline-block; }
     </style>
 </head>
@@ -52,14 +41,14 @@
         <div class="section">
             <span class="section-title">Project Identity</span>
             <div class="input-group">
-                <label>Cutscene Name</label>
-                <input type="text" id="proj-name" placeholder="e.g. Domain_Expansion_VFX">
+                <label>Cutscene Name (Used for filenames)</label>
+                <input type="text" id="proj-name" placeholder="e.g. Hollow_Purple">
             </div>
         </div>
 
         <div class="row">
             <div class="input-group">
-                <label>Sampling FPS (Standard: 12)</label>
+                <label>Sampling FPS</label>
                 <input type="number" id="fps-val" value="12">
             </div>
             <div class="input-group">
@@ -81,12 +70,12 @@
         <div class="step-tag">PART 2: SEQUENCE COMPILER</div>
         <h2>JJS CODE GENERATOR</h2>
         <p style="font-size: 0.7rem; color: #888; text-align: center; margin-bottom: 20px;">
-            After running the Python script, paste the contents of your <b>uploaded_image_ids.txt</b> below.
+            Paste the contents of your <b>uploaded_image_ids.txt</b> below.
         </p>
         
         <div class="row">
             <div class="input-group">
-                <label>Build FPS (Match Part 1)</label>
+                <label>Build FPS</label>
                 <input type="number" id="b-fps" value="12">
             </div>
             <div class="input-group">
@@ -100,8 +89,8 @@
             <label class="toggle-group" style="flex:1"><input type="checkbox" id="transparent"> TRANSPARENT MODE</label>
         </div>
 
-        <textarea id="io-box" placeholder="PASTE DATA HERE... (Example: frame_001 -- 138472042664054)"></textarea>
-        <button class="btn" style="margin-top: 15px; background: #2ecc71;" onclick="buildJJS()">COMPILE JJS DATA</button>
+        <textarea id="io-box" placeholder="PASTE DATA HERE..."></textarea>
+        <button class="btn" style="margin-top: 15px; background: #2ecc71;" onclick="buildJJS()">COMPILE & COMPRESS JJS DATA</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -117,7 +106,7 @@
         }
 
         async function processVideo() {
-            const name = document.getElementById('proj-name').value.trim();
+            const name = document.getElementById('proj-name').value.trim().replace(/\s+/g, '_');
             const file = document.getElementById('vid-input').files[0];
             const fps = document.getElementById('fps-val').value;
 
@@ -134,8 +123,9 @@
             addLog("Reading Video...");
             ffmpeg.FS('writeFile', 'in.mp4', await fetchFile(file));
 
-            addLog("Splitting into PNGs...");
-            await ffmpeg.run('-i', 'in.mp4', '-vf', `fps=${fps}`, 'f_%03d.png');
+            addLog("Splitting into custom named PNGs...");
+            // Saves frames using the custom scheme: Name_001.png, Name_002.png...
+            await ffmpeg.run('-i', 'in.mp4', '-vf', `fps=${fps}`, `${name}_%03d.png`);
 
             addLog("Creating Preview GIF...");
             await ffmpeg.run('-i', 'in.mp4', '-vf', `fps=${fps},scale=320:-1`, 'prev.gif');
@@ -159,7 +149,7 @@
                 if(py.ok) zip.file("upload_tool.py", await py.text());
                 if(gt.ok) zip.file("guide.txt", await gt.text());
                 if(bat.ok) zip.file("run_uploader.bat", await bat.text());
-            } catch(e) { addLog("Local presets fetch failed, proceeding with frames only."); }
+            } catch(e) { addLog("Using default local fallback."); }
 
             const blob = await zip.generateAsync({type:"blob"});
             const a = document.createElement('a');
@@ -167,7 +157,7 @@
             a.download = `${name}_JJS_Bundle.zip`;
             a.click();
 
-            addLog("SUCCESS: Bundle downloaded.");
+            addLog("SUCCESS: Packaged ZIP generated.");
             btn.disabled = false;
         }
 
@@ -182,25 +172,48 @@
 
             const waitTime = parseFloat((1 / fps / speed).toFixed(5));
             const overlayTime = isTrans ? waitTime : parseFloat((waitTime + 0.05).toFixed(5));
-            const lines = raw.split('\n').filter(l => l.includes('--'));
+            
+            // Extract lines and map them alongside their numerical serial id for accurate ordering
+            let dataArray = [];
+            raw.split('\n').forEach(line => {
+                if(line.includes('--')) {
+                    const parts = line.split('--');
+                    const leftSide = parts[0].trim();
+                    const assetId = parseInt(parts[1].trim());
+                    
+                    // Extract trailing numbers from string (e.g., "Hollow_Purple_014" -> 14)
+                    const numMatch = leftSide.match(/_(\d+)$/);
+                    const serialIndex = numMatch ? parseInt(numMatch[1], 10) : 0;
+                    
+                    dataArray.push({ index: serialIndex, id: assetId });
+                }
+            });
+
+            if(dataArray.length === 0) return alert("No valid frame patterns detected!");
+
+            // CRITICAL FIX: Explicit numerical sorting by frame serial sequence index
+            dataArray.sort((a, b) => a.index - b.index);
+
             let nodes = [];
 
+            // 1. PRELOADING STAGE
             if(isPreload) {
-                lines.forEach(line => {
-                    nodes.push({ "TEXTURE": parseInt(line.split('--')[1].trim()), "TIME": 0, "K_NAME": "VISUAL", "EFFECT": "Overlay" });
+                dataArray.forEach(item => {
+                    nodes.push({ "TEXTURE": item.id, "TIME": 0, "K_NAME": "VISUAL", "EFFECT": "Overlay" });
                 });
                 nodes.push({ "TIME": 0, "K_NAME": "WAIT" });
             }
 
+            // 2. BACKGROUND STAGE (Black screen color fill)
             if(!isTrans) {
-                nodes.push({ "COLOR": "0, 0, 0", "TIME": parseFloat((lines.length * waitTime).toFixed(5)), "K_NAME": "VISUAL", "EFFECT": "Screen Color" });
+                nodes.push({ "COLOR": "0, 0, 0", "TIME": parseFloat((dataArray.length * waitTime).toFixed(5)), "K_NAME": "VISUAL", "EFFECT": "Screen Color" });
                 nodes.push({ "TIME": 0, "K_NAME": "WAIT" });
             }
 
-            lines.forEach(line => {
-                const id = line.split('--')[1].trim();
+            // 3. MAIN TIMED PLAYBACK SEQUENCE
+            dataArray.forEach(item => {
                 nodes.push({
-                    "TEXTURE": parseInt(id),
+                    "TEXTURE": item.id,
                     "TIME": overlayTime,
                     "K_NAME": "VISUAL",
                     "EFFECT": "Overlay"
@@ -208,9 +221,22 @@
                 nodes.push({ "TIME": waitTime, "K_NAME": "WAIT" });
             });
 
-            const final = [{"NAME": "Cutscene", "K_NAME": "SKILL", "DATA": JSON.stringify({"Line": nodes})}];
-            document.getElementById('io-box').value = JSON.stringify(final, null, 2);
-            alert("JJS Data Compiled Successfully!");
+            // 4. STRUCTURE COMPRESSION CONTAINER
+            const compressedStructure = [{
+                "ADD": false,
+                "NAME": "CUTSCENE",
+                "K_NAME": "SKILL",
+                "KEY": 1,
+                "DATA": JSON.stringify({
+                    "Line": nodes,
+                    "Req": [],
+                    "Prop": []
+                }),
+                "COOLDOWN": 0
+            }];
+
+            document.getElementById('io-box').value = JSON.stringify(compressedStructure, null, 2);
+            alert("Sorted, Compressed, and Formatted for JJS Studio successfully!");
         }
     </script>
 </body>
