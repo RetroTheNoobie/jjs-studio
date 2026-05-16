@@ -124,7 +124,6 @@
             ffmpeg.FS('writeFile', 'in.mp4', await fetchFile(file));
 
             addLog("Splitting into custom named PNGs...");
-            // Saves frames using the custom scheme: Name_001.png, Name_002.png...
             await ffmpeg.run('-i', 'in.mp4', '-vf', `fps=${fps}`, `${name}_%03d.png`);
 
             addLog("Creating Preview GIF...");
@@ -173,7 +172,6 @@
             const waitTime = parseFloat((1 / fps / speed).toFixed(5));
             const overlayTime = isTrans ? waitTime : parseFloat((waitTime + 0.05).toFixed(5));
             
-            // Extract lines and map them alongside their numerical serial id for accurate ordering
             let dataArray = [];
             raw.split('\n').forEach(line => {
                 if(line.includes('--')) {
@@ -181,7 +179,6 @@
                     const leftSide = parts[0].trim();
                     const assetId = parseInt(parts[1].trim());
                     
-                    // Extract trailing numbers from string (e.g., "Hollow_Purple_014" -> 14)
                     const numMatch = leftSide.match(/_(\d+)$/);
                     const serialIndex = numMatch ? parseInt(numMatch[1], 10) : 0;
                     
@@ -191,7 +188,7 @@
 
             if(dataArray.length === 0) return alert("No valid frame patterns detected!");
 
-            // CRITICAL FIX: Explicit numerical sorting by frame serial sequence index
+            // Explicit numerical sort
             dataArray.sort((a, b) => a.index - b.index);
 
             let nodes = [];
@@ -221,21 +218,24 @@
                 nodes.push({ "TIME": waitTime, "K_NAME": "WAIT" });
             });
 
-            // 4. STRUCTURE COMPRESSION CONTAINER
+            // COMPRESSION: Convert internal structures directly to compressed unspaced strings
+            const innerDataString = JSON.stringify({
+                "Line": nodes,
+                "Req": [],
+                "Prop": []
+            });
+
             const compressedStructure = [{
                 "ADD": false,
                 "NAME": "CUTSCENE",
                 "K_NAME": "SKILL",
                 "KEY": 1,
-                "DATA": JSON.stringify({
-                    "Line": nodes,
-                    "Req": [],
-                    "Prop": []
-                }),
+                "DATA": innerDataString,
                 "COOLDOWN": 0
             }];
 
-            document.getElementById('io-box').value = JSON.stringify(compressedStructure, null, 2);
+            // Outputs the raw, strict, single-line compressed text wall
+            document.getElementById('io-box').value = JSON.stringify(compressedStructure);
             alert("Sorted, Compressed, and Formatted for JJS Studio successfully!");
         }
     </script>
