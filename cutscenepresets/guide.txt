@@ -20,10 +20,11 @@ even if someone somehow got your api key, they wouldnt be able to use it anyway
 ------------- If you've already used this tool, or finished setting that up ---------------------
 
 Look at the "preview.gif" file, which should showcase how the cutscene will look, if theres anything you dont like with this, simply delete the zip file, and 
-generate a new one thru the website
+generate a new one thru the website, (if the quality doesnt look very good, open the frames folder and look at one of those)
 
 its all pretty straight forward, copy your api key, then open "run_uploader.bat" which will install python (if missing), and pip install requests (if missing), 
 which is the minimum necessary for the uploading to work, after it deletes itself, run the upload_tool.py, and simply type in the information requested,
 you'll only have to do this once, and it can be changed at any time
 
-after you're done, simply keep the .py file open till its done doing its thing, and when its done, it should've uploaded all the images to your account, and given you an uploaded image ids.txt file 
+after you're done, simply keep the .py file open till its done doing its thing, and when its done, it should've uploaded all the images to your account, and given you an uploaded image ids.txt file, make sure
+to copy all the information in that txt file, before deleting the folder (the entire thing, you wont need it anyway, but you can keep it if you wanna)
