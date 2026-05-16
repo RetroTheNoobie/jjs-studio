@@ -116,8 +116,6 @@
             logBox.scrollTop = logBox.scrollHeight;
         }
 
-        const fix = (num) => parseFloat(num.toFixed(5));
-
         async function processVideo() {
             const name = document.getElementById('proj-name').value.trim().replace(/\s+/g, '_');
             const file = document.getElementById('vid-input').files[0];
@@ -184,8 +182,11 @@
             
             if(!raw) return alert("Input box is empty!");
 
-            const waitTime = fix(1 / fps / speed);
-            const overlayTime = isTrans ? waitTime : fix(waitTime + 0.05);
+            // Floating point precision helper
+            const calcTime = (num) => parseFloat(num.toFixed(5));
+
+            const waitTime = calcTime(1 / fps / speed);
+            const overlayTime = isTrans ? waitTime : calcTime(waitTime + 0.05);
             
             let dataArray = [];
             raw.split('\n').forEach(line => {
@@ -215,12 +216,12 @@
                 nodes.push({ "TIME": 0, "K_NAME": "WAIT" });
             }
 
-            // 2. BACKGROUND (Uses strict engine naming: "ALT COLOR")
+            // 2. BACKGROUND 
             if(!isTrans) {
                 nodes.push({ 
                     "COLOR": "0, 0, 0", 
                     "ALT COLOR": "0, 0, 0", 
-                    "TIME": fix(dataArray.length * waitTime), 
+                    "TIME": calcTime(dataArray.length * waitTime), 
                     "K_NAME": "VISUAL", 
                     "EFFECT": "Screen Color" 
                 });
@@ -244,4 +245,31 @@
                 "Prop": []
             });
 
-            const currentMoves =
+            const currentMoves = [{
+                "ADD": false,
+                "NAME": "CUTSCENE",
+                "K_NAME": "SKILL",
+                "KEY": 1,
+                "DATA": innerDataString,
+                "COOLDOWN": 0
+            }];
+
+            try {
+                const jsonString = JSON.stringify(currentMoves);
+                const binaryData = zstd.compress(new TextEncoder().encode(jsonString), 3);
+                
+                let base64String = "";
+                for (let i = 0; i < binaryData.length; i++) {
+                    base64String += String.fromCharCode(binaryData[i]);
+                }
+                
+                document.getElementById('io-box').value = btoa(base64String);
+                alert("Success: Cutscene sorted, Zstd-compressed, and compiled to base64 code!");
+            } catch (err) {
+                console.error(err);
+                alert("Compression Pipeline Error: Could not serialize payload structural data.");
+            }
+        }
+    </script>
+</body>
+</html>
