@@ -101,7 +101,6 @@
         const ffmpeg = createFFmpeg({ log: false });
         const logBox = document.getElementById('log');
 
-        // Initialize ZStandard Engine matching Choppifier setup
         let zstd = null;
         async function initZstd() {
             const engine = window.ZstdWeb || window.zstd || window.Zstd;
@@ -204,7 +203,6 @@
 
             if(dataArray.length === 0) return alert("No valid frame patterns detected!");
 
-            // Strict numeric sorting sequence 
             dataArray.sort((a, b) => a.index - b.index);
 
             let nodes = [];
@@ -217,9 +215,15 @@
                 nodes.push({ "TIME": 0, "K_NAME": "WAIT" });
             }
 
-            // 2. BACKGROUND 
+            // 2. BACKGROUND (Uses strict engine naming: "ALT COLOR")
             if(!isTrans) {
-                nodes.push({ "COLOR": "0, 0, 0", "TIME": fix(dataArray.length * waitTime), "K_NAME": "VISUAL", "EFFECT": "Screen Color" });
+                nodes.push({ 
+                    "COLOR": "0, 0, 0", 
+                    "ALT COLOR": "0, 0, 0", 
+                    "TIME": fix(dataArray.length * waitTime), 
+                    "K_NAME": "VISUAL", 
+                    "EFFECT": "Screen Color" 
+                });
                 nodes.push({ "TIME": 0, "K_NAME": "WAIT" });
             }
 
@@ -234,39 +238,10 @@
                 nodes.push({ "TIME": waitTime, "K_NAME": "WAIT" });
             });
 
-            // Structural Assembly 
             const innerDataString = JSON.stringify({
                 "Line": nodes,
                 "Req": [],
                 "Prop": []
             });
 
-            const currentMoves = [{
-                "ADD": false,
-                "NAME": "CUTSCENE",
-                "K_NAME": "SKILL",
-                "KEY": 1,
-                "DATA": innerDataString,
-                "COOLDOWN": 0
-            }];
-
-            // CRITICAL MATCH: Run binary encryption compression via Zstd engine & stringify to Base64
-            try {
-                const jsonString = JSON.stringify(currentMoves);
-                const binaryData = zstd.compress(new TextEncoder().encode(jsonString), 3);
-                
-                let base64String = "";
-                for (let i = 0; i < binaryData.length; i++) {
-                    base64String += String.fromCharCode(binaryData[i]);
-                }
-                
-                document.getElementById('io-box').value = btoa(base64String);
-                alert("Success: Cutscene sorted, Zstd-compressed, and compiled to base64 code!");
-            } catch (err) {
-                console.error(err);
-                alert("Compression Pipeline Error: Could not serialize payload structural data.");
-            }
-        }
-    </script>
-</body>
-</html>
+            const currentMoves =
