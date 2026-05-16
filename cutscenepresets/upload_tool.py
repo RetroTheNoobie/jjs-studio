@@ -109,12 +109,16 @@ def setup_configuration():
     print("="*40 + "\n✅ Configuration Loaded and Saved!\n")
 
 # =========================
-# CORE FUNCTIONS (STAYS SAME)
+# CORE FUNCTIONS
 # =========================
 
 def get_images():
+    """Targets the 'frames' folder in the same directory as the script."""
+    frames_dir = os.path.join(os.getcwd(), "frames")
+    if not os.path.exists(frames_dir):
+        return []
     return sorted([
-        f for f in os.listdir(".")
+        f for f in os.listdir(frames_dir)
         if os.path.splitext(f)[1].lower() in VALID_EXTENSIONS
     ])
 
@@ -126,23 +130,25 @@ def make_creation_context():
     else:
         raise ValueError("OWNER_TYPE must be 'user' or 'group'")
 
-def upload_image(filename):
-    mime = mimetypes.guess_type(filename)[0] or "application/octet-stream"
-    name = os.path.splitext(filename)[0]
+def upload_image(full_filepath):
+    """Expects the complete relative path to open the file successfully."""
+    mime = mimetypes.guess_type(full_filepath)[0] or "application/octet-stream"
+    # Extract just the filename for Roblox's DisplayName property
+    display_name = os.path.splitext(os.path.basename(full_filepath))[0]
 
     payload = {
         "assetType": "Decal",
-        "displayName": name,
+        "displayName": display_name,
         "description": "Bulk Uploaded Asset",
         "creationContext": make_creation_context()
     }
 
     headers = {"x-api-key": API_KEY}
 
-    with open(filename, "rb") as f:
+    with open(full_filepath, "rb") as f:
         files = {
             "request": (None, json.dumps(payload), "application/json"),
-            "fileContent": (filename, f, mime)
+            "fileContent": (os.path.basename(full_filepath), f, mime)
         }
         return requests.post(UPLOAD_URL, headers=headers, files=files)
 
@@ -185,17 +191,20 @@ def append_result(name, image_id):
         f.write(f"{name} -- {image_id}\n")
 
 def process_single_image(img_filename):
-    # Add this line to create the full path to the file
+    """Main thread operation logic."""
     full_path = os.path.join("frames", img_filename)
-    
     name = os.path.splitext(img_filename)[0]
+    
     print(f"📡 [START] Uploading: {img_filename}")
     try:
-        
-        res = upload_image(full_path) 
-        
+        res = upload_image(full_path)
         if res.status_code not in (200, 201):
             return f"✖ [FAIL] {img_filename} - Upload HTTP Error: {res.status_code}"
+
+        initial_data = res.json()
+        operation_path = initial_data.get("path")
+        if not operation_path:
+            return f"✖ [FAIL] {img_filename} - Failed to yield backend tracking handle."
 
         decal_id = None
         for _ in range(15):
@@ -231,16 +240,16 @@ def process_single_image(img_filename):
 # =========================
 
 def main():
-    # Run the setup first to populate API_KEY, OWNER_ID, OWNER_TYPE
     setup_configuration()
 
     images = get_images()
     if not images:
-        print("No valid asset files (.png, .jpg) detected inside directory.")
+        print("❌ Error: No valid asset files (.png, .jpg) detected inside your '/frames' directory.")
+        print("Please check that the 'frames' folder is in the exact same folder as this script.")
         return
 
     open(OUTPUT_FILE, "w", encoding="utf-8").close()
-    print(f"Discovered {len(images)} images. Launching multi-threaded batch engine...\n")
+    print(f"Discovered {len(images)} images inside '/frames'. Launching multi-threaded batch engine...\n")
 
     success_count = 0
     fail_count = 0
