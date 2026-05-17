@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JJS MIDI to Audio Compiler</title>
+    <script src="https://unpkg.com/@tonaljs/tonal/dist/tonal.min.js"></script>
+    <script src="https://unpkg.com/@tonejs/midi"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121214;
+            color: #e1e1e6;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: #1d1d22;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        h1 {
+            color: #04d361;
+            margin-top: 0;
+        }
+        .drop-zone {
+            border: 2px dashed #04d361;
+            border-radius: 6px;
+            padding: 40px;
+            text-align: center;
+            background: #29292e;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 20px;
+        }
+        .drop-zone:hover {
+            background: #323238;
+        }
+        #file-input {
+            display: none;
+        }
+        .status {
+            margin: 15px 0;
+            font-weight: bold;
+            color: #8257e5;
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            background: #121214;
+            color: #04d361;
+            border: 1px solid #29292e;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', Courier, monospace;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+        .btn {
+            background: #04d361;
+            color: #121214;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background: #06b954;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>JJS MIDI to Audio Compiler</h1>
+    <p>Upload or drag a MIDI file below to compile it into raw JJS structural JSON.</p>
+    
+    <div class="drop-zone" id="drop-zone">
+        Drag & Drop your <strong>.mid</strong> file here or click to browse
+        <input type="file" id="file-input" accept=".mid,.midi">
+    </div>
+
+    <div class="status" id="status-text">Ready for file...</div>
+    
+    <h3>Raw JJS JSON Output:</h3>
+    <textarea id="output-area" readonly placeholder="Your compiled data will show up here..."></textarea>
+    <button class="btn" id="copy-btn">Copy Output</button>
+</div>
+
+<script>
+    // Audio Sprite Sheet IDs from the model
+    const LOCAL_SOUNDS = [233836579, 233844049, 233845680, 233852841, 233854135, 233856105];
+
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const statusText = document.getElementById('status-text');
+    const outputArea = document.getElementById('output-area');
+    const copyBtn = document.getElementById('copy-btn');
+
+    // Setup UI Click/Drag interactions
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.background = '#323238'; });
+    dropZone.addEventListener('dragleave', () => dropZone.style.background = '#29292e');
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.background = '#29292e';
+        if (e.dataTransfer.files.length) handleMidiFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) handleMidiFile(e.target.files[0]);
+    });
+
+    copyBtn.addEventListener('click', () => {
+        outputArea.select();
+        document.execCommand('copy');
+        alert('Copied to clipboard!');
+    });
+
+    // Main Processing Engine
+    function handleMidiFile(file) {
+        statusText.textContent = "Processing: " + file.name;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                // Parse the array buffer using @tonejs/midi library
+                const midi = new Midi(e.target.result);
+                processMidiData(midi);
+            } catch (err) {
+                statusText.textContent = "❌ Error parsing MIDI file: " + err.message;
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function processMidiData(midi) {
+        let allNotes = [];
+
+        // Pull notes out of all tracks and drop them into a master chronological line
+        midi.tracks.forEach(track => {
+            track.notes.forEach(note => {
+                allNotes.push({
+                    midiNum: note.midi,
+                    time: note.time,
+                    duration: note.duration
+                });
+            });
+        });
+
+        // Ensure chronological sorting
+        allNotes.sort((a, b) => a.time - b.time);
+
+        if (allNotes.length === 0) {
+            statusText.textContent = "❌ Error: No musical notes found in this MIDI.";
+            return;
+        }
+
+        const jjsLine = [];
+        let currentTime = 0;
+        let noteIndex = 0;
+
+        // Group chords/simultaneous notes
+        while (noteIndex < allNotes.length) {
+            const currentEventTime = allNotes[noteIndex].time;
+            const cluster = [];
+
+            while (noteIndex < allNotes.length && Math.abs(allNotes[noteIndex].time - currentEventTime) < 0.01) {
+                cluster.push(allNotes[noteIndex]);
+                noteIndex++;
+            }
+
+            // A. Calculate WAIT time block
+            const timeDifference = currentEventTime - currentTime;
+            if (timeDifference > 0.01) {
+                jjsLine.push({
+                    "TIME": parseFloat(timeDifference.toFixed(3)),
+                    "K_NAME": "WAIT"
+                });
+                currentTime = currentEventTime;
+            }
+
+            // B. Add the Audio Sprite Sheet Sound Nodes
+            cluster.forEach(note => {
+                const pianoNote = note.midiNum - 35; // Note 1 = C2 (MIDI 36)
+
+                if (pianoNote >= 1 && pianoNote <= 61) {
+                    const trackNote = ((pianoNote - 1) % 12) + 1;
+                    const soundIndex = Math.ceil(trackNote / 2) - 1;
+                    const octave = Math.ceil(pianoNote / 12);
+                    
+                    // Lua model audio alignment calculations
+                    const baseOffset = 16 * (octave - 1) + 8 * (1 - (trackNote % 2));
+                    const padding = (octave - 0.9) / 15;
+                    const startTime = parseFloat((baseOffset + padding).toFixed(3));
+                    const endTime = parseFloat((startTime + note.duration).toFixed(3));
+
+                    jjsLine.push({
+                        "END": endTime,
+                        "K_NAME": "SFX",
+                        "ID": LOCAL_SOUNDS[soundIndex],
+                        "START": startTime
+                    });
+                }
+            });
+
+            // C. Inject your safety Cancel Song Interrupt tags
+            jjsLine.push({
+                "ADD/REMOVE": false,
+                "TAG": "cancelsong",
+                "SET": false,
+                "K_NAME": "TAG",
+                "BRANCH": "end",
+                "CHECK": true,
+                "VALUE": "1"
+            });
+        }
+
+        // D. Seal the sequence array
+        jjsLine.push({
+            "BRANCH": "end",
+            "K_NAME": "BRANCH"
+        });
+
+        // Assemble the final raw nested JSON object layout matching your blueprint
+        const finalStructure = [
+            {
+                "ADD": false,
+                "NAME": "MUSIC",
+                "K_NAME": "SKILL",
+                "KEY": 1,
+                "DATA": JSON.stringify({
+                    "Req": [],
+                    "Line": jjsLine,
+                    "Prop": [],
+                    "Branch": {
+                        "end": {
+                            "Line": [],
+                            "Req": []
+                        }
+                    }
+                }),
+                "COOLDOWN": 0
+            }
+        ];
+
+        // Output raw uncompressed JSON text
+        outputArea.value = JSON.stringify(finalStructure, null, 2);
+        statusText.textContent = `✅ Successfully compiled ${allNotes.length} notes!`;
+    }
+</script>
+
+</body>
+</html>
