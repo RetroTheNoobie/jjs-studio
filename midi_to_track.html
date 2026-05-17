@@ -22,6 +22,9 @@
         .process-btn { width: 100%; background: var(--accent); color: #000; border: var(--thickness) solid #000; padding: 20px; font-size: 1.2rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .process-btn:hover { background: #fff; transform: translate(-2px, -2px); box-shadow: 5px 5px 0 #000; }
         .back-link { display: inline-block; margin-bottom: 20px; color: #666; text-decoration: none; font-size: 0.8rem; }
+        .toggle-group { display: flex; align-items: center; gap: 10px; background: #222; padding: 10px; border: 2px solid #000; margin-bottom: 20px; cursor: pointer; width: 100%; }
+        .toggle-group input { width: 20px; height: 20px; cursor: pointer; margin: 0; }
+        .toggle-group span { font-size: 0.9rem; color: #fff; }
     </style>
     <script src="https://unpkg.com/@tonejs/midi"></script>
 </head>
@@ -32,7 +35,7 @@
         <h1>MIDI TO TRACK</h1>
 
         <div class="guide">
-            <strong>AUDIO COMPILER (v4.0 Auto-Decay):</strong> This build drops note release tracking entirely, allowing the authentic piano samples to ring out cleanly without digital cutting artifact pops while massively stripping file weight for lag-free loading.
+            <strong>AUDIO COMPILER (v4.5):</strong> Drop your <strong>.mid</strong> file. Toggle the setting below to completely strip out interrupt checks for heavy files, keeping your Skillbuilder loading times fluid.
         </div>
 
         <div class="row">
@@ -41,6 +44,11 @@
                 <input type="number" id="volume-val" value="1.0" min="0.0" max="1.0" step="0.1">
             </div>
         </div>
+
+        <label class="toggle-group">
+            <input type="checkbox" id="include-tags" checked>
+            <span>Include Cancel Tags ("cancelsong" interrupt validation nodes)</span>
+        </label>
 
         <div class="file-upload-zone" id="drop-zone">
             CLICK OR DRAG & DROP A MIDI FILE HERE
@@ -60,7 +68,6 @@
         }
         init();
 
-        // Authentic Piano Sprite Sheets from earlier
         const LOCAL_SOUNDS = [233836579, 233844049, 233845680, 233852841, 233854135, 233856105];
 
         const dropZone = document.getElementById('drop-zone');
@@ -101,10 +108,10 @@
         function compileMidiEngine(midi) {
             let allNotes = [];
             const globalVolume = parseFloat(document.getElementById('volume-val').value) ?? 1.0;
+            const useTags = document.getElementById('include-tags').checked;
 
             midi.tracks.forEach(track => {
                 track.notes.forEach(note => {
-                    // Snap note start timestamps to the nearest 10ms grid to merge chords perfectly
                     const quantizedTime = Math.round(note.time * 100) / 100;
                     allNotes.push({
                         midiNum: note.midi,
@@ -113,7 +120,6 @@
                 });
             });
 
-            // Sort notes by timeline start position
             allNotes.sort((a, b) => a.time - b.time);
 
             if (allNotes.length === 0) {
@@ -130,13 +136,11 @@
                 const currentEventTime = allNotes[noteIndex].time;
                 const cluster = [];
 
-                // Gather all simultaneous notes into a single chord block
                 while (noteIndex < allNotes.length && Math.abs(allNotes[noteIndex].time - currentEventTime) <= CHORD_TOLERANCE) {
                     cluster.push(allNotes[noteIndex]);
                     noteIndex++;
                 }
 
-                // Add WAIT interval block between separate note events
                 const timeDifference = currentEventTime - currentTime;
                 if (timeDifference > 0.005) {
                     jjsLine.push({
@@ -146,7 +150,6 @@
                     currentTime = currentEventTime;
                 }
 
-                // Process note audio mapping
                 cluster.forEach(note => {
                     const pianoNote = note.midiNum - 35; 
 
@@ -158,8 +161,6 @@
                         const baseOffset = 16 * (octave - 1) + 8 * (1 - (trackNote % 2));
                         const padding = (octave - 0.9) / 15;
                         const startTime = parseFloat((baseOffset + padding).toFixed(3));
-                        
-                        // Let the piano note decay entirely over 4.0 seconds without hard cutting it
                         const endTime = parseFloat((startTime + 4.0).toFixed(3));
 
                         jjsLine.push({
@@ -172,16 +173,18 @@
                     }
                 });
 
-                // Drop exactly 1 single cancel verification tag behind the whole chord block
-                jjsLine.push({
-                    "ADD/REMOVE": false,
-                    "TAG": "cancelsong",
-                    "SET": false,
-                    "K_NAME": "TAG",
-                    "BRANCH": "end",
-                    "CHECK": true,
-                    "VALUE": "1"
-                });
+                // Conditional configuration check for dynamic tag allocation
+                if (useTags) {
+                    jjsLine.push({
+                        "ADD/REMOVE": false,
+                        "TAG": "cancelsong",
+                        "SET": false,
+                        "K_NAME": "TAG",
+                        "BRANCH": "end",
+                        "CHECK": true,
+                        "VALUE": "1"
+                    });
+                }
             }
 
             jjsLine.push({
@@ -218,10 +221,10 @@
                     let str = "";
                     for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
                     ioArea.value = btoa(str);
-                    alert(`Success! Auto-decay stripped timeline node footprint to just ${jjsLine.length} items.`);
+                    alert(`Compilation complete! Final payload tracking footprint: ${jjsLine.length} nodes.`);
                 }
             } catch(encodeError) {
-                alert("Compression Failure: Error processing binary output arrays.");
+                alert("Compression Failure: Error processing binary target output arrays.");
             }
         }
     </script>
