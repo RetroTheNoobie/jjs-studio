@@ -22,7 +22,7 @@
         .process-btn { width: 100%; background: var(--accent); color: #000; border: var(--thickness) solid #000; padding: 20px; font-size: 1.2rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .process-btn:hover { background: #fff; transform: translate(-2px, -2px); box-shadow: 5px 5px 0 #000; }
         .back-link { display: inline-block; margin-bottom: 20px; color: #666; text-decoration: none; font-size: 0.8rem; }
-        .toggle-group { display: flex; align-items: center; gap: 10px; background: #222; padding: 10px; border: 2px solid #000; margin-bottom: 20px; cursor: pointer; width: 100%; }
+        .toggle-group { display: flex; align-items: center; gap: 10px; background: #222; padding: 10px; border: 2px solid #000; margin-bottom: 12px; cursor: pointer; width: 100%; }
         .toggle-group input { width: 20px; height: 20px; cursor: pointer; margin: 0; }
         .toggle-group span { font-size: 0.9rem; color: #fff; }
     </style>
@@ -35,7 +35,7 @@
         <h1>MIDI TO TRACK</h1>
 
         <div class="guide">
-            <strong>AUDIO COMPILER (v4.8 True Volume Multiplier):</strong> Drop your <strong>.mid</strong> file. This version applies an exponential volume multiplier based directly on your input baseline, capping out at a 2x boost for high treble keys.
+            <strong>AUDIO COMPILER (v4.9 Global Spatial Mode):</strong> Drop your <strong>.mid</strong> file. Toggle the Global setting to make sure notes play uniformly across the map rather than sticking to your character position.
         </div>
 
         <div class="row">
@@ -44,6 +44,11 @@
                 <input type="number" id="volume-val" value="1.0" min="0.0" max="10.0" step="0.1">
             </div>
         </div>
+
+        <label class="toggle-group">
+            <input type="checkbox" id="global-audio" checked>
+            <span>Enable "GLOBAL" Positioning (Plays uniformly everywhere)</span>
+        </label>
 
         <label class="toggle-group">
             <input type="checkbox" id="include-tags" checked>
@@ -109,6 +114,7 @@
             let allNotes = [];
             const baseVolume = parseFloat(document.getElementById('volume-val').value) ?? 1.0;
             const useTags = document.getElementById('include-tags').checked;
+            const useGlobal = document.getElementById('global-audio').checked;
 
             midi.tracks.forEach(track => {
                 track.notes.forEach(note => {
@@ -156,84 +162,4 @@
                     if (pianoNote >= 1 && pianoNote <= 61) {
                         const trackNote = ((pianoNote - 1) % 12) + 1;
                         const soundIndex = Math.ceil(trackNote / 2) - 1;
-                        const octave = Math.ceil(pianoNote / 12);
-                        
-                        const baseOffset = 16 * (octave - 1) + 8 * (1 - (trackNote % 2));
-                        const padding = (octave - 0.9) / 15;
-                        const startTime = parseFloat((baseOffset + padding).toFixed(3));
-                        const endTime = parseFloat((startTime + 4.0).toFixed(3));
-
-                        // EXPONENTIAL TREBLE MULTIPLIER: 
-                        // Base note starts at 1.0x, scaling up to a 2.0x multiplier at the highest key
-                        const noteProgress = (pianoNote - 1) / 60;
-                        const volumeMultiplier = 1.0 + Math.pow(noteProgress, 2); 
-                        
-                        // Multiply directly against your base volume configuration
-                        const dynamicVolume = parseFloat((baseVolume * volumeMultiplier).toFixed(2));
-
-                        jjsLine.push({
-                            "END": endTime,
-                            "K_NAME": "SFX",
-                            "ID": LOCAL_SOUNDS[soundIndex],
-                            "START": startTime,
-                            "VOLUME": dynamicVolume
-                        });
-                    }
-                });
-
-                if (useTags) {
-                    jjsLine.push({
-                        "ADD/REMOVE": false,
-                        "TAG": "cancelsong",
-                        "SET": false,
-                        "K_NAME": "TAG",
-                        "BRANCH": "end",
-                        "CHECK": true,
-                        "VALUE": "1"
-                    });
-                }
-            }
-
-            jjsLine.push({
-                "BRANCH": "end",
-                "K_NAME": "BRANCH"
-            });
-
-            const finalMovesStructure = [
-                {
-                    "ADD": false,
-                    "NAME": "MUSIC",
-                    "K_NAME": "SKILL",
-                    "KEY": 1,
-                    "DATA": JSON.stringify({
-                        "Req": [],
-                        "Line": jjsLine,
-                        "Prop": [],
-                        "Branch": {
-                            "end": {
-                                "Line": [],
-                                "Req": []
-                            }
-                        }
-                    }),
-                    "COOLDOWN": 0
-                }
-            ];
-
-            try {
-                if (!zstd) {
-                    ioArea.value = JSON.stringify(finalMovesStructure, null, 2);
-                } else {
-                    const bin = zstd.compress(new TextEncoder().encode(JSON.stringify(finalMovesStructure)), 3);
-                    let str = "";
-                    for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
-                    ioArea.value = btoa(str);
-                    alert("Compilation successful! Treble boost multiplier applied.");
-                }
-            } catch(encodeError) {
-                alert("Compression Failure: Error processing binary output arrays.");
-            }
-        }
-    </script>
-</body>
-</html>
+                        const octave = Math.ceil(pianoNote /
