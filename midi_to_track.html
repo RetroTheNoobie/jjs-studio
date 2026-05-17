@@ -35,13 +35,13 @@
         <h1>MIDI TO TRACK</h1>
 
         <div class="guide">
-            <strong>AUDIO COMPILER (v4.6 Treble-Boosted):</strong> Drop your <strong>.mid</strong> file. This version uses dynamic key scaling math to linearly ramp up the volume of higher notes to counter sprite sheet fading.
+            <strong>AUDIO COMPILER (v4.8 True Volume Multiplier):</strong> Drop your <strong>.mid</strong> file. This version applies an exponential volume multiplier based directly on your input baseline, capping out at a 2x boost for high treble keys.
         </div>
 
         <div class="row">
             <div class="input-group">
                 <label>GLOBAL BASE VOLUME</label>
-                <input type="number" id="volume-val" value="1.0" min="0.0" max="1.0" step="0.1">
+                <input type="number" id="volume-val" value="1.0" min="0.0" max="10.0" step="0.1">
             </div>
         </div>
 
@@ -163,12 +163,13 @@
                         const startTime = parseFloat((baseOffset + padding).toFixed(3));
                         const endTime = parseFloat((startTime + 4.0).toFixed(3));
 
-                        // TREBLE BOOST MATH: Calculate progressive volume multiplier (1.0x at note 36 -> 2.0x at note 96)
-                        const clampedMidi = Math.max(36, Math.min(96, note.midiNum));
-                        const scalingFactor = 1.0 + ((clampedMidi - 36) / 60);
+                        // EXPONENTIAL TREBLE MULTIPLIER: 
+                        // Base note starts at 1.0x, scaling up to a 2.0x multiplier at the highest key
+                        const noteProgress = (pianoNote - 1) / 60;
+                        const volumeMultiplier = 1.0 + Math.pow(noteProgress, 2); 
                         
-                        // Apply scaling factor to base volume, capped cleanly at 2.0max
-                        const dynamicVolume = parseFloat(Math.min(2.0, baseVolume * scalingFactor).toFixed(2));
+                        // Multiply directly against your base volume configuration
+                        const dynamicVolume = parseFloat((baseVolume * volumeMultiplier).toFixed(2));
 
                         jjsLine.push({
                             "END": endTime,
@@ -227,10 +228,10 @@
                     let str = "";
                     for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
                     ioArea.value = btoa(str);
-                    alert(`Compilation complete! High notes equalized.`);
+                    alert("Compilation successful! Treble boost multiplier applied.");
                 }
             } catch(encodeError) {
-                alert("Compression Failure: Error processing binary target output arrays.");
+                alert("Compression Failure: Error processing binary output arrays.");
             }
         }
     </script>
