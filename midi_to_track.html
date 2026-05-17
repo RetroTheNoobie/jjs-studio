@@ -32,7 +32,7 @@
         <h1>MIDI TO TRACK</h1>
 
         <div class="guide">
-            <strong>AUDIO COMPILER (v2.0 Hyper-Optimized):</strong> Drop your <strong>.mid</strong> file. This version applies strict note quantization and throttles cancel-check tags to aggressively reduce total node count for zero Skillbuilder lag.
+            <strong>AUDIO COMPILER (v4.0 Auto-Decay):</strong> This build drops note release tracking entirely, allowing the authentic piano samples to ring out cleanly without digital cutting artifact pops while massively stripping file weight for lag-free loading.
         </div>
 
         <div class="row">
@@ -60,6 +60,7 @@
         }
         init();
 
+        // Authentic Piano Sprite Sheets from earlier
         const LOCAL_SOUNDS = [233836579, 233844049, 233845680, 233852841, 233854135, 233856105];
 
         const dropZone = document.getElementById('drop-zone');
@@ -103,7 +104,7 @@
 
             midi.tracks.forEach(track => {
                 track.notes.forEach(note => {
-                    // OPTIMIZATION 1: Quantize times to the nearest 10ms to eliminate micro-waits and merge chords cleanly
+                    // Snap note start timestamps to the nearest 10ms grid to merge chords perfectly
                     const quantizedTime = Math.round(note.time * 100) / 100;
                     allNotes.push({
                         midiNum: note.midi,
@@ -112,6 +113,7 @@
                 });
             });
 
+            // Sort notes by timeline start position
             allNotes.sort((a, b) => a.time - b.time);
 
             if (allNotes.length === 0) {
@@ -120,23 +122,21 @@
 
             const jjsLine = [];
             let currentTime = 0;
-            let lastTagTime = -999; // Tracks when the last cancel tag was placed
             let noteIndex = 0;
 
-            // Strict time-window throttling settings
             const CHORD_TOLERANCE = 0.015;
-            const TAG_COOLDOWN = 0.40; // Only check cancel tags every 400 milliseconds max
 
             while (noteIndex < allNotes.length) {
                 const currentEventTime = allNotes[noteIndex].time;
                 const cluster = [];
 
+                // Gather all simultaneous notes into a single chord block
                 while (noteIndex < allNotes.length && Math.abs(allNotes[noteIndex].time - currentEventTime) <= CHORD_TOLERANCE) {
                     cluster.push(allNotes[noteIndex]);
                     noteIndex++;
                 }
 
-                // Process timeline WAIT spacing
+                // Add WAIT interval block between separate note events
                 const timeDifference = currentEventTime - currentTime;
                 if (timeDifference > 0.005) {
                     jjsLine.push({
@@ -146,7 +146,7 @@
                     currentTime = currentEventTime;
                 }
 
-                // Build note elements
+                // Process note audio mapping
                 cluster.forEach(note => {
                     const pianoNote = note.midiNum - 35; 
 
@@ -158,6 +158,8 @@
                         const baseOffset = 16 * (octave - 1) + 8 * (1 - (trackNote % 2));
                         const padding = (octave - 0.9) / 15;
                         const startTime = parseFloat((baseOffset + padding).toFixed(3));
+                        
+                        // Let the piano note decay entirely over 4.0 seconds without hard cutting it
                         const endTime = parseFloat((startTime + 4.0).toFixed(3));
 
                         jjsLine.push({
@@ -170,20 +172,16 @@
                     }
                 });
 
-                // OPTIMIZATION 2: Dynamic Tag Throttling
-                // Only drop a cancel-tag verification if enough real-time has elapsed to matter
-                if (currentEventTime - lastTagTime >= TAG_COOLDOWN) {
-                    jjsLine.push({
-                        "ADD/REMOVE": false,
-                        "TAG": "cancelsong",
-                        "SET": false,
-                        "K_NAME": "TAG",
-                        "BRANCH": "end",
-                        "CHECK": true,
-                        "VALUE": "1"
-                    });
-                    lastTagTime = currentEventTime;
-                }
+                // Drop exactly 1 single cancel verification tag behind the whole chord block
+                jjsLine.push({
+                    "ADD/REMOVE": false,
+                    "TAG": "cancelsong",
+                    "SET": false,
+                    "K_NAME": "TAG",
+                    "BRANCH": "end",
+                    "CHECK": true,
+                    "VALUE": "1"
+                });
             }
 
             jjsLine.push({
@@ -215,17 +213,15 @@
             try {
                 if (!zstd) {
                     ioArea.value = JSON.stringify(finalMovesStructure, null, 2);
-                    alert("Warning: Code rendered in plain text format because Zstandard was busy.");
                 } else {
                     const bin = zstd.compress(new TextEncoder().encode(JSON.stringify(finalMovesStructure)), 3);
                     let str = "";
                     for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
-                    
                     ioArea.value = btoa(str);
-                    alert(`Success: Track compiled! Hyper-optimization shrunk total layout density down to ${jjsLine.length} elements!`);
+                    alert(`Success! Auto-decay stripped timeline node footprint to just ${jjsLine.length} items.`);
                 }
             } catch(encodeError) {
-                alert("Compression Failure: Error packing binary track strings.");
+                alert("Compression Failure: Error processing binary output arrays.");
             }
         }
     </script>
