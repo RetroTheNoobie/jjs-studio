@@ -35,12 +35,12 @@
         <h1>MIDI TO TRACK</h1>
 
         <div class="guide">
-            <strong>AUDIO COMPILER (v4.5):</strong> Drop your <strong>.mid</strong> file. Toggle the setting below to completely strip out interrupt checks for heavy files, keeping your Skillbuilder loading times fluid.
+            <strong>AUDIO COMPILER (v4.6 Treble-Boosted):</strong> Drop your <strong>.mid</strong> file. This version uses dynamic key scaling math to linearly ramp up the volume of higher notes to counter sprite sheet fading.
         </div>
 
         <div class="row">
             <div class="input-group">
-                <label>GLOBAL TRACK VOLUME</label>
+                <label>GLOBAL BASE VOLUME</label>
                 <input type="number" id="volume-val" value="1.0" min="0.0" max="1.0" step="0.1">
             </div>
         </div>
@@ -107,7 +107,7 @@
 
         function compileMidiEngine(midi) {
             let allNotes = [];
-            const globalVolume = parseFloat(document.getElementById('volume-val').value) ?? 1.0;
+            const baseVolume = parseFloat(document.getElementById('volume-val').value) ?? 1.0;
             const useTags = document.getElementById('include-tags').checked;
 
             midi.tracks.forEach(track => {
@@ -163,17 +163,23 @@
                         const startTime = parseFloat((baseOffset + padding).toFixed(3));
                         const endTime = parseFloat((startTime + 4.0).toFixed(3));
 
+                        // TREBLE BOOST MATH: Calculate progressive volume multiplier (1.0x at note 36 -> 2.0x at note 96)
+                        const clampedMidi = Math.max(36, Math.min(96, note.midiNum));
+                        const scalingFactor = 1.0 + ((clampedMidi - 36) / 60);
+                        
+                        // Apply scaling factor to base volume, capped cleanly at 2.0max
+                        const dynamicVolume = parseFloat(Math.min(2.0, baseVolume * scalingFactor).toFixed(2));
+
                         jjsLine.push({
                             "END": endTime,
                             "K_NAME": "SFX",
                             "ID": LOCAL_SOUNDS[soundIndex],
                             "START": startTime,
-                            "VOLUME": globalVolume
+                            "VOLUME": dynamicVolume
                         });
                     }
                 });
 
-                // Conditional configuration check for dynamic tag allocation
                 if (useTags) {
                     jjsLine.push({
                         "ADD/REMOVE": false,
@@ -221,7 +227,7 @@
                     let str = "";
                     for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
                     ioArea.value = btoa(str);
-                    alert(`Compilation complete! Final payload tracking footprint: ${jjsLine.length} nodes.`);
+                    alert(`Compilation complete! High notes equalized.`);
                 }
             } catch(encodeError) {
                 alert("Compression Failure: Error processing binary target output arrays.");
