@@ -32,7 +32,7 @@
         <h1>MIDI TO TRACK</h1>
 
         <div class="guide">
-            <strong>AUDIO COMPILER (v1.2):</strong> Drop your <strong>.mid</strong> file. This build applies a 4-second full audio-clip window to prevent notes from cutting short, and includes a customizable global volume configuration.
+            <strong>AUDIO COMPILER (v2.0 Hyper-Optimized):</strong> Drop your <strong>.mid</strong> file. This version applies strict note quantization and throttles cancel-check tags to aggressively reduce total node count for zero Skillbuilder lag.
         </div>
 
         <div class="row">
@@ -103,9 +103,11 @@
 
             midi.tracks.forEach(track => {
                 track.notes.forEach(note => {
+                    // OPTIMIZATION 1: Quantize times to the nearest 10ms to eliminate micro-waits and merge chords cleanly
+                    const quantizedTime = Math.round(note.time * 100) / 100;
                     allNotes.push({
                         midiNum: note.midi,
-                        time: note.time
+                        time: quantizedTime
                     });
                 });
             });
@@ -118,21 +120,25 @@
 
             const jjsLine = [];
             let currentTime = 0;
+            let lastTagTime = -999; // Tracks when the last cancel tag was placed
             let noteIndex = 0;
+
+            // Strict time-window throttling settings
+            const CHORD_TOLERANCE = 0.015;
+            const TAG_COOLDOWN = 0.40; // Only check cancel tags every 400 milliseconds max
 
             while (noteIndex < allNotes.length) {
                 const currentEventTime = allNotes[noteIndex].time;
                 const cluster = [];
 
-                // 15ms chord tolerance optimization group window
-                while (noteIndex < allNotes.length && Math.abs(allNotes[noteIndex].time - currentEventTime) < 0.015) {
+                while (noteIndex < allNotes.length && Math.abs(allNotes[noteIndex].time - currentEventTime) <= CHORD_TOLERANCE) {
                     cluster.push(allNotes[noteIndex]);
                     noteIndex++;
                 }
 
                 // Process timeline WAIT spacing
                 const timeDifference = currentEventTime - currentTime;
-                if (timeDifference > 0.01) {
+                if (timeDifference > 0.005) {
                     jjsLine.push({
                         "TIME": parseFloat(timeDifference.toFixed(3)),
                         "K_NAME": "WAIT"
@@ -140,7 +146,7 @@
                     currentTime = currentEventTime;
                 }
 
-                // Build out parallel note elements
+                // Build note elements
                 cluster.forEach(note => {
                     const pianoNote = note.midiNum - 35; 
 
@@ -152,9 +158,6 @@
                         const baseOffset = 16 * (octave - 1) + 8 * (1 - (trackNote % 2));
                         const padding = (octave - 0.9) / 15;
                         const startTime = parseFloat((baseOffset + padding).toFixed(3));
-                        
-                        // FIX: Force the END parameter to the max possible duration (4 seconds out) 
-                        // so notes play their natural decay wave entirely without cutoff boundaries!
                         const endTime = parseFloat((startTime + 4.0).toFixed(3));
 
                         jjsLine.push({
@@ -162,21 +165,25 @@
                             "K_NAME": "SFX",
                             "ID": LOCAL_SOUNDS[soundIndex],
                             "START": startTime,
-                            "VOLUME": globalVolume // Apply user interface volume level configuration
+                            "VOLUME": globalVolume
                         });
                     }
                 });
 
-                // Append song interrupt cancel validation tag tracker
-                jjsLine.push({
-                    "ADD/REMOVE": false,
-                    "TAG": "cancelsong",
-                    "SET": false,
-                    "K_NAME": "TAG",
-                    "BRANCH": "end",
-                    "CHECK": true,
-                    "VALUE": "1"
-                });
+                // OPTIMIZATION 2: Dynamic Tag Throttling
+                // Only drop a cancel-tag verification if enough real-time has elapsed to matter
+                if (currentEventTime - lastTagTime >= TAG_COOLDOWN) {
+                    jjsLine.push({
+                        "ADD/REMOVE": false,
+                        "TAG": "cancelsong",
+                        "SET": false,
+                        "K_NAME": "TAG",
+                        "BRANCH": "end",
+                        "CHECK": true,
+                        "VALUE": "1"
+                    });
+                    lastTagTime = currentEventTime;
+                }
             }
 
             jjsLine.push({
@@ -215,7 +222,7 @@
                     for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
                     
                     ioArea.value = btoa(str);
-                    alert(`Success: Track compiled! Optimized layout density to ${jjsLine.length} structural items.`);
+                    alert(`Success: Track compiled! Hyper-optimization shrunk total layout density down to ${jjsLine.length} elements!`);
                 }
             } catch(encodeError) {
                 alert("Compression Failure: Error packing binary track strings.");
