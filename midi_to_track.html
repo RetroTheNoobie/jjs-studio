@@ -11,10 +11,14 @@
         .container { width: 100%; max-width: 900px; background: #111; border: var(--thickness) solid #000; padding: 30px; box-shadow: 12px 12px 0 #000; }
         h1 { color: var(--accent); text-align: center; margin-top: 0; }
         .guide { background: #000; padding: 15px; border: 2px solid #333; font-size: 0.8rem; color: #bbb; margin-bottom: 25px; line-height: 1.4; }
+        .row { display: flex; gap: 20px; margin-bottom: 20px; align-items: center; }
+        .input-group { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+        label { font-size: 0.9rem; color: var(--accent); }
+        input, textarea { background: #000; border: var(--thickness) solid #000; color: #fff; padding: 12px; font-size: 1rem; outline: none; }
         .file-upload-zone { border: var(--thickness) dashed var(--accent); background: #000; padding: 30px; text-align: center; cursor: pointer; margin-bottom: 20px; transition: background 0.2s; }
         .file-upload-zone:hover { background: #151515; }
         #file-input { display: none; }
-        textarea { width: 100%; height: 250px; resize: vertical; font-family: monospace; font-size: 0.75rem; color: #2ecc71; background: #000; border: var(--thickness) solid #000; padding: 12px; outline: none; }
+        textarea { width: 100%; height: 250px; resize: vertical; font-family: monospace; font-size: 0.75rem; color: #2ecc71; }
         .process-btn { width: 100%; background: var(--accent); color: #000; border: var(--thickness) solid #000; padding: 20px; font-size: 1.2rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .process-btn:hover { background: #fff; transform: translate(-2px, -2px); box-shadow: 5px 5px 0 #000; }
         .back-link { display: inline-block; margin-bottom: 20px; color: #666; text-decoration: none; font-size: 0.8rem; }
@@ -28,7 +32,14 @@
         <h1>MIDI TO TRACK</h1>
 
         <div class="guide">
-            <strong>AUDIO COMPILER:</strong> Select or drop your <strong>.mid</strong> or <strong>.midi</strong> piano sequence file below. The system will slice the notes into specialized time-stitched audio sprite assets, inject the interrupt security tags automatically, and compile your copy-ready string.
+            <strong>AUDIO COMPILER (v1.2):</strong> Drop your <strong>.mid</strong> file. This build applies a 4-second full audio-clip window to prevent notes from cutting short, and includes a customizable global volume configuration.
+        </div>
+
+        <div class="row">
+            <div class="input-group">
+                <label>GLOBAL TRACK VOLUME</label>
+                <input type="number" id="volume-val" value="1.0" min="0.0" max="1.0" step="0.1">
+            </div>
         </div>
 
         <div class="file-upload-zone" id="drop-zone">
@@ -49,7 +60,6 @@
         }
         init();
 
-        // 6 Master Piano Audio Sprite IDs found from the script
         const LOCAL_SOUNDS = [233836579, 233844049, 233845680, 233852841, 233854135, 233856105];
 
         const dropZone = document.getElementById('drop-zone');
@@ -89,19 +99,17 @@
 
         function compileMidiEngine(midi) {
             let allNotes = [];
+            const globalVolume = parseFloat(document.getElementById('volume-val').value) ?? 1.0;
 
-            // Gather notes across all internal tracks
             midi.tracks.forEach(track => {
                 track.notes.forEach(note => {
                     allNotes.push({
                         midiNum: note.midi,
-                        time: note.time,
-                        duration: note.duration
+                        time: note.time
                     });
                 });
             });
 
-            // Sort notes strictly chronologically
             allNotes.sort((a, b) => a.time - b.time);
 
             if (allNotes.length === 0) {
@@ -112,17 +120,17 @@
             let currentTime = 0;
             let noteIndex = 0;
 
-            // Handle chords and single timed intervals sequentially
             while (noteIndex < allNotes.length) {
                 const currentEventTime = allNotes[noteIndex].time;
                 const cluster = [];
 
-                while (noteIndex < allNotes.length && Math.abs(allNotes[noteIndex].time - currentEventTime) < 0.01) {
+                // 15ms chord tolerance optimization group window
+                while (noteIndex < allNotes.length && Math.abs(allNotes[noteIndex].time - currentEventTime) < 0.015) {
                     cluster.push(allNotes[noteIndex]);
                     noteIndex++;
                 }
 
-                // Process standard timeline WAIT intervals
+                // Process timeline WAIT spacing
                 const timeDifference = currentEventTime - currentTime;
                 if (timeDifference > 0.01) {
                     jjsLine.push({
@@ -132,9 +140,9 @@
                     currentTime = currentEventTime;
                 }
 
-                // Build out parallel sound chunks using audio sprite indexing formulas
+                // Build out parallel note elements
                 cluster.forEach(note => {
-                    const pianoNote = note.midiNum - 35; // Map down to C2 baseline balance
+                    const pianoNote = note.midiNum - 35; 
 
                     if (pianoNote >= 1 && pianoNote <= 61) {
                         const trackNote = ((pianoNote - 1) % 12) + 1;
@@ -144,18 +152,22 @@
                         const baseOffset = 16 * (octave - 1) + 8 * (1 - (trackNote % 2));
                         const padding = (octave - 0.9) / 15;
                         const startTime = parseFloat((baseOffset + padding).toFixed(3));
-                        const endTime = parseFloat((startTime + note.duration).toFixed(3));
+                        
+                        // FIX: Force the END parameter to the max possible duration (4 seconds out) 
+                        // so notes play their natural decay wave entirely without cutoff boundaries!
+                        const endTime = parseFloat((startTime + 4.0).toFixed(3));
 
                         jjsLine.push({
                             "END": endTime,
                             "K_NAME": "SFX",
                             "ID": LOCAL_SOUNDS[soundIndex],
-                            "START": startTime
+                            "START": startTime,
+                            "VOLUME": globalVolume // Apply user interface volume level configuration
                         });
                     }
                 });
 
-                // Append the safety interrupt conditional check directly behind note events
+                // Append song interrupt cancel validation tag tracker
                 jjsLine.push({
                     "ADD/REMOVE": false,
                     "TAG": "cancelsong",
@@ -167,13 +179,11 @@
                 });
             }
 
-            // Seal timeline array flow
             jjsLine.push({
                 "BRANCH": "end",
                 "K_NAME": "BRANCH"
             });
 
-            // Map variables cleanly inside your target nested skill signature block
             const finalMovesStructure = [
                 {
                     "ADD": false,
@@ -195,10 +205,8 @@
                 }
             ];
 
-            // Trigger compression loop using your exact native Zstd bundle implementation
             try {
                 if (!zstd) {
-                    // Fallback to plain JSON string if system hasn't loaded script dependencies yet
                     ioArea.value = JSON.stringify(finalMovesStructure, null, 2);
                     alert("Warning: Code rendered in plain text format because Zstandard was busy.");
                 } else {
@@ -206,14 +214,8 @@
                     let str = "";
                     for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
                     
-                    // Final packed encoding string output box allocation
                     ioArea.value = btoa(str);
-                    
-                    if (jjsLine.length > 50) {
-                        alert("Notice: Large composition footprint compiled successfully. Monitor for Skillbuilder loading lag.");
-                    } else {
-                        alert("Success: Composition compiled!");
-                    }
+                    alert(`Success: Track compiled! Optimized layout density to ${jjsLine.length} structural items.`);
                 }
             } catch(encodeError) {
                 alert("Compression Failure: Error packing binary track strings.");
