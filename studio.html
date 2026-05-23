@@ -2,350 +2,199 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.6.9</title>
+    <title>JJS STUDIO V1.7.5</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --bg: #050505; --panel: #0d0d0d; --accent: #ffcc33; 
-            --text: #e0e0e0; --border: #252525; --node-card: #161616;
+            --bg: #1a1a1a; 
+            --thickness: 4px; 
+            --accent: #ffcc33; 
+            --panel: #111;
+            --text: #e0e0e0; 
+            --node-card: #252525;
+            --border: #000;
         }
 
-        * { font-family: 'Finger Paint', cursive; box-sizing: border-box; outline: none; }
-        body { background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        * { font-family: 'Finger Paint', cursive; box-sizing: border-box; outline: none; border-radius: 0 !important; }
         
-        .sidebar { width: 380px; background: var(--panel); border-right: 3px solid var(--accent); display: flex; flex-direction: column; z-index: 10; }
-        .sidebar-header { padding: 25px; border-bottom: 1px solid var(--border); text-align: center; }
-        .io-container { padding: 20px; background: #000; margin: 15px; border-radius: 15px; border: 1px solid var(--border); }
-        textarea { width: 100%; height: 100px; background: #050505; color: #2ecc71; border: 1px solid #333; font-size: 10px; resize: none; margin-bottom: 10px; padding: 8px; font-family: monospace; }
+        body { 
+            margin: 0; 
+            background-color: var(--bg);
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.3) 2px, transparent 2px),
+                linear-gradient(90deg, rgba(0,0,0,0.3) 2px, transparent 2px);
+            background-size: 50px 50px;
+            color: var(--text); 
+            display: flex; 
+            height: 100vh; 
+            overflow: hidden; 
+        }
         
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.2s; margin-bottom: 8px; }
+        .sidebar { 
+            width: 380px; 
+            background: var(--panel); 
+            border-right: var(--thickness) solid var(--border); 
+            display: flex; 
+            flex-direction: column; 
+            z-index: 10; 
+            box-shadow: 5px 0 0 rgba(0,0,0,0.2);
+        }
+        
+        .sidebar-header { 
+            padding: 25px; 
+            border-bottom: var(--thickness) solid var(--border); 
+            text-align: center; 
+        }
+        
+        .io-container { 
+            padding: 20px; 
+            background: #000; 
+            margin: 15px; 
+            border: var(--thickness) solid var(--border); 
+            box-shadow: 6px 6px 0px #000;
+        }
+        
+        textarea { 
+            width: 100%; 
+            height: 100px; 
+            background: #050505; 
+            color: #2ecc71; 
+            border: calc(var(--thickness)/2) solid var(--border); 
+            font-size: 10px; 
+            resize: none; 
+            margin-bottom: 10px; 
+            padding: 8px; 
+            font-family: monospace; 
+        }
+        
+        .btn { 
+            width: 100%; 
+            padding: 14px; 
+            border: var(--thickness) solid var(--border); 
+            font-weight: bold; 
+            cursor: pointer; 
+            text-transform: uppercase; 
+            transition: transform 0.1s, box-shadow 0.1s; 
+            margin-bottom: 8px; 
+        }
+        
         .btn-load { background: var(--accent); color: #000; }
         .btn-save { background: #2ecc71; color: #fff; }
-        .btn-template { background: #3498db; color: #fff; }
-        .btn:hover { filter: brightness(1.2); transform: scale(1.02); }
+        
+        .btn:hover { 
+            transform: translate(-4px, -4px); 
+            box-shadow: 6px 6px 0px #000; 
+            filter: brightness(1.1);
+        }
 
         .container-list { flex: 1; overflow-y: auto; padding: 15px; scrollbar-width: thin; scrollbar-color: var(--accent) #000; }
-        .item { padding: 18px; background: #111; margin-bottom: 12px; border-radius: 12px; cursor: pointer; border-left: 6px solid transparent; transition: 0.2s; }
-        .item:hover { background: #1a1a1a; }
-        .item.active { border-left-color: var(--accent); background: #222; }
+        
+        .item { 
+            padding: 18px; 
+            background: var(--node-card); 
+            margin-bottom: 12px; 
+            cursor: pointer; 
+            border: var(--thickness) solid var(--border);
+            box-shadow: 4px 4px 0px #000;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        
+        .item:hover { 
+            background: #333; 
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #000;
+        }
+        
+        .item.active { 
+            background: var(--accent); 
+            color: #000;
+        }
+        
+        .item.active .type-tag, .item.active .move-name { color: #000; }
         .item .type-tag { font-size: 0.65rem; color: var(--accent); text-transform: uppercase; }
         .item .move-name { display: block; font-size: 1.2rem; color: #fff; }
 
-        .main { flex: 1; overflow-y: auto; padding: 40px; background: radial-gradient(circle at top right, #111 0%, #050505 100%); }
-        .editor-header { display: flex; flex-direction: column; gap: 15px; border-left: 6px solid var(--accent); padding-left: 20px; margin-bottom: 40px; }
-        .tooltip-field { background: #0c0c0c; border: 1px solid #222; padding: 12px; border-radius: 10px; max-width: 400px; margin-top: 10px; }
+        .main { flex: 1; overflow-y: auto; padding: 40px; }
+        
+        .editor-header { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+            border-left: var(--thickness) solid var(--accent); 
+            padding-left: 20px; 
+            margin-bottom: 40px; 
+        }
+        
+        .tooltip-field { 
+            background: #000; 
+            border: var(--thickness) solid var(--border); 
+            padding: 12px; 
+            max-width: 400px; 
+            margin-top: 10px; 
+            box-shadow: 5px 5px 0px #000;
+        }
+        
         .tooltip-field label { display: block; font-size: 0.65rem; color: var(--accent); text-transform: uppercase; margin-bottom: 5px; }
-        .tooltip-field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 1px solid #333; }
+        .tooltip-field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #333; }
         .tooltip-field input:focus { border-bottom-color: var(--accent); }
         
-        .node-card { background: var(--node-card); border: 1px solid var(--border); border-radius: 18px; margin-bottom: 30px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        .node-head { background: #1f1f1f; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #222; }
+        .node-card { 
+            background: var(--panel); 
+            border: var(--thickness) solid var(--border); 
+            margin-bottom: 30px; 
+            overflow: hidden; 
+            box-shadow: 10px 10px 0px rgba(0,0,0,1); 
+        }
+        
+        .node-head { 
+            background: #222; 
+            padding: 15px 25px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: var(--thickness) solid var(--border); 
+        }
+        
         .node-head strong { color: var(--accent); font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; }
         
         .node-grid { padding: 25px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
-        .field { background: #0c0c0c; border: 1px solid #222; padding: 12px; border-radius: 10px; }
+        
+        .field { 
+            background: #000; 
+            border: calc(var(--thickness)/2) solid var(--border); 
+            padding: 12px; 
+            box-shadow: 4px 4px 0px #000;
+        }
+        
         .field label { display: block; font-size: 0.65rem; color: #666; text-transform: uppercase; margin-bottom: 5px; }
-        .field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 1px solid #333; }
+        .field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #222; }
         .field input:focus { border-bottom-color: var(--accent); }
 
-        .empty-state { text-align: center; margin-top: 150px; opacity: 0.15; }
+        .empty-state { text-align: center; margin-top: 150px; border: var(--thickness) dashed var(--border); padding: 40px; background: #111; max-width: 500px; margin-left: auto; margin-right: auto; box-shadow: 10px 10px 0 #000; }
+
+        /* SAFETY CUSTOM PROMPT DIALOG SCREEN OVERLAYS */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); display: none; align-items: center;
+            justify-content: center; z-index: 1000;
+        }
+        .modal-box {
+            background: #111; border: var(--thickness) solid #000;
+            padding: 30px; max-width: 520px; width: 90%; box-shadow: 15px 15px 0 #000; text-align: center;
+        }
+        .modal-title { font-size: 1.4rem; color: var(--accent); margin-top: 0; margin-bottom: 15px; text-transform: uppercase; }
+        .modal-body { font-size: 0.9rem; margin-bottom: 25px; color: #bbb; line-height: 1.4; }
+        .modal-actions { display: flex; flex-direction: column; gap: 10px; }
+        .btn-modal { padding: 12px; border: var(--thickness) solid #000; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.9rem; }
+        .btn-cancel { background: #555; color: #fff; }
+        .btn-merge { background: #3498db; color: #fff; }
+        .btn-replace { background: #e74c3c; color: #fff; }
+        .btn-modal:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 #000; }
     </style>
 </head>
 <body>
 
-<div class="sidebar">
-    <div class="sidebar-header">
-        <h2 style="margin:0; color: var(--accent);">JJS STUDIO</h2>
-        <span style="font-size:0.7rem; color:#555;">V1.6.9 // SYNC & SEQUENCE REORDER</span>
-    </div>
-    <div class="io-container">
-        <textarea id="kluv-io" placeholder="PASTE RAW KLUV DATA..."></textarea>
-        <button class="btn btn-load" onclick="importData()">Load Character</button>
-        <button class="btn btn-save" onclick="exportData()">Generate Clean String</button>
-        <button class="btn btn-template" onclick="generateAllNodesTemplate()">Generate Template String</button>
-    </div>
-    <div id="sidebar-list" class="container-list"></div>
-</div>
-
-<div class="main" id="editor-view">
-    <div class="empty-state"><h1>AWAITING DATA</h1></div>
-</div>
-
-<script src="./zstd-bundle.js"></script>
-<script>
-    let currentMoves = [];
-    let activeIndex = -1;
-    let zstd = null;
-
-    // THE DICTIONARY
-    const TRANSLATIONS = {
-        "ULTGIB": "ADD AWAKENING", 
-        "HPGIB": "ADD HEALTH", 
-        "EVGIB": "ADD EVASION",
-        "HITCNCL": "HIT CANCEL", 
-        "ATK": "ATTACK", 
-        "ANIM": "ANIMATION",
-        "VELO": "VELOCITY", 
-        "PROJ": "PROJECTILE", 
-        "SFX": "SOUND",
-        "WAIT": "WAIT", 
-        "SKILL": "SKILL", 
-        "SPECIAL": "SPECIAL",
-        "CONNECT": "CONNECT", 
-        "HITBOX": "HITBOX", 
-        "BRANCH": "BRANCH",
-        "VISUAL": "VISUAL", 
-        "GRAB": "GRAB", 
-        "COUNTER": "COUNTER",
-        "TAG": "TAG", 
-        "STATE": "STATE", 
-        "TELEPORT": "TELEPORT",
-        "LOOP": "LOOP",
-        "SETCD": "SET COOLDOWN"
-    };
-
-    const NODE_TEMPLATES = {
-        WAIT: ["TIME"],
-        SKILL: ["SPEED", "START", "ENABLE VARIANTS", "HOLD FOR", "MOVE", "CANCEL LAST"],
-        SPECIAL: ["SPEED", "SPEC", "ENABLE VARIANTS", "CANCEL LAST"],
-        ANIM: ["FADE IN", "PREVIEW", "FADE OUT", "LAST HIT", "SPEED", "ANIM_USE"],
-        SFX: ["END", "GLOBAL", "VOLUME", "PROJECTILE TAG", "ID", "START", "CANCEL", "SPEED"],
-        VELO: ["RELATIVE FROM BRANCH", "TRACK", "TIME", "TRUE RAGDOLL", "FORCE", "RAGDOLL", "LAST HIT", "FADE"],
-        CONNECT: ["SIGNAL", "TIME"],
-        HITBOX: ["SIZE", "SINGLE TARGET", "CAN KILL", "BLOCKABLE", "ATTACK TYPE", "PREVIEW", "STUN", "DEBREE", "POSITION", "BRANCH TARGET", "HIT RAGDOLL", "BRANCH FINISHER", "STUN ANIM", "BRANCH", "DAMAGE", "ROTATION", "CANCEL ENEMY", "PROJECTILE TAG", "360 BLOCK", "HIT USER", "CLEAR KNOCKBACK"],
-        BRANCH: ["LAST HIT", "BRANCH", "RANDOM"],
-        VISUAL: ["SIZE", "RELATIVE FROM BRANCH", "CAN COLLIDE", "OPACITY", "TEXTURE", "ALT COLOR", "COLOR", "EASING STYLE", "AMOUNT", "ALT ROTATION", "POSITION", "EASING DIRECTION", "CANCEL ON INTERRUPT", "VISUAL TAG", "ALT SIZE", "TIME", "RUN ON SERVER", "PROJECTILE TAG", "BODY PART", "ROTATION", "LAST HIT", "EFFECT", "ALT POSITION", "ALT OPACITY"],
-        GRAB: ["POSITION", "BODY PART", "ROTATION", "LAST HIT", "TIME", "BODY PART2"],
-        PROJECTILE: ["DAMAGE", "SPEED", "CAN KILL", "BLOCKABLE", "ATTACK TYPE", "CONTINUE", "CLEAR KNOCKBACK", "FILTER INTERVAL", "STUN", "CANCEL ENEMY", "DEBREE", "CACHE", "POSITION", "REFLECT COUNT", "BRANCH TARGET", "HIT RAGDOLL", "BRANCH", "BRANCH COLLIDED", "TIME", "HIT USER", "SIZE", "ROTATION", "PROJECTILE TAG", "360 BLOCK", "STUN ANIM", "AIM LAST HIT"],
-        COUNTER: ["BRANCH", "CANCEL ENEMY", "BRANCH TARGET", "STUN", "REMOVE ON HIT", "TIME", "ATTACK TYPE2"],
-        TAG: ["ADD/REMOVE", "TIME", "TAG", "CHECK", "LAST HIT", "BRANCH", "VALUE", "SET"],
-        STATE: ["DISABLE BURST", "CANCEL ON END", "LAST HIT", "STATE", "TIME", "VALUE"],
-        TELEPORT: ["POSITION", "PROJECTILE TAG", "LAST HIT", "RELATIVE FROM BRANCH", "ROTATION"],
-        ULTGIB: ["AMOUNT"], HPGIB: ["AMOUNT"], EVGIB: ["AMOUNT"],
-        HITCNCL: ["FLIP", "BRANCH", "TIME", "ENDLAG"],
-        LOOP: ["LOOP BACK", "HOLD", "LOOP AMOUNT"],
-        SETCD: ["KEY", "COOLDOWN"]
-    };
-
-    const DEFAULTS_LIB = {
-        TIME: 1.0, SPEED: 1.0, START: 0.0, "ENABLE VARIANTS": true, "HOLD FOR": 0.0,
-        MOVE: "Divergent Fist", SPEC: "Limitless", "FADE IN": 0.1, PREVIEW: [0, 3.59],
-        "FADE OUT": 0.0, "LAST HIT": -1.0, END: 500.0, GLOBAL: false, VOLUME: 0.5,
-        "PROJECTILE TAG": "nil", ID: 12222253, CANCEL: false, "TRUE RAGDOLL": false,
-        RAGDOLL: 0.0, FADE: false, SIGNAL: "Nothing", SIZE: "6.0, 6.0, 6.0",
-        "SINGLE TARGET": true, "CAN KILL": true, BLOCKABLE: true, "ATTACK TYPE": "Melee",
-        "ATTACK TYPE2": "Melee", STUN: 1.0, DEBREE: 0.0, "BRANCH TARGET": "nil",
-        "HIT RAGDOLL": false, BRANCH: "nil", DAMAGE: 1.0, "CANCEL ENEMY": true,
-        "360 BLOCK": false, "HIT USER": false, "CLEAR KNOCKBACK": false, RANDOM: "",
-        OPACITY: 0.0, TEXTURE: 0.0, "EASING STYLE": "Linear", "EASING DIRECTION": "In",
-        "BODY PART": "HumanoidRootPart", "BODY PART2": "HumanoidRootPart",
-        EFFECT: "Slash", STATE: "Stun", AMOUNT: 1.0, FLIP: false, ENDLAG: 1.0,
-        "LOOP BACK": 1.0, HOLD: false, "LOOP AMOUNT": 3.0, POSITION: "0.0, 0.0, 0.0", 
-        ROTATION: "0.0, 0.0, 0.0", "RELATIVE FROM BRANCH": false, "CAN COLLIDE": false,
-        COLOR: "255, 255, 255", "ALT COLOR": "255, 255, 255", "ALT SIZE": 1.0, "ALT POSITION": "0.0, 0.0, 0.0",
-        "ALT ROTATION": "0.0, 0.0, 0.0", "ALT OPACITY": 0.0, "BRANCH FINISHER": "nil", 
-        "STUN ANIM": false, "RUN ON SERVER": false, "VISUAL TAG": "nil", "FILTER INTERVAL": 1.0,
-        "CACHE": true, "REFLECT COUNT": 0.0, "BRANCH COLLIDED": "nil", "AIM LAST HIT": -1.0,
-        "REMOVE ON HIT": true, "ADD/REMOVE": true, "CHECK": false, "SET": true,
-        "DISABLE BURST": false, "CANCEL ON END": false, "VALUE": "nil", "CONTINUE": false,
-        "ANIM_USE": [1, 1.9], "CANCEL LAST": false,
-        KEY: 1, COOLDOWN: 1.0
-    };
-
-    const TYPE_OVERRIDES = {
-        ULTGIB: { AMOUNT: 5.0 }, HPGIB: { AMOUNT: 5.0 }, EVGIB: { AMOUNT: 5.0 },
-        HITBOX: { PREVIEW: [0, 15] }
-    };
-
-    async function init() {
-        const engine = window.ZstdWeb || window.zstd || window.Zstd;
-        if (engine?.init) { await engine.init(); zstd = engine; }
-    }
-
-    function importData() {
-        try {
-            const raw = document.getElementById('kluv-io').value.trim();
-            const bin = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
-            currentMoves = JSON.parse(new TextDecoder().decode(zstd.decompress(bin)));
-            renderSidebar();
-            loadMove(0);
-        } catch(e) { alert("Import Failed"); }
-    }
-
-    function renderSidebar() {
-        const list = document.getElementById('sidebar-list');
-        list.innerHTML = currentMoves.map((m, i) => `
-            <div class="item ${i === activeIndex ? 'active' : ''}" onclick="loadMove(${i})">
-                <span class="type-tag">${m.K_NAME || "Container"}</span>
-                <span class="move-name">${m.NAME || "Unnamed"}</span>
-            </div>
-        `).join('');
-    }
-
-    function loadMove(idx) {
-        activeIndex = idx;
-        renderSidebar();
-        const move = currentMoves[idx];
-        let nodes = Array.isArray(move.Line) ? move.Line : JSON.parse(move.DATA).Line || [];
-        const tooltipVal = move["TOOL TIP"] || "";
-
-        document.getElementById('editor-view').innerHTML = `
-            <div class="editor-header">
-                <h1 style="margin:0; font-size: 2.5rem; color: #fff;">${move.NAME || 'Unnamed'}</h1>
-                <div class="tooltip-field">
-                    <label>Move Tool Tip</label>
-                    <input value="${tooltipVal.replace(/"/g, '&quot;')}" onchange="updateTooltip(this.value)">
-                </div>
-            </div>
-            ${nodes.map((n, ni) => {
-                const template = NODE_TEMPLATES[n.K_NAME] || Object.keys(n);
-                const displayTitle = TRANSLATIONS[n.K_NAME] || n.K_NAME;
-                return `
-                <div class="node-card">
-                    <div class="node-head">
-                        <strong>${displayTitle}</strong>
-                    </div>
-                    <div class="node-grid">
-                        ${template.map(k => k === 'K_NAME' ? '' : `
-                            <div class="field">
-                                <label>${k}</label>
-                                <input value='${getValue(n, k, n.K_NAME)}' onchange="updateVal(${ni}, '${k}', this.value)">
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>`;
-            }).join('')}
-        `;
-    }
-
-    function getValue(node, key, nodeType) {
-        let val = node[key];
-        if (val === undefined) {
-            val = (TYPE_OVERRIDES[nodeType] && TYPE_OVERRIDES[nodeType][key] !== undefined) 
-                  ? TYPE_OVERRIDES[nodeType][key] 
-                  : DEFAULTS_LIB[key];
-        }
-        if (val === undefined) return "";
-        return Array.isArray(val) ? JSON.stringify(val) : val;
-    }
-
-    function updateTooltip(val) {
-        if (activeIndex !== -1) {
-            currentMoves[activeIndex]["TOOL TIP"] = val;
-        }
-    }
-
-    function updateVal(nodeIdx, key, val) {
-        const move = currentMoves[activeIndex];
-        let targetList = Array.isArray(move.Line) ? move.Line : JSON.parse(move.DATA).Line;
-        
-        let final;
-        try {
-            const trimmed = val.trim();
-            if (trimmed.startsWith('[') || trimmed.startsWith('{')) final = JSON.parse(trimmed);
-            else if (trimmed === "true") final = true;
-            else if (trimmed === "false") final = false;
-            else if (isNaN(trimmed) || trimmed === "") final = val;
-            else final = parseFloat(trimmed);
-        } catch(e) { final = val; }
-
-        targetList[nodeIdx][key] = final;
-        if (!Array.isArray(move.Line)) {
-            let inner = JSON.parse(move.DATA);
-            inner.Line = targetList;
-            move.DATA = JSON.stringify(inner);
-        }
-    }
-
-    function exportData() {
-        const exportCopy = JSON.parse(JSON.stringify(currentMoves));
-        exportCopy.forEach(move => {
-            let data = typeof move.DATA === 'string' ? JSON.parse(move.DATA) : move;
-            if (data.Line) {
-                data.Line.forEach(node => {
-                    Object.keys(node).forEach(key => {
-                        if (key === "K_NAME") return;
-                        let defVal = (TYPE_OVERRIDES[node.K_NAME] && TYPE_OVERRIDES[node.K_NAME][key] !== undefined) 
-                                     ? TYPE_OVERRIDES[node.K_NAME][key] 
-                                     : DEFAULTS_LIB[key];
-                        if (JSON.stringify(node[key]) === JSON.stringify(defVal)) {
-                            delete node[key];
-                        }
-                    });
-                });
-            }
-            if (typeof move.DATA === 'string') move.DATA = JSON.stringify(data);
-        });
-
-        const bin = zstd.compress(new TextEncoder().encode(JSON.stringify(exportCopy)), 3);
-        let str = "";
-        for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
-        document.getElementById('kluv-io').value = btoa(str);
-        alert("Clean String Generated!");
-    }
-
-    function generateAllNodesTemplate() {
-        if (!zstd) return alert("Engine initializing. Please wait a brief moment.");
-        
-        const generatedLine = [];
-        
-        // Loop through keys following the precise layout order specified in NODE_TEMPLATES
-        Object.keys(NODE_TEMPLATES).forEach(nodeType => {
-            const targetNode = { "K_NAME": nodeType };
-            
-            NODE_TEMPLATES[nodeType].forEach(fieldKey => {
-                let val = (TYPE_OVERRIDES[nodeType] && TYPE_OVERRIDES[nodeType][fieldKey] !== undefined)
-                    ? TYPE_OVERRIDES[nodeType][fieldKey]
-                    : DEFAULTS_LIB[fieldKey];
-                    
-                if (val !== undefined) {
-                    targetNode[fieldKey] = JSON.parse(JSON.stringify(val));
-                }
-            });
-            
-            generatedLine.push(targetNode);
-        });
-
-        const templateStructure = [
-            {
-                "ADD": false,
-                "NAME": "Master Node Template",
-                "K_NAME": "SKILL",
-                "KEY": 1,
-                "TOOL TIP": "Contains every registered node type with system defaults.",
-                "COOLDOWN": 0,
-                "DATA": JSON.stringify({
-                    "Line": generatedLine,
-                    "Prop": [],
-                    "Req": []
-                })
-            }
-        ];
-
-        // Core visual assignment state synchronization so UI loads flawlessly right away
-        currentMoves = templateStructure;
-        renderSidebar();
-        loadMove(0);
-
-        try {
-            const bin = zstd.compress(new TextEncoder().encode(JSON.stringify(templateStructure)), 3);
-            let str = "";
-            for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
-            
-            const compiledBase64 = btoa(str);
-            const ioArea = document.getElementById('kluv-io');
-            ioArea.value = compiledBase64;
-            
-            ioArea.select();
-            document.execCommand('copy');
-            
-            alert("Success: Complete master layout template loaded and copied directly to clipboard!");
-        } catch(err) {
-            alert("Error generating template compression array bundle.");
-        }
-    }
-
-    setTimeout(init, 500);
-</script>
-</body>
-</html>
+<div class="modal-overlay" id="safety-modal">
+    <div class="modal-box">
+        <h3 class="modal-title" id="modal-header-text">Action Intercepted</h3>
+        <p class="modal-body" id="modal-body
