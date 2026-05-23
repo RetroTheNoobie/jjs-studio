@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.6.6</title>
+    <title>JJS STUDIO V1.6.8</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -21,6 +21,7 @@
         .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.2s; margin-bottom: 8px; }
         .btn-load { background: var(--accent); color: #000; }
         .btn-save { background: #2ecc71; color: #fff; }
+        .btn-template { background: #3498db; color: #fff; }
         .btn:hover { filter: brightness(1.2); transform: scale(1.02); }
 
         .container-list { flex: 1; overflow-y: auto; padding: 15px; scrollbar-width: thin; scrollbar-color: var(--accent) #000; }
@@ -31,7 +32,11 @@
         .item .move-name { display: block; font-size: 1.2rem; color: #fff; }
 
         .main { flex: 1; overflow-y: auto; padding: 40px; background: radial-gradient(circle at top right, #111 0%, #050505 100%); }
-        .editor-title { border-left: 6px solid var(--accent); padding-left: 20px; margin-bottom: 40px; }
+        .editor-header { display: flex; flex-direction: column; gap: 15px; border-left: 6px solid var(--accent); padding-left: 20px; margin-bottom: 40px; }
+        .tooltip-field { background: #0c0c0c; border: 1px solid #222; padding: 12px; border-radius: 10px; max-width: 400px; margin-top: 10px; }
+        .tooltip-field label { display: block; font-size: 0.65rem; color: var(--accent); text-transform: uppercase; margin-bottom: 5px; }
+        .tooltip-field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 1px solid #333; }
+        .tooltip-field input:focus { border-bottom-color: var(--accent); }
         
         .node-card { background: var(--node-card); border: 1px solid var(--border); border-radius: 18px; margin-bottom: 30px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
         .node-head { background: #1f1f1f; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #222; }
@@ -51,12 +56,13 @@
 <div class="sidebar">
     <div class="sidebar-header">
         <h2 style="margin:0; color: var(--accent);">JJS STUDIO</h2>
-        <span style="font-size:0.7rem; color:#555;">V1.6.6 // DICTIONARY OVERRIDE</span>
+        <span style="font-size:0.7rem; color:#555;">V1.6.8 // MASTER TEMPLATE EDITION</span>
     </div>
     <div class="io-container">
         <textarea id="kluv-io" placeholder="PASTE RAW KLUV DATA..."></textarea>
         <button class="btn btn-load" onclick="importData()">Load Character</button>
         <button class="btn btn-save" onclick="exportData()">Generate Clean String</button>
+        <button class="btn btn-template" onclick="generateAllNodesTemplate()">Generate Template String</button>
     </div>
     <div id="sidebar-list" class="container-list"></div>
 </div>
@@ -93,7 +99,9 @@
         "COUNTER": "COUNTER",
         "TAG": "TAG", 
         "STATE": "STATE", 
-        "LOOP": "LOOP"
+        "LOOP": "LOOP",
+        "SETCD": "SET COOLDOWN",
+        "TELEPORT": "TELEPORT"
     };
 
     const NODE_TEMPLATES = {
@@ -114,7 +122,9 @@
         STATE: ["DISABLE BURST", "CANCEL ON END", "LAST HIT", "STATE", "TIME", "VALUE"],
         ULTGIB: ["AMOUNT"], HPGIB: ["AMOUNT"], EVGIB: ["AMOUNT"],
         HITCNCL: ["FLIP", "BRANCH", "TIME", "ENDLAG"],
-        LOOP: ["LOOP BACK", "HOLD", "LOOP AMOUNT"]
+        LOOP: ["LOOP BACK", "HOLD", "LOOP AMOUNT"],
+        SETCD: ["KEY", "COOLDOWN"],
+        TELEPORT: ["POSITION", "PROJECTILE TAG", "LAST HIT", "RELATIVE FROM BRANCH", "ROTATION"]
     };
 
     const DEFAULTS_LIB = {
@@ -138,7 +148,8 @@
         "CACHE": true, "REFLECT COUNT": 0.0, "BRANCH COLLIDED": "nil", "AIM LAST HIT": -1.0,
         "REMOVE ON HIT": true, "ADD/REMOVE": true, "CHECK": false, "SET": true,
         "DISABLE BURST": false, "CANCEL ON END": false, "VALUE": "nil", "CONTINUE": false,
-        "ANIM_USE": [1, 1.9], "CANCEL LAST": false
+        "ANIM_USE": [1, 1.9], "CANCEL LAST": false,
+        KEY: 1, COOLDOWN: 1.0
     };
 
     const TYPE_OVERRIDES = {
@@ -176,14 +187,18 @@
         renderSidebar();
         const move = currentMoves[idx];
         let nodes = Array.isArray(move.Line) ? move.Line : JSON.parse(move.DATA).Line || [];
+        const tooltipVal = move["TOOL TIP"] || "";
 
         document.getElementById('editor-view').innerHTML = `
-            <div class="editor-title">
+            <div class="editor-header">
                 <h1 style="margin:0; font-size: 2.5rem; color: #fff;">${move.NAME || 'Unnamed'}</h1>
+                <div class="tooltip-field">
+                    <label>Move Tool Tip</label>
+                    <input value="${tooltipVal.replace(/"/g, '&quot;')}" onchange="updateTooltip(this.value)">
+                </div>
             </div>
             ${nodes.map((n, ni) => {
                 const template = NODE_TEMPLATES[n.K_NAME] || Object.keys(n);
-                // USE DICTIONARY HERE
                 const displayTitle = TRANSLATIONS[n.K_NAME] || n.K_NAME;
                 return `
                 <div class="node-card">
@@ -212,6 +227,12 @@
         }
         if (val === undefined) return "";
         return Array.isArray(val) ? JSON.stringify(val) : val;
+    }
+
+    function updateTooltip(val) {
+        if (activeIndex !== -1) {
+            currentMoves[activeIndex]["TOOL TIP"] = val;
+        }
     }
 
     function updateVal(nodeIdx, key, val) {
@@ -261,6 +282,69 @@
         for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
         document.getElementById('kluv-io').value = btoa(str);
         alert("Clean String Generated!");
+    }
+
+    function generateAllNodesTemplate() {
+        if (!zstd) return alert("Engine initializing. Please wait a brief moment.");
+        
+        const generatedLine = [];
+        
+        // Loop through every single available node layout from the template configuration library
+        Object.keys(NODE_TEMPLATES).forEach(nodeType => {
+            const targetNode = { "K_NAME": nodeType };
+            
+            NODE_TEMPLATES[nodeType].forEach(fieldKey => {
+                // Determine layout default fallback states or direct overrides
+                let val = (TYPE_OVERRIDES[nodeType] && TYPE_OVERRIDES[nodeType][fieldKey] !== undefined)
+                    ? TYPE_OVERRIDES[nodeType][fieldKey]
+                    : DEFAULTS_LIB[fieldKey];
+                    
+                if (val !== undefined) {
+                    targetNode[fieldKey] = JSON.parse(JSON.stringify(val)); // Deep copy values
+                }
+            });
+            
+            generatedLine.push(targetNode);
+        });
+
+        const templateStructure = [
+            {
+                "ADD": false,
+                "NAME": "Master Node Template",
+                "K_NAME": "SKILL",
+                "KEY": 1,
+                "TOOL TIP": "Contains every registered node type with system defaults.",
+                "COOLDOWN": 0,
+                "DATA": JSON.stringify({
+                    "Line": generatedLine,
+                    "Prop": [],
+                    "Req": []
+                })
+            }
+        ];
+
+        try {
+            const bin = zstd.compress(new TextEncoder().encode(JSON.stringify(templateStructure)), 3);
+            let str = "";
+            for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
+            
+            const compiledBase64 = btoa(str);
+            const ioArea = document.getElementById('kluv-io');
+            ioArea.value = compiledBase64;
+            
+            // Auto copy directly to clipboard sequence
+            ioArea.select();
+            document.execCommand('copy');
+            
+            // Render it visually in the window panel workspace as well
+            currentMoves = templateStructure;
+            renderSidebar();
+            loadMove(0);
+            
+            alert("Success: Complete master layout template copied directly to clipboard!");
+        } catch(err) {
+            alert("Error generating template compression array bundle.");
+        }
     }
 
     setTimeout(init, 500);
