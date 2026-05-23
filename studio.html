@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.6.8</title>
+    <title>JJS STUDIO V1.6.9</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -56,7 +56,7 @@
 <div class="sidebar">
     <div class="sidebar-header">
         <h2 style="margin:0; color: var(--accent);">JJS STUDIO</h2>
-        <span style="font-size:0.7rem; color:#555;">V1.6.8 // MASTER TEMPLATE EDITION</span>
+        <span style="font-size:0.7rem; color:#555;">V1.6.9 // SYNC & SEQUENCE REORDER</span>
     </div>
     <div class="io-container">
         <textarea id="kluv-io" placeholder="PASTE RAW KLUV DATA..."></textarea>
@@ -99,9 +99,9 @@
         "COUNTER": "COUNTER",
         "TAG": "TAG", 
         "STATE": "STATE", 
+        "TELEPORT": "TELEPORT",
         "LOOP": "LOOP",
-        "SETCD": "SET COOLDOWN",
-        "TELEPORT": "TELEPORT"
+        "SETCD": "SET COOLDOWN"
     };
 
     const NODE_TEMPLATES = {
@@ -120,11 +120,11 @@
         COUNTER: ["BRANCH", "CANCEL ENEMY", "BRANCH TARGET", "STUN", "REMOVE ON HIT", "TIME", "ATTACK TYPE2"],
         TAG: ["ADD/REMOVE", "TIME", "TAG", "CHECK", "LAST HIT", "BRANCH", "VALUE", "SET"],
         STATE: ["DISABLE BURST", "CANCEL ON END", "LAST HIT", "STATE", "TIME", "VALUE"],
+        TELEPORT: ["POSITION", "PROJECTILE TAG", "LAST HIT", "RELATIVE FROM BRANCH", "ROTATION"],
         ULTGIB: ["AMOUNT"], HPGIB: ["AMOUNT"], EVGIB: ["AMOUNT"],
         HITCNCL: ["FLIP", "BRANCH", "TIME", "ENDLAG"],
         LOOP: ["LOOP BACK", "HOLD", "LOOP AMOUNT"],
-        SETCD: ["KEY", "COOLDOWN"],
-        TELEPORT: ["POSITION", "PROJECTILE TAG", "LAST HIT", "RELATIVE FROM BRANCH", "ROTATION"]
+        SETCD: ["KEY", "COOLDOWN"]
     };
 
     const DEFAULTS_LIB = {
@@ -289,18 +289,17 @@
         
         const generatedLine = [];
         
-        // Loop through every single available node layout from the template configuration library
+        // Loop through keys following the precise layout order specified in NODE_TEMPLATES
         Object.keys(NODE_TEMPLATES).forEach(nodeType => {
             const targetNode = { "K_NAME": nodeType };
             
             NODE_TEMPLATES[nodeType].forEach(fieldKey => {
-                // Determine layout default fallback states or direct overrides
                 let val = (TYPE_OVERRIDES[nodeType] && TYPE_OVERRIDES[nodeType][fieldKey] !== undefined)
                     ? TYPE_OVERRIDES[nodeType][fieldKey]
                     : DEFAULTS_LIB[fieldKey];
                     
                 if (val !== undefined) {
-                    targetNode[fieldKey] = JSON.parse(JSON.stringify(val)); // Deep copy values
+                    targetNode[fieldKey] = JSON.parse(JSON.stringify(val));
                 }
             });
             
@@ -323,6 +322,11 @@
             }
         ];
 
+        // Core visual assignment state synchronization so UI loads flawlessly right away
+        currentMoves = templateStructure;
+        renderSidebar();
+        loadMove(0);
+
         try {
             const bin = zstd.compress(new TextEncoder().encode(JSON.stringify(templateStructure)), 3);
             let str = "";
@@ -332,16 +336,10 @@
             const ioArea = document.getElementById('kluv-io');
             ioArea.value = compiledBase64;
             
-            // Auto copy directly to clipboard sequence
             ioArea.select();
             document.execCommand('copy');
             
-            // Render it visually in the window panel workspace as well
-            currentMoves = templateStructure;
-            renderSidebar();
-            loadMove(0);
-            
-            alert("Success: Complete master layout template copied directly to clipboard!");
+            alert("Success: Complete master layout template loaded and copied directly to clipboard!");
         } catch(err) {
             alert("Error generating template compression array bundle.");
         }
