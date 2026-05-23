@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.7.6</title>
+    <title>JJS STUDIO V1.7.7</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -200,12 +200,12 @@
 <!-- custom prompt modular workflow container markup -->
 <div class="modal-overlay" id="safety-modal">
     <div class="modal-box">
-        <h3 class="modal-title" id="modal-header-text">Action Intercepted</h3>
-        <p class="modal-body" id="modal-body-text">Hey, you are trying to parse data while items already exist in the timeline environment workspace.</p>
+        <h3 class="modal-title" id="modal-header-text">Hold On!</h3>
+        <p class="modal-body" id="modal-body-text">Hey, you're trying to load a moveset code when you already have something open.</p>
         <div class="modal-actions">
-            <button class="btn-modal btn-merge" id="modal-opt-merge">Merge (Combine Tracks Together)</button>
-            <button class="btn-modal btn-replace" id="modal-opt-replace">Replace (Overwrite Entire Workspace)</button>
-            <button class="btn-modal btn-cancel" id="modal-opt-cancel">Cancel (Do Nothing)</button>
+            <button class="btn-modal btn-merge" id="modal-opt-merge">Merge (Add the moves together)</button>
+            <button class="btn-modal btn-replace" id="modal-opt-replace">Replace (Wipe current and use new code)</button>
+            <button class="btn-modal btn-cancel" id="modal-opt-cancel">Cancel (Don't do anything)</button>
         </div>
     </div>
 </div>
@@ -213,18 +213,18 @@
 <div class="sidebar">
     <div class="sidebar-header">
         <h2 style="margin:0; color: var(--accent); text-transform: uppercase; letter-spacing: 1px;">JJS STUDIO</h2>
-        <span style="font-size:0.7rem; color:#555;">V1.7.6 // RENDER RETAINED</span>
+        <span style="font-size:0.7rem; color:#555;">V1.7.7 // CLEAN TEXT UPDATE</span>
     </div>
     <div class="io-container">
-        <textarea id="kluv-io" placeholder="PASTE RAW KLUV DATA..."></textarea>
+        <textarea id="kluv-io" placeholder="PASTE YOUR MOVESET CODE HERE..."></textarea>
         <button class="btn btn-load" onclick="triggerImportPipeline()">Load Character</button>
-        <button class="btn btn-save" onclick="exportData()">Generate Clean String</button>
+        <button class="btn btn-save" onclick="exportData()">Get Export Code</button>
     </div>
     <div id="sidebar-list" class="container-list"></div>
 </div>
 
 <div class="main" id="editor-view">
-    <div class="empty-state"><h2 style="margin:0; color:var(--accent);">AWAITING TIMELINE PAYLOAD</h2><span style="font-size:0.75rem; color:#666; text-transform:uppercase; margin-top:5px; display:block;">Import characters via sidebar node options</span></div>
+    <div class="empty-state"><h2 style="margin:0; color:var(--accent);">NOTHING LOADED YET</h2><span style="font-size:0.75rem; color:#666; text-transform:uppercase; margin-top:5px; display:block;">Paste a code on the left and click Load Character to start</span></div>
 </div>
 
 <script src="./zstd-bundle.js"></script>
@@ -305,18 +305,18 @@
     function triggerImportPipeline() {
         try {
             const raw = document.getElementById('kluv-io').value.trim();
-            if (!raw) return alert("Error: Please paste valid KLUv data into the text box first.");
+            if (!raw) return alert("Oops! Make sure you paste your moveset code into the text box first.");
             
             const bin = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
             const parsedStructure = JSON.parse(new TextDecoder().decode(zstd.decompress(bin)));
 
             if (currentMoves.length > 0) {
                 cachedPendingData = parsedStructure;
-                showInterceptModal("Character Import Active", "Hey, you are trying to insert an external string while there is data active in the editor view.");
+                showInterceptModal("Hold On!", "Hey, you're trying to import another code when there's one already in the editor.");
             } else {
                 executeDirectLoad(parsedStructure);
             }
-        } catch(e) { alert("Import Processing Failure: Incorrect array formatting parameters."); }
+        } catch(e) { alert("Error: That code doesn't look right. Make sure it was copied correctly."); }
     }
 
     function executeDirectLoad(data) {
@@ -352,8 +352,10 @@
     
     document.getElementById('modal-opt-replace').onclick = () => {
         if (!cachedPendingData) return;
-        if (confirm("🚨 DOUBLE CHECK INTERCEPT: Are you absolutely 100% sure you want to completely erase the current character moveset and overwrite it with this template data? This action cannot be undone.")) {
-            executeDirectLoad(cachedPendingData);
+        if (confirm("Are you totally sure? This will delete the moveset you are currently working on!")) {
+            if (confirm("Last warning: You'll lose your current unsaved changes if you replace it. Ready?")) {
+                executeDirectLoad(cachedPendingData);
+            }
         }
     };
 
@@ -365,7 +367,7 @@
     });
 
     function generateTemplateDataIntercept() {
-        if (!zstd) return alert("System state initializing. Please wait.");
+        if (!zstd) return alert("Hang on, the editor is still loading up.");
         
         const uiLine = [];
         const exportLine = [];
@@ -408,14 +410,14 @@
             const bin = zstd.compress(new TextEncoder().encode(JSON.stringify(exportStructure)), 3);
             let str = ""; for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
             document.getElementById('kluv-io').value = btoa(str);
-        } catch(err) { console.error("Template buffer preparation failed."); }
+        } catch(err) { console.error("Template build failed."); }
 
         if (currentMoves.length > 0) {
             cachedPendingData = uiStructure;
-            showInterceptModal("Insert Template System String", "Hey, you're trying to insert a template string into the current active project environment workspace.");
+            showInterceptModal("Hold On!", "Hey, you're trying to insert a template string.");
         } else {
             executeDirectLoad(uiStructure);
-            alert("Debug Template Mode Active: String copied to text input and canvas loaded.");
+            alert("Secret Template Loaded! The template code has been pasted into the text box.");
         }
     }
 
@@ -423,8 +425,8 @@
         const list = document.getElementById('sidebar-list');
         list.innerHTML = currentMoves.map((m, i) => `
             <div class="item ${i === activeIndex ? 'active' : ''}" onclick="loadMove(${i})">
-                <span class="type-tag">${m.K_NAME || "Container"}</span>
-                <span class="move-name">${m.NAME || "Unnamed"}</span>
+                <span class="type-tag">${m.K_NAME || "Move Group"}</span>
+                <span class="move-name">${m.NAME || "Unnamed Move"}</span>
             </div>
         `).join('');
     }
@@ -438,9 +440,9 @@
 
         document.getElementById('editor-view').innerHTML = `
             <div class="editor-header">
-                <h1 style="margin:0; font-size: 2.5rem; color: #fff; text-transform: uppercase;">${move.NAME || 'Unnamed'}</h1>
+                <h1 style="margin:0; font-size: 2.5rem; color: #fff; text-transform: uppercase;">${move.NAME || 'Unnamed Move'}</h1>
                 <div class="tooltip-field">
-                    <label>Move Tool Tip</label>
+                    <label>Move Description / Tooltip</label>
                     <input value="${tooltipVal.replace(/"/g, '&quot;')}" onchange="updateTooltip(this.value)">
                 </div>
             </div>
@@ -505,7 +507,7 @@
     }
 
     function exportData() {
-        if (currentMoves.length === 0) return alert("Export Blocked: No move modules loaded to convert.");
+        if (currentMoves.length === 0) return alert("Nothing to export! Load a character first.");
         const exportCopy = JSON.parse(JSON.stringify(currentMoves));
         exportCopy.forEach(move => {
             let data = typeof move.DATA === 'string' ? JSON.parse(move.DATA) : move;
@@ -530,8 +532,8 @@
             let str = "";
             for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
             document.getElementById('kluv-io').value = btoa(str);
-            alert("Clean String Generated!");
-        } catch(err) { alert("Encoding failure during payload compilation."); }
+            alert("Done! Your clean moveset code has been copied to the text box.");
+        } catch(err) { alert("Something went wrong trying to save your changes."); }
     }
 
     setTimeout(init, 500);
