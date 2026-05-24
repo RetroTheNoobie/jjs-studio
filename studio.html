@@ -28,6 +28,25 @@
         body.theme-shadow  { --bg:#1c1e22; --accent:#00f0ff; --panel:#111215; --text:#c0c5cd; --node-card:#242930; --border:#00f0ff; --thickness:3px; }
         body.theme-crimson { --bg:#141414; --accent:#ff2a4b; --panel:#0b0b0b; --text:#f5f5f5; --node-card:#1f1f1f; --border:#ff2a4b; --thickness:4px; }
 
+        body.root-shenanigans {
+            --bg: #1a1a1a;
+            --thickness: 4px;
+            --accent: #ffcc33;
+            --panel: #111;
+            --text: #e0e0e0;
+            --node-card: #252525;
+            --border: #000;
+            --font-family: 'Finger Paint', bold;
+            --bg-image: linear-gradient(rgba(0,0,0,0.3) 2px, transparent 2px), linear-gradient(90deg, rgba(0,0,0,0.3) 2px, transparent 2px);
+        }
+
+        body.root-shenanigans.theme-retro   { --bg:#444444; --accent:#ff5722; --panel:#2a2a2a; --text:#eeeeee; --node-card:#333333; --border:#000; }
+        body.root-shenanigans.theme-matrix  { --bg:#050505; --accent:#00ff66; --panel:#0d0d0d; --text:#00ff66; --node-card:#141414; --border:#00ff66; }
+        body.root-shenanigans.theme-nova    { --bg:#120024; --accent:#b026ff; --panel:#090012; --text:#e0b0ff; --node-card:#1c0035; --border:#000; }
+        body.root-shenanigans.theme-toon    { --bg:#000000; --accent:#ffffff; --panel:#000000; --text:#ffffff; --node-card:#000000; --border:#ffffff; --thickness:6px; }
+        body.root-shenanigans.theme-shadow  { --bg:#1c1e22; --accent:#00f0ff; --panel:#111215; --text:#c0c5cd; --node-card:#242930; --border:#00f0ff; --thickness:3px; }
+        body.root-shenanigans.theme-crimson { --bg:#141414; --accent:#ff2a4b; --panel:#0b0b0b; --text:#f5f5f5; --node-card:#1f1f1f; --border:#ff2a4b; --thickness:4px; }
+
         * {
             font-family: var(--font-family);
             box-sizing: border-box;
@@ -87,8 +106,70 @@
             color: #fff;
         }
 
+        .layout-toggle-container {
+            margin: 12px 15px 4px 15px;
+            display: flex;
+            gap: 0;
+            border: var(--thickness) solid var(--border);
+            box-shadow: 4px 4px 0px #000;
+            overflow: hidden;
+        }
+
+        .btn-layout-toggle {
+            flex: 1;
+            padding: 9px 6px;
+            font-size: 0.65rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+            background: var(--node-card);
+            color: var(--text);
+            transition: background 0.15s, color 0.15s;
+            border-right: var(--thickness) solid var(--border);
+        }
+
+        .btn-layout-toggle:last-child { border-right: none; }
+
+        .btn-layout-toggle.active {
+            background: #00f2ff;
+            color: #000;
+        }
+
+        .root-toggle-container {
+            margin: 4px 15px 4px 15px;
+            display: flex;
+            gap: 0;
+            border: var(--thickness) solid var(--border);
+            box-shadow: 4px 4px 0px #000;
+            overflow: hidden;
+        }
+
+        .btn-root-toggle {
+            flex: 1;
+            padding: 9px 6px;
+            font-size: 0.65rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+            background: var(--node-card);
+            color: var(--text);
+            transition: background 0.15s, color 0.15s;
+            border-right: var(--thickness) solid var(--border);
+        }
+
+        .btn-root-toggle:last-child { border-right: none; }
+
+        .btn-root-toggle.active {
+            background: var(--accent);
+            color: #000;
+        }
+
         .theme-container {
-            margin: 15px 15px 10px 15px;
+            margin: 10px 15px;
             padding: 10px;
             background: #000;
             border: var(--thickness) solid var(--border);
@@ -141,6 +222,31 @@
         .item .move-name { display: block; font-size: 1.2rem; color: var(--text); }
         body.theme-toon .item.active .move-name { color: #000; }
 
+        .jjs-bar {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            height: 42px;
+            border: var(--thickness) solid var(--border);
+            background: var(--node-card);
+            color: var(--text);
+            box-shadow: 4px 4px 0px #000;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: background 0.1s, transform 0.1s;
+        }
+        .jjs-bar:hover { background: #222; transform: translate(-1px, -1px); }
+        .jjs-bar-icon-box {
+            width: 42px; height: 100%; display: flex; align-items: center; justify-content: center; border-right: var(--thickness) solid var(--border); background: rgba(0,0,0,0.2);
+        }
+        .jjs-bar-icon-box svg { width: 18px; height: 18px; fill: currentColor; }
+        .jjs-bar-text { flex-grow: 1; padding: 0 12px; font-size: 0.8rem; text-transform: uppercase; font-weight: bold; }
+
+        .jjs-c-skill { border-left: calc(var(--thickness) * 2) solid #ff7b7b; }
+        .jjs-c-special { border-left: calc(var(--thickness) * 2) solid #ffb37b; }
+        .jjs-c-awakening { border-left: calc(var(--thickness) * 2) solid #ffff7b; }
+
         .main { flex: 1; overflow-y: auto; padding: 40px; height: 100%; display: flex; flex-direction: column; }
 
         .editor-header { display: flex; flex-direction: column; gap: 15px; border-left: var(--thickness) solid var(--accent); padding-left: 20px; margin-bottom: 40px; }
@@ -150,15 +256,7 @@
         .tooltip-field label { display: block; font-size: 0.65rem; color: var(--accent); text-transform: uppercase; margin-bottom: 5px; }
         .tooltip-field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #333; }
 
-        .node-card { 
-            background: var(--panel); 
-            border: var(--thickness) solid var(--border); 
-            margin-bottom: 30px; 
-            overflow: hidden; 
-            box-shadow: 10px 10px 0px rgba(0,0,0,1); 
-            transition: background 0.2s, border-color 0.2s; 
-            flex-shrink: 0; /* CRITICAL FIX: Stops nodes from trying to stretch and flattening into lines */
-        }
+        .node-card { background: var(--panel); border: var(--thickness) solid var(--border); margin-bottom: 30px; overflow: hidden; box-shadow: 10px 10px 0px rgba(0,0,0,1); transition: background 0.2s, border-color 0.2s; }
         body.theme-toon .node-card { box-shadow: 10px 10px 0px #fff; }
 
         .node-head { background: #222; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: var(--thickness) solid var(--border); }
@@ -180,6 +278,10 @@
         body.theme-toon   .field label { color: #aaa; }
         .field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #222; }
         
+        .timeline-track-canvas {
+            display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,0.25); padding: 20px; border: var(--thickness) solid var(--border); box-shadow: 5px 5px 0px #000; margin-top: 15px;
+        }
+
         .empty-state { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 1.5rem; color: #555; text-transform: uppercase; }
 
         .jjs-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.75); z-index: 999; display: none; align-items: center; justify-content: center; }
@@ -210,6 +312,11 @@
         <h2 style="margin:0; color: var(--accent); text-transform: uppercase; font-size: 1.6rem;">JJS STUDIO</h2>
         <span style="font-size:0.7rem; color:#555;">V2.8.8 STABLE</span>
         <div id="engine-info" class="engine-status">CHECKING...</div>
+    </div>
+
+    <div class="layout-toggle-container">
+        <button class="btn-layout-toggle active" id="btn-layout-editor" onclick="switchActiveLayout('editor')">Studio</button>
+        <button class="btn-layout-toggle" id="btn-layout-tracks" onclick="switchActiveLayout('tracks')">Shenanigans</button>
     </div>
 
     <div class="theme-container">
@@ -294,7 +401,10 @@
 <script>
     let dynamicCustomThemes = {};
     let activeModalMode = '';
-    let allContainers = [];
+    let currentRoot = 'default'; 
+    let currentLayout = 'editor'; // 'editor' | 'tracks'
+    let allContainers = []; // Engine build data parsed from load build
+    let activeTrackCategory = 'SKILL'; // Tracks focus channel selector
 
     const MASTER_SCHEMA = {
         "ANIM": { "Speed": 1, "FadeTime": 0.1, "Looped": false, "Weight": 1, "START": 0, "END": 0 },
@@ -319,51 +429,200 @@
     window.addEventListener('DOMContentLoaded', () => {
         checkEngine();
 
+        // Load custom themes from local storage
         const savedData = localStorage.getItem('jjs_studio_custom_registry');
         if (savedData) dynamicCustomThemes = JSON.parse(savedData);
 
+        const savedLayout = localStorage.getItem('jjs_studio_active_layout') || 'editor';
+
         rebuildDropdownList();
+        switchActiveLayout(savedLayout);
+    });
+
+    function switchActiveLayout(layoutMode) {
+        currentLayout = layoutMode;
+        localStorage.setItem('jjs_studio_active_layout', layoutMode);
+        
+        document.getElementById('btn-layout-editor').classList.toggle('active', layoutMode === 'editor');
+        document.getElementById('btn-layout-tracks').classList.toggle('active', layoutMode === 'tracks');
+
+        const rootName = (layoutMode === 'tracks') ? 'shenanigans' : 'default';
+        currentRoot = rootName;
+        document.body.classList.toggle('root-shenanigans', rootName === 'shenanigans');
+
+        // Refresh currently previewed theme parameters so custom presets match the active layout style properties
+        const picker = document.getElementById('global-theme-picker');
+        if (picker) {
+            previewTheme(picker.value);
+        }
+
         renderSidebarContents();
         renderWorkspaceContents();
-    });
+    }
+
+    function changeShenanigansTrackChannel(category) {
+        activeTrackCategory = category;
+        renderSidebarContents();
+        renderWorkspaceContents();
+    }
 
     function renderSidebarContents() {
         const heading = document.getElementById('sidebar-list-heading');
         const list = document.getElementById('sidebar-dynamic-list');
         list.innerHTML = '';
 
-        heading.innerText = "Moveset List";
-        if (allContainers.length === 0) {
-            list.innerHTML = '<div style="text-align:center; padding-top: 30px; font-size: 0.8rem; color: #555;">No build loaded yet. Paste build data inside Import!</div>';
-            return;
-        }
+        if (currentLayout === 'editor') {
+            heading.innerText = "Moveset List";
+            if (allContainers.length === 0) {
+                list.innerHTML = '<div style="text-align:center; padding-top: 30px; font-size: 0.8rem; color: #555;">No build loaded yet. Paste Base64 inside actual Import action!</div>';
+                return;
+            }
 
-        allContainers.forEach((c, i) => {
-            const btn = document.createElement('div');
-            btn.className = 'item';
-            btn.id = `btn-${i}`;
-            btn.onclick = () => selectContainer(i);
-            
-            const kName = c.K_NAME || 'BUILD';
-            const moveName = c.NAME || 'UNNAMED';
-            
-            btn.innerHTML = `
-                <span class="type-tag">${kName}</span>
-                <span class="move-name">${moveName}</span>
+            allContainers.forEach((c, i) => {
+                const btn = document.createElement('div');
+                btn.className = 'item';
+                btn.id = `btn-${i}`;
+                btn.onclick = () => selectContainer(i);
+                
+                const kName = c.K_NAME || 'BUILD';
+                const moveName = c.NAME || 'UNNAMED';
+                
+                btn.innerHTML = `
+                    <span class="type-tag">${kName}</span>
+                    <span class="move-name">${moveName}</span>
+                `;
+                list.appendChild(btn);
+            });
+        } else {
+            // Tracks layout
+            heading.innerText = "Main Target Containers";
+            list.innerHTML = `
+                <div class="jjs-bar jjs-c-skill" onclick="changeShenanigansTrackChannel('SKILL')" style="${activeTrackCategory === 'SKILL' ? 'border-color: var(--accent); background: rgba(255,123,123,0.15);' : ''}">
+                    <div class="jjs-bar-icon-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6"/></svg>
+                    </div>
+                    <div class="jjs-bar-text">Skill Container</div>
+                </div>
+                <div class="jjs-bar jjs-c-special" onclick="changeShenanigansTrackChannel('SPECIAL')" style="${activeTrackCategory === 'SPECIAL' ? 'border-color: var(--accent); background: rgba(255,179,123,0.15);' : ''}">
+                    <div class="jjs-bar-icon-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/></svg>
+                    </div>
+                    <div class="jjs-bar-text">Special Container</div>
+                </div>
+                <div class="jjs-bar jjs-c-awakening" onclick="changeShenanigansTrackChannel('AWAKENING')" style="${activeTrackCategory === 'AWAKENING' ? 'border-color: var(--accent); background: rgba(255,255,123,0.15);' : ''}">
+                    <div class="jjs-bar-icon-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+                    </div>
+                    <div class="jjs-bar-text">Awakening Container</div>
+                </div>
             `;
-            list.appendChild(btn);
-        });
+        }
     }
 
     function renderWorkspaceContents() {
         const workspace = document.getElementById('main-timeline');
         workspace.innerHTML = '';
 
-        if (allContainers.length === 0) {
-            workspace.innerHTML = '<div class="empty-state">LOAD A COMPRESSED BUILD TO BEGIN EDITING</div>';
-            return;
+        if (currentLayout === 'editor') {
+            if (allContainers.length === 0) {
+                workspace.innerHTML = '<div class="empty-state">LOAD A COMPRESSED BUILD TO BEGIN EDITING</div>';
+                return;
+            }
+            selectContainer(0); // Trigger default
+        } else {
+            // Render Fully Restored Interactive Shenanigans Sequence System
+            let shenanigansHTML = `
+                <div class="editor-header">
+                    <h1 style="margin:0; font-size:2.5rem; text-transform:uppercase;">${activeTrackCategory} RUNTIME TRACK</h1>
+                    <div class="tooltip-field">
+                        <label>Global Module Identification Context</label>
+                        <input value="Shenanigans_Profile_Core_${activeTrackCategory}" readonly>
+                    </div>
+                </div>
+
+                <div class="node-card">
+                    <div class="node-head">
+                        <strong>Active Target Properties</strong>
+                    </div>
+                    <div class="node-grid">
+                        <div class="field"><label>Playback Speed</label><input value="1.00" readonly></div>
+                        <div class="field"><label>Global Interpolation</label><input value="Linear" readonly></div>
+                        <div class="field"><label>Safety Assert Override</label><input value="disabled" readonly></div>
+                        <div class="field"><label>Frame Padding Count</label><input value="4" readonly></div>
+                    </div>
+                </div>
+
+                <div class="node-card">
+                    <div class="node-head">
+                        <strong>Sequence Timeline Tracker Canvas</strong>
+                    </div>
+                    <div class="timeline-track-canvas" style="padding:25px;">
+            `;
+
+            // Filter out containers that map explicitly into the category, or default to loaded configuration data channels
+            let relevantTracks = allContainers.filter(c => (c.K_NAME || '').toUpperCase() === activeTrackCategory || (c.NAME || '').toUpperCase().includes(activeTrackCategory));
+            
+            if (relevantTracks.length === 0 && allContainers.length > 0) {
+                relevantTracks = allContainers; // Mirror existing sequences if not implicitly classified
+            }
+
+            if (relevantTracks.length === 0) {
+                shenanigansHTML += `
+                    <div style="text-align:center; padding: 25px 10px; color: #555; font-size: 0.85rem; text-transform: uppercase; line-height:1.5;">
+                        No sequence container mapped to active ${activeTrackCategory} channel.<br>
+                        <span style="font-size:0.7rem; opacity:0.6;">Use the Unified Import Center to pass execution base64 data strings.</span>
+                    </div>
+                `;
+            } else {
+                relevantTracks.forEach((container) => {
+                    let sequenceNodes = [];
+                    try {
+                        const inner = typeof container.DATA === 'string' ? JSON.parse(container.DATA) : container.DATA;
+                        sequenceNodes = inner.Line || inner.DATA?.Line || [];
+                    } catch(e) { sequenceNodes = container.Line || []; }
+
+                    shenanigansHTML += `
+                        <div style="margin-bottom:20px; border-bottom:2px dashed var(--border); padding-bottom:15px;">
+                            <div style="font-size:0.9rem; color: var(--accent); margin-bottom:12px; text-transform:uppercase; font-weight:bold; letter-spacing:0.5px;">
+                                Stream Target: ${container.NAME || 'UNNAMED'} [${container.K_NAME || 'BUILD'}]
+                            </div>
+                    `;
+
+                    if (sequenceNodes.length === 0) {
+                        shenanigansHTML += `<div style="font-size:0.75rem; color:#444; padding-left:10px; font-style:italic;">[Empty Data Line Channel]</div>`;
+                    } else {
+                        sequenceNodes.forEach((node, idx) => {
+                            const nodeName = NODE_NAME_MAP[node.K_NAME] || node.K_NAME;
+                            let nodeProperties = '';
+                            if (node.K_NAME === 'ANIM') nodeProperties = `Speed: ${node.Speed || 1}, FadeTime: ${node.FadeTime || 0.1}`;
+                            else if (node.K_NAME === 'WAIT') nodeProperties = `Duration: ${node.Duration || 0.1}s`;
+                            else if (node.K_NAME === 'SFX') nodeProperties = `SoundId: ${node.SoundId || 0}, Volume: ${node.Volume || 0.5}`;
+                            else if (node.K_NAME === 'VISUAL') nodeProperties = `Type: ${node.VisualType || 'Slash'}, Limb: ${node.Limb || 'HRP'}`;
+                            else nodeProperties = Object.entries(node).filter(([k]) => k !== 'K_NAME').map(([k,v]) => `${k}:${v}`).slice(0, 2).join(', ');
+
+                            shenanigansHTML += `
+                                <div class="jjs-bar" style="margin-bottom:8px;">
+                                    <div class="jjs-bar-icon-box" style="color:var(--accent);">
+                                        <span style="font-size:0.7rem;">#${idx+1}</span>
+                                    </div>
+                                    <div class="jjs-bar-text" style="font-size:0.75rem; display:flex; justify-content:space-between; width:100%; padding-right:15px; font-weight:normal;">
+                                        <span style="font-weight:bold; color:var(--text)">[${nodeName}]</span>
+                                        <span style="color:#777; font-family:monospace !important; text-transform:none;">${nodeProperties}</span>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+                    shenanigansHTML += `</div>`;
+                });
+            }
+
+            shenanigansHTML += `
+                    </div>
+                </div>
+            `;
+            workspace.innerHTML = shenanigansHTML;
         }
-        selectContainer(0);
     }
 
     function checkEngine() {
@@ -376,55 +635,33 @@
     }
 
     function loadCode(raw) {
-        if (!raw) return;
-        
-        // Check 1: See if the string is just an uncompressed raw text JSON moveset structure
+        if (!raw || !window.pako) return;
         try {
-            const parsedData = JSON.parse(raw.trim());
-            allContainers = Array.isArray(parsedData) ? parsedData : [parsedData];
-            renderSidebarContents();
-            renderWorkspaceContents();
-            return;
-        } catch(e) {
-            // Not raw JSON, proceed to base64 pako block
-        }
-
-        if (!window.pako) {
-            alert("Pako library engine is unavailable.");
-            return;
-        }
-
-        try {
-            // Clean out all format spaces/newlines to prevent atob encoding byte drops
-            const cleaned = raw.replace(/\s/g, '');
-            const binary = atob(cleaned);
+            const binary = atob(raw.trim());
             const bytes = new Uint8Array(binary.length);
             for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
             
             let decodedText;
             try {
-                // Try standard zlib/gzip headered inflate stream
                 const inflated = pako.inflate(bytes);
                 decodedText = new TextDecoder().decode(inflated);
             } catch(e) {
-                try {
-                    // Fallback try raw deflate mode (no compression headers)
-                    const inflatedRaw = pako.inflateRaw(bytes);
-                    decodedText = new TextDecoder().decode(inflatedRaw);
-                } catch(err) {
-                    // Final fallback attempt raw string bytes decode
-                    decodedText = new TextDecoder().decode(bytes);
-                }
+                decodedText = new TextDecoder().decode(bytes); // Fallback to raw decode
             }
             
             const data = JSON.parse(decodedText);
             allContainers = Array.isArray(data) ? data : [data];
             
+            if (currentLayout !== 'editor') {
+                currentLayout = 'editor';
+            }
+            
             renderSidebarContents();
             renderWorkspaceContents();
+            selectContainer(0);
         } catch(e) { 
             console.error("IMPORT ERROR:", e); 
-            alert("IMPORT FAILED: The provided data could not be parsed or decompressed properly. Make sure you copied the entire code block."); 
+            alert("IMPORT FAILED: The data provided is not a valid compressed JSON build or valid theme configuration."); 
         }
     }
 
@@ -445,7 +682,7 @@
     }
 
     function selectContainer(index) {
-        if (allContainers.length === 0) return;
+        if (currentLayout !== 'editor' || allContainers.length === 0) return;
 
         document.querySelectorAll('.item').forEach(b => b.classList.remove('active'));
         const activeBtn = document.getElementById(`btn-${index}`);
@@ -453,8 +690,9 @@
         
         const container = allContainers[index];
         const timeline = document.getElementById('main-timeline');
-        timeline.innerHTML = ''; 
+        timeline.innerHTML = ''; // Clear
 
+        // Insert Editor Header style from testjjs
         timeline.innerHTML += `
             <div class="editor-header">
                 <h1 style="margin:0; font-size:2.5rem; text-transform:uppercase;">${container.NAME || 'UNNAMED'}</h1>
@@ -516,7 +754,9 @@
     }
 
     function previewTheme(styleName) {
+        const isShena = document.body.classList.contains('root-shenanigans');
         document.body.className = '';
+        if (isShena) document.body.classList.add('root-shenanigans');
         document.body.removeAttribute('style');
 
         document.getElementById('custom-editor-ui').style.display = (styleName === 'custom') ? 'block' : 'none';
@@ -644,25 +884,46 @@
         overlay.style.display = 'flex';
 
         if (mode === 'import') {
-            titleEl.innerHTML = '<i class="fa-solid fa-file-import"></i> Import Center';
-            ioBox.placeholder = "Paste compressed base64 data here...";
+            titleEl.innerHTML = '<i class="fa-solid fa-file-import"></i> Unified Import Center';
+            ioBox.placeholder = "Paste theme configuration JSON OR compressed base64 Pako build data here...";
             ioBox.readOnly = false;
             actionBtn.innerText = "Execute Import";
         } else if (mode === 'export') {
-            titleEl.innerHTML = '<i class="fa-solid fa-file-export"></i> Export Center';
+            titleEl.innerHTML = '<i class="fa-solid fa-file-export"></i> Unified Export Center';
             ioBox.readOnly = true;
             actionBtn.innerText = "Copy to Clipboard";
 
+            // Export logic adapts automatically to output both theme parameters AND binary builds if loaded
+            let exportPayload = {};
+            const activeThemeKey = document.getElementById('global-theme-picker').value;
+
+            if (activeThemeKey === 'custom') {
+                exportPayload.themeConfig = {
+                    name:      document.getElementById('val-name').value,
+                    bg:        document.getElementById('val-bg').value,
+                    panel:     document.getElementById('val-panel').value,
+                    node:      document.getElementById('val-node').value,
+                    accent:    document.getElementById('val-accent').value,
+                    text:      document.getElementById('val-text').value,
+                    border:    document.getElementById('val-border').value,
+                    thickness: document.getElementById('val-thick').value + 'px',
+                    bgImg:     document.getElementById('val-bgimg').value
+                };
+            } else if (activeThemeKey.startsWith('saved_')) {
+                exportPayload.themeConfig = dynamicCustomThemes[activeThemeKey];
+            } else {
+                exportPayload.themeConfig = { activeTheme: activeThemeKey, activeRoot: currentRoot };
+            }
+
             if (allContainers.length > 0) {
                 try {
-                    ioBox.value = generateBuildExportCode();
+                    exportPayload.compressedBuild = generateBuildExportCode();
                 } catch(err) {
-                    console.error(err);
-                    ioBox.value = "ERROR: Failed to compress data build.";
+                    console.warn("Could not compress build for export payload", err);
                 }
-            } else {
-                ioBox.value = "ERROR: No data loaded to export.";
             }
+
+            ioBox.value = JSON.stringify(exportPayload, null, 2);
         }
     }
 
@@ -682,17 +943,69 @@
             }
             ioBox.select();
             document.execCommand('copy');
-            alert('Export code copied to clipboard successfully!');
+            alert('Export configuration copied to clipboard successfully!');
             closeJJSModal(null);
             
         } else if (activeModalMode === 'import') {
             const rawVal = ioBox.value.trim();
             if (rawVal === '') {
-                alert("Please paste your moveset code data before executing.");
+                alert("Please provide configuration string data first.");
                 return;
             }
-            loadCode(rawVal);
-            closeJJSModal(null);
+
+            try {
+                // Check if JSON configuration payload is provided (like themes or unified exports)
+                const parsed = JSON.parse(rawVal);
+                
+                // Read nested structures if standard exports are imported
+                if (parsed.themeConfig) {
+                    const cfg = parsed.themeConfig;
+                    const uniqueKey = 'saved_' + Date.now();
+                    dynamicCustomThemes[uniqueKey] = {
+                        name:      cfg.name      || 'Imported Theme',
+                        bg:        cfg.bg        || '#1a1a1a',
+                        panel:     cfg.panel     || '#111111',
+                        node:      cfg.node      || '#252525',
+                        accent:    cfg.accent    || '#ffcc33',
+                        text:      cfg.text      || '#e0e0e0',
+                        border:    cfg.border    || '#000000',
+                        thickness: cfg.thickness || '4px',
+                        bgImg:     cfg.bgImg     || ''
+                    };
+                    localStorage.setItem('jjs_studio_custom_registry', JSON.stringify(dynamicCustomThemes));
+                    rebuildDropdownList();
+                    document.getElementById('global-theme-picker').value = uniqueKey;
+                    previewTheme(uniqueKey);
+                }
+
+                if (parsed.compressedBuild) {
+                    loadCode(parsed.compressedBuild);
+                } else if (!parsed.themeConfig) {
+                    // Try parsing raw direct theme configuration JSONs
+                    const uniqueKey = 'saved_' + Date.now();
+                    dynamicCustomThemes[uniqueKey] = {
+                        name:      parsed.name      || 'Imported Theme',
+                        bg:        parsed.bg        || '#1a1a1a',
+                        panel:     parsed.panel     || '#111111',
+                        node:      parsed.node      || '#252525',
+                        accent:    parsed.accent    || '#ffcc33',
+                        text:      parsed.text      || '#e0e0e0',
+                        border:    parsed.border    || '#000000',
+                        thickness: parsed.thickness || '4px',
+                        bgImg:     parsed.bgImg     || ''
+                    };
+                    localStorage.setItem('jjs_studio_custom_registry', JSON.stringify(dynamicCustomThemes));
+                    rebuildDropdownList();
+                    document.getElementById('global-theme-picker').value = uniqueKey;
+                    previewTheme(uniqueKey);
+                }
+                
+                closeJJSModal(null);
+            } catch(e) {
+                // If it fails JSON parsing, assume it's direct base64 Pako build data
+                loadCode(rawVal);
+                closeJJSModal(null);
+            }
         }
     }
 </script>
