@@ -2,541 +2,560 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.7.7</title>
-    <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JJS STUDIO - UNIFIED ENGINE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Finger+Paint&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+
     <style>
-        :root { 
-            --bg: #1a1a1a; 
-            --thickness: 4px; 
-            --accent: #ffcc33; 
-            --panel: #111;
-            --text: #e0e0e0; 
-            --node-card: #252525;
-            --border: #000;
+        /* ==========================================
+           CORE STYLING SYSTEM (Based on Fused Style)
+           ========================================== */
+        :root {
+            --bg: #13131a;
+            --panel: #1c1c24;
+            --node-card: #22222f;
+            --accent: #ffcc33;
+            --text: #e2e2e9;
+            --border: #2d2d3d;
+            --thickness: 1px;
+            --border-radius: 8px;
+            --font-family: 'Inter', sans-serif;
+            --bg-image: none;
         }
 
-        * { font-family: 'Finger Paint', cursive; box-sizing: border-box; outline: none; border-radius: 0 !important; }
-        
-        body { 
-            margin: 0; 
-            background-color: var(--bg);
-            background-image: 
-                linear-gradient(rgba(0,0,0,0.3) 2px, transparent 2px),
-                linear-gradient(90deg, rgba(0,0,0,0.3) 2px, transparent 2px);
-            background-size: 50px 50px;
-            color: var(--text); 
-            display: flex; 
-            width: 100vw;
-            height: 100vh; 
-            overflow: hidden; 
+        /* ==========================================
+           SHENANIGANS STRUCTURAL OVERRIDES
+           ========================================== */
+        body.mode-shenanigans {
+            --bg: #1a1a1a;
+            --panel: #111111;
+            --node-card: #252525;
+            --accent: #ffcc33;
+            --text: #e0e0e0;
+            --border: #000000;
+            --thickness: 4px;
+            --font-family: 'Finger Paint', cursive;
+            --bg-image: linear-gradient(rgba(0,0,0,0.3) 2px, transparent 2px), linear-gradient(90deg, rgba(0,0,0,0.3) 2px, transparent 2px);
         }
-        
-        .sidebar { 
-            width: 380px; 
-            min-width: 380px;
-            background: var(--panel); 
-            border-right: var(--thickness) solid var(--border); 
-            display: flex; 
-            flex-direction: column; 
-            z-index: 10; 
-            box-shadow: 5px 0 0 rgba(0,0,0,0.2);
+
+        body.mode-shenanigans * {
+            font-family: 'Finger Paint', cursive !important;
+            border-radius: 0px !important;
+        }
+
+        body.mode-shenanigans .node-card,
+        body.mode-shenanigans .sidebar,
+        body.mode-shenanigans .jjs-bar,
+        body.mode-shenanigans .field-input,
+        body.mode-shenanigans .btn-layout-toggle,
+        body.mode-shenanigans .action-btn {
+            border: var(--thickness) solid var(--border) !important;
+            box-shadow: 5px 5px 0px #000000 !important;
+        }
+
+        /* ==========================================
+           BASE LAYOUT STRUCTURE
+           ========================================== */
+        * {
+            font-family: var(--font-family);
+            box-sizing: border-box;
+            outline: none;
+            transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--bg);
+            background-image: var(--bg-image);
+            background-size: 40px 40px;
+            color: var(--text);
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Container */
+        .sidebar {
+            width: 360px;
+            min-width: 360px;
+            background: var(--panel);
+            border-right: var(--thickness) solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
             height: 100%;
         }
-        
-        .sidebar-header { 
-            padding: 25px; 
-            border-bottom: var(--thickness) solid var(--border); 
-            text-align: center; 
-        }
-        
-        .io-container { 
-            padding: 20px; 
-            background: #000; 
-            margin: 15px; 
-            border: var(--thickness) solid var(--border); 
-            box-shadow: 6px 6px 0px #000;
-        }
-        
-        textarea { 
-            width: 100%; 
-            height: 100px; 
-            background: #050505; 
-            color: #2ecc71; 
-            border: calc(var(--thickness)/2) solid var(--border); 
-            font-size: 10px; 
-            resize: none; 
-            margin-bottom: 10px; 
-            padding: 8px; 
-            font-family: monospace; 
-        }
-        
-        .btn { 
-            width: 100%; 
-            padding: 14px; 
-            border: var(--thickness) solid var(--border); 
-            font-weight: bold; 
-            cursor: pointer; 
-            text-transform: uppercase; 
-            transition: transform 0.1s, box-shadow 0.1s; 
-            margin-bottom: 8px; 
-        }
-        
-        .btn-load { background: var(--accent); color: #000; }
-        .btn-save { background: #2ecc71; color: #fff; }
-        
-        .btn:hover { 
-            transform: translate(-4px, -4px); 
-            box-shadow: 6px 6px 0px #000; 
-            filter: brightness(1.1);
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: var(--thickness) solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        .container-list { flex: 1; overflow-y: auto; padding: 15px; scrollbar-width: thin; scrollbar-color: var(--accent) #000; }
-        
-        .item { 
-            padding: 18px; 
-            background: var(--node-card); 
-            margin-bottom: 12px; 
-            cursor: pointer; 
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        /* Workspace Core Toggles */
+        .layout-switcher {
+            display: flex;
+            padding: 15px;
+            gap: 10px;
+            border-bottom: var(--thickness) solid var(--border);
+        }
+
+        .btn-layout-toggle {
+            flex: 1;
+            padding: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
             border: var(--thickness) solid var(--border);
-            box-shadow: 4px 4px 0px #000;
-            transition: transform 0.1s, box-shadow 0.1s;
+            background: var(--node-card);
+            color: var(--text);
+            border-radius: var(--border-radius);
+            text-align: center;
         }
-        
-        .item:hover { 
-            background: #333; 
-            transform: translate(-2px, -2px);
-            box-shadow: 6px 6px 0px #000;
-        }
-        
-        .item.active { 
-            background: var(--accent); 
-            color: #000;
-        }
-        
-        .item.active .type-tag, .item.active .move-name { color: #000; }
-        .item .type-tag { font-size: 0.65rem; color: var(--accent); text-transform: uppercase; }
-        .item .move-name { display: block; font-size: 1.2rem; color: #fff; }
 
-        .main { flex: 1; overflow-y: auto; padding: 40px; height: 100%; }
-        
-        .editor-header { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 15px; 
-            border-left: var(--thickness) solid var(--accent); 
-            padding-left: 20px; 
-            margin-bottom: 40px; 
+        .btn-layout-toggle.active {
+            background: var(--accent);
+            color: #000000;
+            border-color: var(--accent);
         }
-        
-        .tooltip-field { 
-            background: #000; 
-            border: var(--thickness) solid var(--border); 
-            padding: 12px; 
-            max-width: 400px; 
-            margin-top: 10px; 
-            box-shadow: 5px 5px 0px #000;
-        }
-        
-        .tooltip-field label { display: block; font-size: 0.65rem; color: var(--accent); text-transform: uppercase; margin-bottom: 5px; }
-        .tooltip-field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #333; }
-        .tooltip-field input:focus { border-bottom-color: var(--accent); }
-        
-        .node-card { 
-            background: var(--panel); 
-            border: var(--thickness) solid var(--border); 
-            margin-bottom: 30px; 
-            overflow: hidden; 
-            box-shadow: 10px 10px 0px rgba(0,0,0,1); 
-        }
-        
-        .node-head { 
-            background: #222; 
-            padding: 15px 25px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border-bottom: var(--thickness) solid var(--border); 
-        }
-        
-        .node-head strong { color: var(--accent); font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; }
-        
-        .node-grid { padding: 25px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
-        
-        .field { 
-            background: #000; 
-            border: calc(var(--thickness)/2) solid var(--border); 
-            padding: 12px; 
-            box-shadow: 4px 4px 0px #000;
-        }
-        
-        .field label { display: block; font-size: 0.65rem; color: #666; text-transform: uppercase; margin-bottom: 5px; }
-        .field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #222; }
-        .field input:focus { border-bottom-color: var(--accent); }
 
-        .empty-state { text-align: center; margin-top: 100px; border: var(--thickness) dashed var(--border); padding: 40px; background: #111; max-width: 500px; margin-left: auto; margin-right: auto; box-shadow: 10px 10px 0 #000; }
+        /* Interactive Dynamic Lists */
+        .data-stream-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
 
-        /* SAFETY CUSTOM PROMPT DIALOG SCREEN OVERLAYS */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85); display: none; align-items: center;
-            justify-content: center; z-index: 1000;
+        .jjs-bar {
+            background: var(--node-card);
+            border: var(--thickness) solid var(--border);
+            border-radius: var(--border-radius);
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 500;
+            font-size: 0.9rem;
         }
-        .modal-box {
-            background: #111; border: var(--thickness) solid #000;
-            padding: 30px; max-width: 520px; width: 90%; box-shadow: 15px 15px 0 #000; text-align: center;
+
+        .jjs-bar:hover {
+            border-color: var(--accent);
         }
-        .modal-title { font-size: 1.4rem; color: var(--accent); margin-top: 0; margin-bottom: 15px; text-transform: uppercase; }
-        .modal-body { font-size: 0.9rem; margin-bottom: 25px; color: #bbb; line-height: 1.4; }
-        .modal-actions { display: flex; flex-direction: column; gap: 10px; }
-        .btn-modal { padding: 12px; border: var(--thickness) solid #000; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.9rem; margin-bottom: 0; }
-        .btn-cancel { background: #555; color: #fff; }
-        .btn-merge { background: #3498db; color: #fff; }
-        .btn-replace { background: #e74c3c; color: #fff; }
-        .btn-modal:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 #000; }
+
+        .jjs-bar.active {
+            background: var(--accent);
+            color: #000000;
+            border-color: var(--accent);
+        }
+
+        /* Main Workspace Window */
+        .main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        /* ==========================================
+           NODE ENGINE GRAPHICAL COMPONENT STYLES
+           ========================================== */
+        .node-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .node-card {
+            background: var(--panel);
+            border: var(--thickness) solid var(--border);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .node-head {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 12px 15px;
+            border-bottom: var(--thickness) solid var(--border);
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .node-body {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .field-row {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .field-row label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+        }
+
+        .field-input {
+            background: var(--node-card);
+            border: var(--thickness) solid var(--border);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            width: 100%;
+        }
+
+        /* Action Panel Bottom Buttons */
+        .action-row {
+            padding: 15px;
+            border-top: var(--thickness) solid var(--border);
+            display: flex;
+            gap: 10px;
+            background: rgba(0,0,0,0.15);
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 10px;
+            border: var(--thickness) solid var(--border);
+            background: var(--node-card);
+            color: var(--text);
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: var(--border-radius);
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        .action-btn.primary {
+            background: var(--accent);
+            color: #000000;
+            border-color: var(--accent);
+        }
+
+        /* ==========================================
+           MODAL OVERLAY SYSTEM
+           ========================================== */
+        .jjs-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .jjs-modal-window {
+            background: var(--panel);
+            border: 2px solid var(--border);
+            border-radius: var(--border-radius);
+            width: 500px;
+            max-width: 90%;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .jjs-modal-window h3 {
+            margin: 0;
+            color: var(--accent);
+            font-size: 1.2rem;
+        }
+
+        .jjs-modal-window textarea {
+            width: 100%;
+            height: 180px;
+            background: var(--bg);
+            border: var(--thickness) solid var(--border);
+            color: var(--text);
+            padding: 10px;
+            font-family: monospace !important;
+            font-size: 0.8rem;
+            resize: none;
+        }
     </style>
 </head>
-<body>
+<body class="mode-studio">
 
-<!-- custom prompt modular workflow container markup -->
-<div class="modal-overlay" id="safety-modal">
-    <div class="modal-box">
-        <h3 class="modal-title" id="modal-header-text">Hold On!</h3>
-        <p class="modal-body" id="modal-body-text">Hey, you're trying to load a moveset code when you already have something open.</p>
-        <div class="modal-actions">
-            <button class="btn-modal btn-merge" id="modal-opt-merge">Merge (Add the moves together)</button>
-            <button class="btn-modal btn-replace" id="modal-opt-replace">Replace (Wipe current and use new code)</button>
-            <button class="btn-modal btn-cancel" id="modal-opt-cancel">Cancel (Don't do anything)</button>
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h2>JJS STUDIO ENGINE</h2>
+        <span style="font-size: 0.75rem; background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 20px;">v2.8.8</span>
+    </div>
+
+    <div class="layout-switcher">
+        <button class="btn-layout-toggle active" id="btn-studio" onclick="setEngineLayout('Studio')">Studio</button>
+        <button class="btn-layout-toggle" id="btn-shenanigans" onclick="setEngineLayout('Shenanigans')">Shenanigans</button>
+    </div>
+
+    <div class="data-stream-container" id="sidebar-moves-list">
+        <div style="text-align: center; color: rgba(255,255,255,0.4); margin-top: 40px; font-size: 0.85rem;">
+            <i class="fa-solid fa-folder-open" style="font-size: 1.5rem; margin-bottom: 10px; display: block;"></i>
+            No Engine Code Build Loaded
+        </div>
+    </div>
+
+    <div class="action-row">
+        <button class="action-btn" onclick="openEngineIO('import')">Import</button>
+        <button class="action-btn primary" onclick="openEngineIO('export')">Export</button>
+    </div>
+</div>
+
+<div class="main" id="workspace-viewport">
+    <div style="max-width: 800px; margin: 60px auto; text-align: center; color: rgba(255,255,255,0.5);">
+        <h1 style="color: var(--text); font-size: 2rem; margin-bottom: 15px;">Welcome to JJS Engine Workspace</h1>
+        <p>Please load your compiled character moveset data via the base64 build importer tool at the bottom left to begin schema mapping.</p>
+    </div>
+</div>
+
+<div class="jjs-modal-overlay" id="engine-modal">
+    <div class="jjs-modal-window">
+        <h3 id="modal-title-text">Engine Data Port</h3>
+        <p id="modal-desc-text" style="font-size: 0.8rem; margin: 0; color: rgba(255,255,255,0.6);"></p>
+        <textarea id="modal-io-target" placeholder="Paste your dynamic code block data here..."></textarea>
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button class="action-btn" onclick="closeEngineIO()" style="flex: none; width: 100px;">Cancel</button>
+            <button class="action-btn primary" id="modal-action-btn" style="flex: none; width: 120px;">Execute</button>
         </div>
     </div>
 </div>
 
-<div class="sidebar">
-    <div class="sidebar-header">
-        <h2 style="margin:0; color: var(--accent); text-transform: uppercase; letter-spacing: 1px;">JJS STUDIO</h2>
-        <span style="font-size:0.7rem; color:#555;">V1.7.7 // CLEAN TEXT UPDATE</span>
-    </div>
-    <div class="io-container">
-        <textarea id="kluv-io" placeholder="PASTE YOUR MOVESET CODE HERE..."></textarea>
-        <button class="btn btn-load" onclick="triggerImportPipeline()">Load Character</button>
-        <button class="btn btn-save" onclick="exportData()">Get Export Code</button>
-    </div>
-    <div id="sidebar-list" class="container-list"></div>
-</div>
-
-<div class="main" id="editor-view">
-    <div class="empty-state"><h2 style="margin:0; color:var(--accent);">NOTHING LOADED YET</h2><span style="font-size:0.75rem; color:#666; text-transform:uppercase; margin-top:5px; display:block;">Paste a code on the left and click Load Character to start</span></div>
-</div>
-
-<script src="./zstd-bundle.js"></script>
 <script>
-    let currentMoves = [];
-    let activeIndex = -1;
-    let zstd = null;
-    let cachedPendingData = null;
+    /* ===================================================
+       MASTER SCHEMAS & DICTIONARIES FROM THE ENGINE
+       =================================================== */
+    let activeWorkspaceMode = 'Studio';
+    let loadedMovesData = [];
+    let selectedMoveIndex = null;
 
-    const TRANSLATIONS = {
-        "ULTGIB": "ADD AWAKENING", "HPGIB": "ADD HEALTH", "EVGIB": "ADD EVASION",
-        "HITCNCL": "HIT CANCEL", "ATK": "ATTACK", "ANIM": "ANIMATION",
-        "VELO": "VELOCITY", "PROJ": "PROJECTILE", "SFX": "SOUND",
-        "WAIT": "WAIT", "SKILL": "SKILL", "SPECIAL": "SPECIAL",
-        "CONNECT": "CONNECT", "HITBOX": "HITBOX", "BRANCH": "BRANCH",
-        "VISUAL": "VISUAL", "GRAB": "GRAB", "COUNTER": "COUNTER",
-        "TAG": "TAG", "STATE": "STATE", "TELEPORT": "TELEPORT",
-        "LOOP": "LOOP", "SETCD": "SET COOLDOWN"
+    // Dictionary definition frameworks derived from engine rules
+    const MASTER_SCHEMA = {
+        "K_NAME": "String", "Frame": "Integer", "Duration": "Integer", "X": "Float", "Y": "Float",
+        "Width": "Float", "Height": "Float", "Damage": "Float", "Knockback": "Float", "Angle": "Float"
     };
 
-    const NODE_TEMPLATES = {
-        WAIT: ["TIME"],
-        SKILL: ["SPEED", "START", "ENABLE VARIANTS", "HOLD FOR", "MOVE", "CANCEL LAST"],
-        SPECIAL: ["SPEED", "SPEC", "ENABLE VARIANTS", "CANCEL LAST"],
-        ANIM: ["FADE IN", "PREVIEW", "FADE OUT", "LAST HIT", "SPEED", "ANIM_USE"],
-        SFX: ["END", "GLOBAL", "VOLUME", "PROJECTILE TAG", "ID", "START", "CANCEL", "SPEED"],
-        VELO: ["RELATIVE FROM BRANCH", "TRACK", "TIME", "TRUE RAGDOLL", "FORCE", "RAGDOLL", "LAST HIT", "FADE"],
-        CONNECT: ["SIGNAL", "TIME"],
-        HITBOX: ["SIZE", "SINGLE TARGET", "CAN KILL", "BLOCKABLE", "ATTACK TYPE", "PREVIEW", "STUN", "DEBREE", "POSITION", "BRANCH TARGET", "HIT RAGDOLL", "BRANCH FINISHER", "STUN ANIM", "BRANCH", "DAMAGE", "ROTATION", "CANCEL ENEMY", "PROJECTILE TAG", "360 BLOCK", "HIT USER", "CLEAR KNOCKBACK"],
-        BRANCH: ["LAST HIT", "BRANCH", "RANDOM"],
-        VISUAL: ["SIZE", "RELATIVE FROM BRANCH", "CAN COLLIDE", "OPACITY", "TEXTURE", "ALT COLOR", "COLOR", "EASING STYLE", "AMOUNT", "ALT ROTATION", "POSITION", "EASING DIRECTION", "CANCEL ON INTERRUPT", "VISUAL TAG", "ALT SIZE", "TIME", "RUN ON SERVER", "PROJECTILE TAG", "BODY PART", "ROTATION", "LAST HIT", "EFFECT", "ALT POSITION", "ALT OPACITY"],
-        GRAB: ["POSITION", "BODY PART", "ROTATION", "LAST HIT", "TIME", "BODY PART2"],
-        PROJECTILE: ["DAMAGE", "SPEED", "CAN KILL", "BLOCKABLE", "ATTACK TYPE", "CONTINUE", "CLEAR KNOCKBACK", "FILTER INTERVAL", "STUN", "CANCEL ENEMY", "DEBREE", "CACHE", "POSITION", "REFLECT COUNT", "BRANCH TARGET", "HIT RAGDOLL", "BRANCH", "BRANCH COLLIDED", "TIME", "HIT USER", "SIZE", "ROTATION", "PROJECTILE TAG", "360 BLOCK", "STUN ANIM", "AIM LAST HIT"],
-        COUNTER: ["BRANCH", "CANCEL ENEMY", "BRANCH TARGET", "STUN", "REMOVE ON HIT", "TIME", "ATTACK TYPE2"],
-        TAG: ["ADD/REMOVE", "TIME", "TAG", "CHECK", "LAST HIT", "BRANCH", "VALUE", "SET"],
-        STATE: ["DISABLE BURST", "CANCEL ON END", "LAST HIT", "STATE", "TIME", "VALUE"],
-        TELEPORT: ["POSITION", "PROJECTILE TAG", "LAST HIT", "RELATIVE FROM BRANCH", "ROTATION"],
-        ULTGIB: ["AMOUNT"], HPGIB: ["AMOUNT"], EVGIB: ["AMOUNT"],
-        HITCNCL: ["FLIP", "BRANCH", "TIME", "ENDLAG"],
-        LOOP: ["LOOP BACK", "HOLD", "LOOP AMOUNT"],
-        SETCD: ["KEY", "COOLDOWN"]
-    };
-
-    const DEFAULTS_LIB = {
-        TIME: 1.0, SPEED: 1.0, START: 0.0, "ENABLE VARIANTS": true, "HOLD FOR": 0.0,
-        MOVE: "Divergent Fist", SPEC: "Limitless", "FADE IN": 0.1, PREVIEW: [0, 3.59],
-        "FADE OUT": 0.0, "LAST HIT": -1.0, END: 500.0, GLOBAL: false, VOLUME: 0.5,
-        "PROJECTILE TAG": "nil", ID: 12222253, CANCEL: false, "TRUE RAGDOLL": false,
-        RAGDOLL: 0.0, FADE: false, SIGNAL: "Nothing", SIZE: "6.0, 6.0, 6.0",
-        "SINGLE TARGET": true, "CAN KILL": true, BLOCKABLE: true, "ATTACK TYPE": "Melee",
-        "ATTACK TYPE2": "Melee", STUN: 1.0, DEBREE: 0.0, "BRANCH TARGET": "nil",
-        "HIT RAGDOLL": false, BRANCH: "nil", DAMAGE: 1.0, "CANCEL ENEMY": true,
-        "360 BLOCK": false, "HIT USER": false, "CLEAR KNOCKBACK": false, RANDOM: "",
-        OPACITY: 0.0, TEXTURE: 0.0, "EASING STYLE": "Linear", "EASING DIRECTION": "In",
-        "BODY PART": "HumanoidRootPart", "BODY PART2": "HumanoidRootPart",
-        EFFECT: "Slash", STATE: "Stun", AMOUNT: 1.0, FLIP: false, ENDLAG: 1.0,
-        "LOOP BACK": 1.0, HOLD: false, "LOOP AMOUNT": 3.0, POSITION: "0.0, 0.0, 0.0", 
-        ROTATION: "0.0, 0.0, 0.0", "RELATIVE FROM BRANCH": false, "CAN COLLIDE": false,
-        COLOR: "255, 255, 255", "ALT COLOR": "255, 255, 255", "ALT SIZE": 1.0, "ALT POSITION": "0.0, 0.0, 0.0",
-        "ALT ROTATION": "0.0, 0.0, 0.0", "ALT OPACITY": 0.0, "BRANCH FINISHER": "nil", 
-        "STUN ANIM": false, "RUN ON SERVER": false, "VISUAL TAG": "nil", "FILTER INTERVAL": 1.0,
-        "CACHE": true, "REFLECT COUNT": 0.0, "BRANCH COLLIDED": "nil", "AIM LAST HIT": -1.0,
-        "REMOVE ON HIT": true, "ADD/REMOVE": true, "CHECK": false, "SET": true,
-        "DISABLE BURST": false, "CANCEL ON END": false, "VALUE": "nil", "CONTINUE": false,
-        "ANIM_USE": [1, 1.9], "CANCEL LAST": false, KEY: 1, COOLDOWN: 1.0
-    };
-
-    const TYPE_OVERRIDES = {
-        ULTGIB: { AMOUNT: 5.0 }, HPGIB: { AMOUNT: 5.0 }, EVGIB: { AMOUNT: 5.0 },
-        HITBOX: { PREVIEW: [0, 15] }
-    };
-
-    async function init() {
-        const engine = window.ZstdWeb || window.zstd || window.Zstd;
-        if (engine?.init) { await engine.init(); zstd = engine; }
-    }
-
-    function triggerImportPipeline() {
-        try {
-            const raw = document.getElementById('kluv-io').value.trim();
-            if (!raw) return alert("Oops! Make sure you paste your moveset code into the text box first.");
-            
-            const bin = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
-            const parsedStructure = JSON.parse(new TextDecoder().decode(zstd.decompress(bin)));
-
-            if (currentMoves.length > 0) {
-                cachedPendingData = parsedStructure;
-                showInterceptModal("Hold On!", "Hey, you're trying to import another code when there's one already in the editor.");
-            } else {
-                executeDirectLoad(parsedStructure);
-            }
-        } catch(e) { alert("Error: That code doesn't look right. Make sure it was copied correctly."); }
-    }
-
-    function executeDirectLoad(data) {
-        currentMoves = data;
-        renderSidebar();
-        loadMove(0);
-        closeModal();
-    }
-
-    function executeMergePipeline(incomingData) {
-        currentMoves = currentMoves.concat(incomingData);
-        renderSidebar();
-        loadMove(currentMoves.length - incomingData.length);
-        closeModal();
-    }
-
-    function showInterceptModal(title, msg) {
-        document.getElementById('modal-header-text').innerText = title;
-        document.getElementById('modal-body-text').innerText = msg;
-        document.getElementById('safety-modal').style.display = 'flex';
-    }
-
-    function closeModal() {
-        document.getElementById('safety-modal').style.display = 'none';
-        cachedPendingData = null;
-    }
-
-    document.getElementById('modal-opt-cancel').onclick = () => closeModal();
-    
-    document.getElementById('modal-opt-merge').onclick = () => {
-        if (cachedPendingData) executeMergePipeline(cachedPendingData);
-    };
-    
-    document.getElementById('modal-opt-replace').onclick = () => {
-        if (!cachedPendingData) return;
-        if (confirm("Are you totally sure? This will delete the moveset you are currently working on!")) {
-            if (confirm("Last warning: You'll lose your current unsaved changes if you replace it. Ready?")) {
-                executeDirectLoad(cachedPendingData);
-            }
-        }
-    };
-
-    window.addEventListener('keydown', function(e) {
-        if (e.ctrlKey && e.altKey && e.shiftKey && (e.key === 'T' || e.key === 't')) {
-            e.preventDefault();
-            generateTemplateDataIntercept();
-        }
-    });
-
-    function generateTemplateDataIntercept() {
-        if (!zstd) return alert("Hang on, the editor is still loading up.");
+    // Engine UI Handler Lifecycle
+    function setEngineLayout(layoutTarget) {
+        activeWorkspaceMode = layoutTarget;
         
-        const uiLine = [];
-        const exportLine = [];
+        const studioBtn = document.getElementById('btn-studio');
+        const shenanigansBtn = document.getElementById('btn-shenanigans');
         
-        Object.keys(NODE_TEMPLATES).forEach(nodeType => {
-            const uiNode = { "K_NAME": nodeType };
-            const exportNode = { "K_NAME": nodeType };
-            
-            NODE_TEMPLATES[nodeType].forEach(fieldKey => {
-                let val = (TYPE_OVERRIDES[nodeType] && TYPE_OVERRIDES[nodeType][fieldKey] !== undefined)
-                    ? TYPE_OVERRIDES[nodeType][fieldKey]
-                    : DEFAULTS_LIB[fieldKey];
-                    
-                if (val !== undefined) {
-                    uiNode[fieldKey] = JSON.parse(JSON.stringify(val));
-                }
-            });
-            
-            uiLine.push(uiNode);
-            exportLine.push(exportNode);
-        });
-
-        const uiStructure = [
-            {
-                "ADD": false, "NAME": "Master Node Template", "K_NAME": "SKILL", "KEY": 1,
-                "TOOL TIP": "Contains every registered node type with system defaults.", "COOLDOWN": 0,
-                "DATA": JSON.stringify({ "Line": uiLine, "Prop": [], "Req": [] })
-            }
-        ];
-
-        const exportStructure = [
-            {
-                "ADD": false, "NAME": "Master Node Template", "K_NAME": "SKILL", "KEY": 1,
-                "TOOL TIP": "Contains every registered node type with system defaults.", "COOLDOWN": 0,
-                "DATA": JSON.stringify({ "Line": exportLine, "Prop": [], "Req": [] })
-            }
-        ];
-
-        try {
-            const bin = zstd.compress(new TextEncoder().encode(JSON.stringify(exportStructure)), 3);
-            let str = ""; for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
-            document.getElementById('kluv-io').value = btoa(str);
-        } catch(err) { console.error("Template build failed."); }
-
-        if (currentMoves.length > 0) {
-            cachedPendingData = uiStructure;
-            showInterceptModal("Hold On!", "Hey, you're trying to insert a template string.");
+        if(layoutTarget === 'Shenanigans') {
+            document.body.className = 'mode-shenanigans';
+            shenanigansBtn.classList.add('active');
+            studioBtn.classList.remove('active');
         } else {
-            executeDirectLoad(uiStructure);
-            alert("Secret Template Loaded! The template code has been pasted into the text box.");
+            document.body.className = 'mode-studio';
+            studioBtn.classList.add('active');
+            shenanigansBtn.classList.remove('active');
         }
-    }
-
-    function renderSidebar() {
-        const list = document.getElementById('sidebar-list');
-        list.innerHTML = currentMoves.map((m, i) => `
-            <div class="item ${i === activeIndex ? 'active' : ''}" onclick="loadMove(${i})">
-                <span class="type-tag">${m.K_NAME || "Move Group"}</span>
-                <span class="move-name">${m.NAME || "Unnamed Move"}</span>
-            </div>
-        `).join('');
-    }
-
-    function loadMove(idx) {
-        activeIndex = idx;
-        renderSidebar();
-        const move = currentMoves[idx];
-        let nodes = Array.isArray(move.Line) ? move.Line : JSON.parse(move.DATA).Line || [];
-        const tooltipVal = move["TOOL TIP"] || "";
-
-        document.getElementById('editor-view').innerHTML = `
-            <div class="editor-header">
-                <h1 style="margin:0; font-size: 2.5rem; color: #fff; text-transform: uppercase;">${move.NAME || 'Unnamed Move'}</h1>
-                <div class="tooltip-field">
-                    <label>Move Description / Tooltip</label>
-                    <input value="${tooltipVal.replace(/"/g, '&quot;')}" onchange="updateTooltip(this.value)">
-                </div>
-            </div>
-            ${nodes.map((n, ni) => {
-                const template = NODE_TEMPLATES[n.K_NAME] || Object.keys(n);
-                const displayTitle = TRANSLATIONS[n.K_NAME] || n.K_NAME;
-                return `
-                <div class="node-card">
-                    <div class="node-head">
-                        <strong>${displayTitle}</strong>
-                    </div>
-                    <div class="node-grid">
-                        ${template.map(k => k === 'K_NAME' ? '' : `
-                            <div class="field">
-                                <label>${k}</label>
-                                <input value='${getValue(n, k, n.K_NAME)}' onchange="updateVal(${ni}, '${k}', this.value)">
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>`;
-            }).join('')}
-        `;
-    }
-
-    function getValue(node, key, nodeType) {
-        let val = node[key];
-        if (val === undefined) {
-            val = (TYPE_OVERRIDES[nodeType] && TYPE_OVERRIDES[nodeType][key] !== undefined) 
-                  ? TYPE_OVERRIDES[nodeType][key] 
-                  : DEFAULTS_LIB[key];
-        }
-        if (val === undefined) return "";
-        return Array.isArray(val) ? JSON.stringify(val) : val;
-    }
-
-    function updateTooltip(val) {
-        if (activeIndex !== -1) {
-            currentMoves[activeIndex]["TOOL TIP"] = val;
-        }
-    }
-
-    function updateVal(nodeIdx, key, val) {
-        const move = currentMoves[activeIndex];
-        let targetList = Array.isArray(move.Line) ? move.Line : JSON.parse(move.DATA).Line;
         
-        let final;
-        try {
-            const trimmed = val.trim();
-            if (trimmed.startsWith('[') || trimmed.startsWith('{')) final = JSON.parse(trimmed);
-            else if (trimmed === "true") final = true;
-            else if (trimmed === "false") final = false;
-            else if (isNaN(trimmed) || trimmed === "") final = val;
-            else final = parseFloat(trimmed);
-        } catch(e) { final = val; }
+        renderWorkspaceView();
+    }
 
-        targetList[nodeIdx][key] = final;
-        if (!Array.isArray(move.Line)) {
-            let inner = JSON.parse(move.DATA);
-            inner.Line = targetList;
-            move.DATA = JSON.stringify(inner);
+    /* ===================================================
+       COMPRESSION, CORE ENGINE DECODER & PARSER ENGINE
+       =================================================== */
+    function openEngineIO(mode) {
+        const modal = document.getElementById('engine-modal');
+        const title = document.getElementById('modal-title-text');
+        const desc = document.getElementById('modal-desc-text');
+        const textarea = document.getElementById('modal-io-target');
+        const actionBtn = document.getElementById('modal-action-btn');
+        
+        modal.style.display = 'flex';
+        textarea.value = '';
+        
+        if (mode === 'import') {
+            title.textContent = 'Import Engine Character Build';
+            desc.textContent = 'Paste your raw character code data package below to parse the system configuration structure.';
+            actionBtn.textContent = 'Load Build';
+            actionBtn.onclick = function() {
+                processIncomingBuild(textarea.value);
+            };
+        } else {
+            title.textContent = 'Export Engine Character Build';
+            desc.textContent = 'Your current operational schema configurations package code output ready for runtime compilation:';
+            actionBtn.textContent = 'Copy Data';
+            
+            // Build compilation logic matching engine format rules
+            let dataString = loadedMovesData.length > 0 ? JSON.stringify(loadedMovesData, null, 2) : "[]";
+            textarea.value = btoa(pako.deflate(dataString, { to: 'string' }));
+            
+            actionBtn.onclick = function() {
+                textarea.select();
+                document.execCommand('copy');
+                alert('Output code package successfully copied to clipboard!');
+                closeEngineIO();
+            };
         }
     }
 
-    function exportData() {
-        if (currentMoves.length === 0) return alert("Nothing to export! Load a character first.");
-        const exportCopy = JSON.parse(JSON.stringify(currentMoves));
-        exportCopy.forEach(move => {
-            let data = typeof move.DATA === 'string' ? JSON.parse(move.DATA) : move;
-            if (data.Line) {
-                data.Line.forEach(node => {
-                    Object.keys(node).forEach(key => {
-                        if (key === "K_NAME") return;
-                        let defVal = (TYPE_OVERRIDES[node.K_NAME] && TYPE_OVERRIDES[node.K_NAME][key] !== undefined) 
-                                     ? TYPE_OVERRIDES[node.K_NAME][key] 
-                                     : DEFAULTS_LIB[key];
-                        if (JSON.stringify(node[key]) === JSON.stringify(defVal)) {
-                            delete node[key];
-                        }
-                    });
-                });
-            }
-            if (typeof move.DATA === 'string') move.DATA = JSON.stringify(data);
-        });
-
-        try {
-            const bin = zstd.compress(new TextEncoder().encode(JSON.stringify(exportCopy)), 3);
-            let str = "";
-            for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
-            document.getElementById('kluv-io').value = btoa(str);
-            alert("Done! Your clean moveset code has been copied to the text box.");
-        } catch(err) { alert("Something went wrong trying to save your changes."); }
+    function closeEngineIO() {
+        document.getElementById('engine-modal').style.display = 'none';
     }
 
-    setTimeout(init, 500);
+    function processIncomingBuild(rawData) {
+        if(!rawData.trim()) return alert("Input stream payload is empty!");
+        try {
+            // Decoding package data via runtime engine standards
+            const binaryData = atob(rawData.trim());
+            const charData = new Uint8Array(binaryData.length);
+            for(let i=0; i<binaryData.length; i++) {
+                charData[i] = binaryData.charCodeAt(i);
+            }
+            const restorationText = pako.inflate(charData, { to: 'string' });
+            const parsedPackage = JSON.parse(restorationText);
+            
+            if(Array.isArray(parsedPackage)) {
+                loadedMovesData = parsedPackage;
+                buildSidebarStreams();
+                selectMoveNode(0);
+                closeEngineIO();
+            } else {
+                alert("Data structure parsing failed: Master collection context must be formatted in a valid array frame.");
+            }
+        } catch(err) {
+            alert("Error parsing character build: Unrecognized format or corrupted compilation string.");
+            console.error(err);
+        }
+    }
+
+    /* ===================================================
+       WORKSPACE AND GRAPHICS VIEWS CONTROLLERS
+       =================================================== */
+    function buildSidebarStreams() {
+        const streamContainer = document.getElementById('sidebar-moves-list');
+        streamContainer.innerHTML = '';
+        
+        if(loadedMovesData.length === 0) {
+            streamContainer.innerHTML = `<div style="text-align: center; color: rgba(255,255,255,0.4); margin-top: 40px; font-size: 0.85rem;">No Engine Code Build Loaded</div>`;
+            return;
+        }
+
+        loadedMovesData.forEach((move, index) => {
+            const el = document.createElement('div');
+            el.className = `jjs-bar ${selectedMoveIndex === index ? 'active' : ''}`;
+            el.onclick = () => selectMoveNode(index);
+            
+            const moveName = move.Name || move.K_NAME || `Moveset Stream #${index + 1}`;
+            el.innerHTML = `<span><i class="fa-solid fa-bolt" style="margin-right: 8px;"></i> ${moveName}</span> <i class="fa-solid fa-chevron-right" style="font-size:0.75rem;"></i>`;
+            streamContainer.appendChild(el);
+        });
+    }
+
+    function selectMoveNode(index) {
+        selectedMoveIndex = index;
+        const bars = document.querySelectorAll('.jjs-bar');
+        bars.forEach((bar, i) => {
+            if(i === index) bar.classList.add('active');
+            else bar.classList.remove('active');
+        });
+        renderWorkspaceView();
+    }
+
+    function renderWorkspaceView() {
+        const view = document.getElementById('workspace-viewport');
+        if (selectedMoveIndex === null || !loadedMovesData[selectedMoveIndex]) {
+            return;
+        }
+
+        const moveObject = loadedMovesData[selectedMoveIndex];
+        const currentTitle = moveObject.Name || moveObject.K_NAME || "Active Matrix View";
+
+        if (activeWorkspaceMode === 'Shenanigans') {
+            // Alternative Timeline Tracks/Shenanigans visualization layout
+            let htmlBlock = `
+                <div style="margin-bottom: 20px;">
+                    <h2 style="margin:0; text-transform: uppercase;">⚡ SHENANIGANS TRACKS: ${currentTitle}</h2>
+                    <p style="margin: 5px 0 0 0; color: var(--accent);">FORCED CARTOON STRUCTURAL OVERRIDE ACTIVE</p>
+                </div>
+                <div class="node-card" style="padding: 20px;">
+                    <div style="font-size: 1.1rem; border-bottom: 2px dashed var(--border); padding-bottom: 10px; margin-bottom: 15px; font-weight: bold;">
+                        RAW TIMELINE DATA STREAM OBJECT
+                    </div>
+                    <pre style="background: rgba(0,0,0,0.4); padding: 15px; font-family: monospace !important; overflow-x: auto; font-size: 0.85rem;">${JSON.stringify(moveObject, null, 2)}</pre>
+                </div>
+            `;
+            view.innerHTML = htmlBlock;
+        } else {
+            // Standard Functional Studio build environment
+            let htmlBlock = `
+                <div style="border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 25px;">
+                    <h2 style="margin:0; font-size:1.6rem; font-weight:700;">${currentTitle}</h2>
+                    <span style="font-size:0.8rem; color: rgba(255,255,255,0.5);">Engine Node Parameter Field Inspector</span>
+                </div>
+                <div class="node-grid">
+            `;
+
+            // Dynamic structural loop reading node parameters matching MASTER_SCHEMA definitions
+            Object.keys(MASTER_SCHEMA).forEach(key => {
+                const val = moveObject[key] !== undefined ? moveObject[key] : "";
+                htmlBlock += `
+                    <div class="node-card">
+                        <div class="node-head">
+                            <span>FIELD :: ${key}</span>
+                            <i class="fa-solid fa-sliders"></i>
+                        </div>
+                        <div class="node-body">
+                            <div class="field-row">
+                                <label>Value (${MASTER_SCHEMA[key]})</label>
+                                <input type="text" class="field-input" value="${val}" onchange="updateEngineField('${key}', this.value)">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            htmlBlock += `</div>`;
+            view.innerHTML = htmlBlock;
+        }
+    }
+
+    function updateEngineField(key, value) {
+        if(selectedMoveIndex !== null && loadedMovesData[selectedMoveIndex]) {
+            // Cast types matching schema definitions rules
+            if(MASTER_SCHEMA[key] === "Integer") value = parseInt(value) || 0;
+            else if(MASTER_SCHEMA[key] === "Float") value = parseFloat(value) || 0.0;
+            
+            loadedMovesData[selectedMoveIndex][key] = value;
+        }
+    }
 </script>
 </body>
 </html>
