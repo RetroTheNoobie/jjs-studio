@@ -558,36 +558,53 @@
     }
 
     function loadCode(raw) {
-        if (!raw || !window.pako) return;
+    if (!raw || !window.pako) return;
+    try {
+        let binary;
         try {
-            const binary = atob(raw.trim());
-            const bytes = new Uint8Array(binary.length);
-            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-            
-            let decodedText;
-            try {
-                const inflated = pako.inflate(bytes);
-                decodedText = new TextDecoder().decode(inflated);
-            } catch(e) {
-                decodedText = new TextDecoder().decode(bytes); // Fallback to raw decode
-            }
-            
-            const data = JSON.parse(decodedText);
-            allContainers = Array.isArray(data) ? data : [data];
-            
-            if (currentLayout !== 'editor') {
-                currentLayout = 'editor';
-            }
-            
-            renderSidebarContents();
-            renderWorkspaceContents();
-            selectContainer(0);
-        } catch(e) { 
-            console.error("IMPORT ERROR:", e); 
-            alert("IMPORT FAILED: The data provided is not a valid compressed JSON build or valid theme configuration."); 
+            binary = atob(raw.trim());
+        } catch(b64err) {
+            throw new Error("The string provided is not valid Base64 encoded data.");
         }
-    }
 
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        
+        let decodedText;
+        try {
+            // Attempt decompression
+            const inflated = pako.inflate(bytes);
+            decodedText = new TextDecoder().decode(inflated);
+        } catch(e) {
+            // Fallback ONLY if it's meant to be a raw uncompressed string
+            decodedText = new TextDecoder().decode(bytes);
+            // Quick check to see if it's just binary garbage
+            if (decodedText.includes('\uFFFD') || !decodedText.trim().startsWithAny(['{', '['])) {
+                throw new Error("Decompression failed. The binary data is corrupted or not a valid zlib stream.");
+            }
+        }
+        
+        const data = JSON.parse(decodedText);
+        allContainers = Array.isArray(data) ? data : [data];
+        
+        if (currentLayout !== 'editor') {
+            currentLayout = 'editor';
+        }
+        
+        renderSidebarContents();
+        renderWorkspaceContents();
+        selectContainer(0);
+        closeJJSModal(null);
+    } catch(e) { 
+        console.error("IMPORT ERROR:", e); 
+        alert("IMPORT FAILED: " + e.message); 
+    }
+}
+
+// Helper utility for block start checking
+String.prototype.startsWithAny = function(arr) {
+    return arr.some(str => this.startsWith(str));
+};
     function generateBuildExportCode() {
         if (!window.pako) throw new Error("Engine not loaded yet.");
         if (allContainers.length === 0) throw new Error("No build loaded to export.");
@@ -858,31 +875,31 @@
         }
     }
 
-    function executeModalAction() {
-        const ioBox = document.getElementById('modal-io-box');
-        
-        if (activeModalMode === 'export') {
-            if (ioBox.value.startsWith("ERROR:")) {
-                closeJJSModal(null);
-                return;
-            }
-            ioBox.select();
-            document.execCommand('copy');
-            alert('Export configuration copied to clipboard successfully!');
+function executeModalAction() {
+    const ioBox = document.getElementById('modal-io-box');
+    
+    if (activeModalMode === 'export') {
+        if (ioBox.value.startsWith("ERROR:")) {
             closeJJSModal(null);
-            
-        } else if (activeModalMode === 'import') {
-            const rawVal = ioBox.value.trim();
-            if (rawVal === '') {
-                alert("Please provide configuration string data first.");
-                return;
-            }
+            return;
+        }
+        ioBox.select();
+        document.execCommand('copy');
+        alert('Export configuration copied to clipboard successfully!');
+        closeJJSModal(null);
+        
+    } else if (activeModalMode === 'import') {
+        const rawVal = ioBox.value.trim();
+        if (rawVal === '') {
+            alert("Please provide configuration string data first.");
+            return;
+        }
 
-            try {
-                // Check if JSON configuration payload is provided (like themes or unified exports)
+        try {
+            // Explicitly check if the user is trying to paste a JSON block
+            if (rawVal.startsWith('{') || rawVal.startsWith('[')) {
                 const parsed = JSON.parse(rawVal);
                 
-                // Read nested structures if standard exports are imported
                 if (parsed.themeConfig) {
                     const cfg = parsed.themeConfig;
                     const uniqueKey = 'saved_' + Date.now();
@@ -906,7 +923,6 @@
                 if (parsed.compressedBuild) {
                     loadCode(parsed.compressedBuild);
                 } else if (!parsed.themeConfig) {
-                    // Try parsing raw direct theme configuration JSONs
                     const uniqueKey = 'saved_' + Date.now();
                     dynamicCustomThemes[uniqueKey] = {
                         name:      parsed.name      || 'Imported Theme',
@@ -924,15 +940,16 @@
                     document.getElementById('global-theme-picker').value = uniqueKey;
                     previewTheme(uniqueKey);
                 }
-                
                 closeJJSModal(null);
-            } catch(e) {
-                // If it fails JSON parsing, assume it's direct base64 Pako build data
+            } else {
+                // If it doesn't start with structural JSON characters, handle as raw compressed Base64 data
                 loadCode(rawVal);
-                closeJJSModal(null);
             }
+        } catch(e) {
+            alert("IMPORT FAILED (Invalid JSON Syntax): " + e.message);
         }
     }
+}
 </script>
 </body>
 </html>
