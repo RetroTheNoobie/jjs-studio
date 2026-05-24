@@ -274,7 +274,7 @@
         body.theme-matrix .field label { color: #00aa44; }
         body.theme-nova   .field label { color: #8a4dbb; }
         body.theme-toon   .field label { color: #aaa; }
-        .field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #333; }
+        .field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #222; }
         
         .timeline-track-canvas {
             display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,0.25); padding: 20px; border: var(--thickness) solid var(--border); box-shadow: 5px 5px 0px #000; margin-top: 15px;
@@ -369,7 +369,7 @@
         </button>
     </div>
 
-    <div class="container-heading" id="sidebar-list-heading">Move List</div>
+    <div class="container-heading" id="sidebar-list-heading">MOVE LIST</div>
     <div class="container-list" id="sidebar-dynamic-list">
         </div>
 </div>
@@ -462,52 +462,27 @@
         const list = document.getElementById('sidebar-dynamic-list');
         list.innerHTML = '';
 
-        if (currentLayout === 'editor') {
-            heading.innerText = "Move List";
-            if (allContainers.length === 0) {
-                list.innerHTML = '<div style="text-align:center; padding-top: 30px; font-size: 0.8rem; color: #555;">No build loaded yet. Paste Base64 inside actual Import action!</div>';
-                return;
-            }
-
-            allContainers.forEach((c, i) => {
-                const btn = document.createElement('div');
-                btn.className = 'item';
-                btn.id = `btn-${i}`;
-                btn.onclick = () => selectContainer(i);
-                
-                const kName = c.K_NAME || 'BUILD';
-                const moveName = c.NAME || 'UNNAMED';
-                
-                btn.innerHTML = `
-                    <span class="type-tag">${kName}</span>
-                    <span class="move-name">${moveName}</span>
-                `;
-                list.appendChild(btn);
-            });
-        } else {
-            // Tracks layout
-            heading.innerText = "Main Target Containers";
-            list.innerHTML = `
-                <div class="jjs-bar jjs-c-skill" onclick="alert('Container mapped to SKILL track')">
-                    <div class="jjs-bar-icon-box">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6"/></svg>
-                    </div>
-                    <div class="jjs-bar-text">Skill Container</div>
-                </div>
-                <div class="jjs-bar jjs-c-special" onclick="alert('Container mapped to SPECIAL track')">
-                    <div class="jjs-bar-icon-box">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/></svg>
-                    </div>
-                    <div class="jjs-bar-text">Special Container</div>
-                </div>
-                <div class="jjs-bar jjs-c-awakening" onclick="alert('Container mapped to AWAKENING track')">
-                    <div class="jjs-bar-icon-box">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
-                    </div>
-                    <div class="jjs-bar-text">Awakening Container</div>
-                </div>
-            `;
+        heading.innerText = "MOVE LIST";
+        if (allContainers.length === 0) {
+            list.innerHTML = '<div style="text-align:center; padding-top: 30px; font-size: 0.8rem; color: #555;">No build loaded yet. Paste Base64 inside actual Import action!</div>';
+            return;
         }
+
+        allContainers.forEach((c, i) => {
+            const btn = document.createElement('div');
+            btn.className = 'item';
+            btn.id = `btn-${i}`;
+            btn.onclick = () => selectContainer(i);
+            
+            const kName = c.K_NAME || 'BUILD';
+            const moveName = c.NAME || 'UNNAMED';
+            
+            btn.innerHTML = `
+                <span class="type-tag">${kName}</span>
+                <span class="move-name">${moveName}</span>
+            `;
+            list.appendChild(btn);
+        });
     }
 
     function renderWorkspaceContents() {
@@ -563,6 +538,13 @@
                     </div>
                 </div>
             `;
+            if (allContainers.length > 0) {
+                const activeBtn = document.querySelector('.item.active');
+                if (!activeBtn) {
+                    const firstBtn = document.getElementById('btn-0');
+                    if (firstBtn) firstBtn.classList.add('active');
+                }
+            }
         }
     }
 
@@ -623,12 +605,14 @@
     }
 
     function selectContainer(index) {
-        if (currentLayout !== 'editor' || allContainers.length === 0) return;
+        if (allContainers.length === 0) return;
 
         document.querySelectorAll('.item').forEach(b => b.classList.remove('active'));
         const activeBtn = document.getElementById(`btn-${index}`);
         if (activeBtn) activeBtn.classList.add('active');
         
+        if (currentLayout !== 'editor') return;
+
         const container = allContainers[index];
         const timeline = document.getElementById('main-timeline');
         timeline.innerHTML = ''; // Clear
