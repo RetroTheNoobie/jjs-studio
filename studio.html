@@ -6,7 +6,7 @@
     <title>JJS STUDIO - V2.8.8 STABLE</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <script src="./zstd-bundle.js"></script>
 
     <style>
         :root {
@@ -245,7 +245,7 @@
         .jjs-c-special { border-left: calc(var(--thickness) * 2) solid #ffb37b; }
         .jjs-c-awakening { border-left: calc(var(--thickness) * 2) solid #ffff7b; }
 
-        .main { flex: 1; overflow-y: auto; padding: 40px; height: 100%; display: block; }
+        .main { flex: 1; overflow-y: auto; padding: 40px; height: 100%; display: flex; flex-direction: column; }
 
         .editor-header { display: flex; flex-direction: column; gap: 15px; border-left: var(--thickness) solid var(--accent); padding-left: 20px; margin-bottom: 40px; }
         
@@ -369,7 +369,7 @@
         </button>
     </div>
 
-    <div class="container-heading" id="sidebar-list-heading">MOVE LIST</div>
+    <div class="container-heading" id="sidebar-list-heading">Moveset List</div>
     <div class="container-list" id="sidebar-dynamic-list">
         </div>
 </div>
@@ -402,6 +402,7 @@
     let currentRoot = 'default'; 
     let currentLayout = 'editor'; // 'editor' | 'tracks'
     let allContainers = []; // Engine build data parsed from load build
+    let zstd = null; // Target runtime compression instance
 
     const MASTER_SCHEMA = {
         "ANIM": { "Speed": 1, "FadeTime": 0.1, "Looped": false, "Weight": 1, "START": 0, "END": 0 },
@@ -424,7 +425,7 @@
     const NODE_NAME_MAP = { "ANIM": "ANIMATION", "ULTGIB": "ADD AWAKENING", "HPGIB": "ADD HEALTH", "EVGIB": "ADD EVASION" };
 
     window.addEventListener('DOMContentLoaded', () => {
-        checkEngine();
+        initZstdEngine();
 
         // Load custom themes from local storage
         const savedData = localStorage.getItem('jjs_studio_custom_registry');
@@ -435,6 +436,18 @@
         rebuildDropdownList();
         switchActiveLayout(savedLayout);
     });
+
+    // Native Zstd configuration engine initializer
+    async function initZstdEngine() {
+        const engine = window.ZstdWeb || window.zstd || window.Zstd;
+        if (engine?.init) { 
+            await engine.init(); 
+            zstd = engine; 
+        } else if (engine) {
+            zstd = engine;
+        }
+        checkEngine();
+    }
 
     function switchActiveLayout(layoutMode) {
         currentLayout = layoutMode;
@@ -462,27 +475,52 @@
         const list = document.getElementById('sidebar-dynamic-list');
         list.innerHTML = '';
 
-        heading.innerText = "MOVE LIST";
-        if (allContainers.length === 0) {
-            list.innerHTML = '<div style="text-align:center; padding-top: 30px; font-size: 0.8rem; color: #555;">No build loaded yet. Paste Base64 inside actual Import action!</div>';
-            return;
-        }
+        if (currentLayout === 'editor') {
+            heading.innerText = "Moveset List";
+            if (allContainers.length === 0) {
+                list.innerHTML = '<div style="text-align:center; padding-top: 30px; font-size: 0.8rem; color: #555;">No build loaded yet. Paste Base64 inside actual Import action!</div>';
+                return;
+            }
 
-        allContainers.forEach((c, i) => {
-            const btn = document.createElement('div');
-            btn.className = 'item';
-            btn.id = `btn-${i}`;
-            btn.onclick = () => selectContainer(i);
-            
-            const kName = c.K_NAME || 'BUILD';
-            const moveName = c.NAME || 'UNNAMED';
-            
-            btn.innerHTML = `
-                <span class="type-tag">${kName}</span>
-                <span class="move-name">${moveName}</span>
+            allContainers.forEach((c, i) => {
+                const btn = document.createElement('div');
+                btn.className = 'item';
+                btn.id = `btn-${i}`;
+                btn.onclick = () => selectContainer(i);
+                
+                const kName = c.K_NAME || 'BUILD';
+                const moveName = c.NAME || 'UNNAMED';
+                
+                btn.innerHTML = `
+                    <span class="type-tag">${kName}</span>
+                    <span class="move-name">${moveName}</span>
+                `;
+                list.appendChild(btn);
+            });
+        } else {
+            // Tracks layout
+            heading.innerText = "Main Target Containers";
+            list.innerHTML = `
+                <div class="jjs-bar jjs-c-skill" onclick="alert('Container mapped to SKILL track')">
+                    <div class="jjs-bar-icon-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6"/></svg>
+                    </div>
+                    <div class="jjs-bar-text">Skill Container</div>
+                </div>
+                <div class="jjs-bar jjs-c-special" onclick="alert('Container mapped to SPECIAL track')">
+                    <div class="jjs-bar-icon-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/></svg>
+                    </div>
+                    <div class="jjs-bar-text">Special Container</div>
+                </div>
+                <div class="jjs-bar jjs-c-awakening" onclick="alert('Container mapped to AWAKENING track')">
+                    <div class="jjs-bar-icon-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+                    </div>
+                    <div class="jjs-bar-text">Awakening Container</div>
+                </div>
             `;
-            list.appendChild(btn);
-        });
+        }
     }
 
     function renderWorkspaceContents() {
@@ -538,98 +576,76 @@
                     </div>
                 </div>
             `;
-            if (allContainers.length > 0) {
-                const activeBtn = document.querySelector('.item.active');
-                if (!activeBtn) {
-                    const firstBtn = document.getElementById('btn-0');
-                    if (firstBtn) firstBtn.classList.add('active');
-                }
-            }
         }
     }
 
     function checkEngine() {
         const info = document.getElementById('engine-info');
-        if (window.pako) {
-            info.innerHTML = "ENGINE STATUS: <span style='color:#00ffcc; font-weight:bold;'>NATIVE (ZLIB)</span>";
+        const engine = zstd || window.ZstdWeb || window.zstd || window.Zstd;
+        if (engine) {
+            info.innerHTML = "ENGINE STATUS: <span style='color:#00ffcc; font-weight:bold;'>NATIVE (ZSTD)</span>";
         } else {
-            info.innerHTML = "ENGINE STATUS: <span style='color:#ff4444; font-weight:bold;'>LOADING ERROR</span>";
+            info.innerHTML = "ENGINE STATUS: <span style='color:#ff4444; font-weight:bold;'>LOADING ENGINE...</span>";
         }
     }
 
+    // Fixed to correctly parse standard text schemas and decompress binary strings utilizing your Zstd structure
     function loadCode(raw) {
-    if (!raw || !window.pako) return;
-    try {
-        let binary;
+        if (!raw) return;
+        raw = raw.trim();
         try {
-            binary = atob(raw.trim());
-        } catch(b64err) {
-            throw new Error("The string provided is not valid Base64 encoded data.");
-        }
-
-        const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-        
-        let decodedText;
-        try {
-            // Attempt decompression
-            const inflated = pako.inflate(bytes);
-            decodedText = new TextDecoder().decode(inflated);
-        } catch(e) {
-            // Fallback ONLY if it's meant to be a raw uncompressed string
-            decodedText = new TextDecoder().decode(bytes);
-            // Quick check to see if it's just binary garbage
-            if (decodedText.includes('\uFFFD') || !decodedText.trim().startsWithAny(['{', '['])) {
-                throw new Error("Decompression failed. The binary data is corrupted or not a valid zlib stream.");
+            let decodedText;
+            if (raw.startsWith('[') || raw.startsWith('{')) {
+                decodedText = raw;
+            } else {
+                const engine = zstd || window.ZstdWeb || window.zstd || window.Zstd;
+                if (!engine) {
+                    alert("Zstd Engine not loaded yet! Please check zstd-bundle.js setup.");
+                    return;
+                }
+                const bin = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
+                decodedText = new TextDecoder().decode(engine.decompress(bin));
             }
+            
+            const data = JSON.parse(decodedText);
+            allContainers = Array.isArray(data) ? data : [data];
+            
+            if (currentLayout !== 'editor') {
+                currentLayout = 'editor';
+            }
+            
+            renderSidebarContents();
+            renderWorkspaceContents();
+            selectContainer(0);
+        } catch(e) { 
+            console.error("IMPORT ERROR:", e); 
+            alert("IMPORT FAILED: The data provided is not a valid compressed Zstd JSON build or valid theme configuration."); 
         }
-        
-        const data = JSON.parse(decodedText);
-        allContainers = Array.isArray(data) ? data : [data];
-        
-        if (currentLayout !== 'editor') {
-            currentLayout = 'editor';
-        }
-        
-        renderSidebarContents();
-        renderWorkspaceContents();
-        selectContainer(0);
-        closeJJSModal(null);
-    } catch(e) { 
-        console.error("IMPORT ERROR:", e); 
-        alert("IMPORT FAILED: " + e.message); 
     }
-}
 
-// Helper utility for block start checking
-String.prototype.startsWithAny = function(arr) {
-    return arr.some(str => this.startsWith(str));
-};
+    // Fixed to encode and output clean, base64 strings compressed via native Zstd
     function generateBuildExportCode() {
-        if (!window.pako) throw new Error("Engine not loaded yet.");
+        const engine = zstd || window.ZstdWeb || window.zstd || window.Zstd;
+        if (!engine) throw new Error("Zstd Engine not loaded yet.");
         if (allContainers.length === 0) throw new Error("No build loaded to export.");
 
         const jsonString = JSON.stringify(allContainers);
-        const compressed = pako.deflate(jsonString);
+        const bin = engine.compress(new TextEncoder().encode(jsonString), 3);
         
-        let binary = '';
-        const chunkSize = 8192;
-        for (let i = 0; i < compressed.length; i += chunkSize) {
-            binary += String.fromCharCode.apply(null, compressed.slice(i, i + chunkSize));
+        let str = "";
+        for (let i = 0; i < bin.length; i++) {
+            str += String.fromCharCode(bin[i]);
         }
-        
-        return btoa(binary);
+        return btoa(str);
     }
 
     function selectContainer(index) {
-        if (allContainers.length === 0) return;
+        if (currentLayout !== 'editor' || allContainers.length === 0) return;
 
         document.querySelectorAll('.item').forEach(b => b.classList.remove('active'));
         const activeBtn = document.getElementById(`btn-${index}`);
         if (activeBtn) activeBtn.classList.add('active');
         
-        if (currentLayout !== 'editor') return;
-
         const container = allContainers[index];
         const timeline = document.getElementById('main-timeline');
         timeline.innerHTML = ''; // Clear
@@ -827,7 +843,7 @@ String.prototype.startsWithAny = function(arr) {
 
         if (mode === 'import') {
             titleEl.innerHTML = '<i class="fa-solid fa-file-import"></i> Unified Import Center';
-            ioBox.placeholder = "Paste theme configuration JSON OR compressed base64 Pako build data here...";
+            ioBox.placeholder = "Paste theme configuration JSON OR compressed base64 Zstd build data here...";
             ioBox.readOnly = false;
             actionBtn.innerText = "Execute Import";
         } else if (mode === 'export') {
@@ -875,31 +891,31 @@ String.prototype.startsWithAny = function(arr) {
         }
     }
 
-function executeModalAction() {
-    const ioBox = document.getElementById('modal-io-box');
-    
-    if (activeModalMode === 'export') {
-        if (ioBox.value.startsWith("ERROR:")) {
-            closeJJSModal(null);
-            return;
-        }
-        ioBox.select();
-        document.execCommand('copy');
-        alert('Export configuration copied to clipboard successfully!');
-        closeJJSModal(null);
+    function executeModalAction() {
+        const ioBox = document.getElementById('modal-io-box');
         
-    } else if (activeModalMode === 'import') {
-        const rawVal = ioBox.value.trim();
-        if (rawVal === '') {
-            alert("Please provide configuration string data first.");
-            return;
-        }
+        if (activeModalMode === 'export') {
+            if (ioBox.value.startsWith("ERROR:")) {
+                closeJJSModal(null);
+                return;
+            }
+            ioBox.select();
+            document.execCommand('copy');
+            alert('Export configuration copied to clipboard successfully!');
+            closeJJSModal(null);
+            
+        } else if (activeModalMode === 'import') {
+            const rawVal = ioBox.value.trim();
+            if (rawVal === '') {
+                alert("Please provide configuration string data first.");
+                return;
+            }
 
-        try {
-            // Explicitly check if the user is trying to paste a JSON block
-            if (rawVal.startsWith('{') || rawVal.startsWith('[')) {
+            try {
+                // Check if JSON configuration payload is provided (like themes or unified exports)
                 const parsed = JSON.parse(rawVal);
                 
+                // Read nested structures if standard exports are imported
                 if (parsed.themeConfig) {
                     const cfg = parsed.themeConfig;
                     const uniqueKey = 'saved_' + Date.now();
@@ -923,6 +939,7 @@ function executeModalAction() {
                 if (parsed.compressedBuild) {
                     loadCode(parsed.compressedBuild);
                 } else if (!parsed.themeConfig) {
+                    // Try parsing raw direct theme configuration JSONs
                     const uniqueKey = 'saved_' + Date.now();
                     dynamicCustomThemes[uniqueKey] = {
                         name:      parsed.name      || 'Imported Theme',
@@ -940,16 +957,15 @@ function executeModalAction() {
                     document.getElementById('global-theme-picker').value = uniqueKey;
                     previewTheme(uniqueKey);
                 }
+                
                 closeJJSModal(null);
-            } else {
-                // If it doesn't start with structural JSON characters, handle as raw compressed Base64 data
+            } catch(e) {
+                // If it fails JSON parsing, assume it's direct base64 Zstd build data
                 loadCode(rawVal);
+                closeJJSModal(null);
             }
-        } catch(e) {
-            alert("IMPORT FAILED (Invalid JSON Syntax): " + e.message);
         }
     }
-}
 </script>
 </body>
 </html>
