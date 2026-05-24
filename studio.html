@@ -28,25 +28,6 @@
         body.theme-shadow  { --bg:#1c1e22; --accent:#00f0ff; --panel:#111215; --text:#c0c5cd; --node-card:#242930; --border:#00f0ff; --thickness:3px; }
         body.theme-crimson { --bg:#141414; --accent:#ff2a4b; --panel:#0b0b0b; --text:#f5f5f5; --node-card:#1f1f1f; --border:#ff2a4b; --thickness:4px; }
 
-        body.root-shenanigans {
-            --bg: #1a1a1a;
-            --thickness: 4px;
-            --accent: #ffcc33;
-            --panel: #111;
-            --text: #e0e0e0;
-            --node-card: #252525;
-            --border: #000;
-            --font-family: 'Finger Paint', bold;
-            --bg-image: linear-gradient(rgba(0,0,0,0.3) 2px, transparent 2px), linear-gradient(90deg, rgba(0,0,0,0.3) 2px, transparent 2px);
-        }
-
-        body.root-shenanigans.theme-retro   { --bg:#444444; --accent:#ff5722; --panel:#2a2a2a; --text:#eeeeee; --node-card:#333333; --border:#000; }
-        body.root-shenanigans.theme-matrix  { --bg:#050505; --accent:#00ff66; --panel:#0d0d0d; --text:#00ff66; --node-card:#141414; --border:#00ff66; }
-        body.root-shenanigans.theme-nova    { --bg:#120024; --accent:#b026ff; --panel:#090012; --text:#e0b0ff; --node-card:#1c0035; --border:#000; }
-        body.root-shenanigans.theme-toon    { --bg:#000000; --accent:#ffffff; --panel:#000000; --text:#ffffff; --node-card:#000000; --border:#ffffff; --thickness:6px; }
-        body.root-shenanigans.theme-shadow  { --bg:#1c1e22; --accent:#00f0ff; --panel:#111215; --text:#c0c5cd; --node-card:#242930; --border:#00f0ff; --thickness:3px; }
-        body.root-shenanigans.theme-crimson { --bg:#141414; --accent:#ff2a4b; --panel:#0b0b0b; --text:#f5f5f5; --node-card:#1f1f1f; --border:#ff2a4b; --thickness:4px; }
-
         * {
             font-family: var(--font-family);
             box-sizing: border-box;
@@ -106,39 +87,8 @@
             color: #fff;
         }
 
-        .layout-toggle-container {
-            margin: 12px 15px 4px 15px;
-            display: flex;
-            gap: 0;
-            border: var(--thickness) solid var(--border);
-            box-shadow: 4px 4px 0px #000;
-            overflow: hidden;
-        }
-
-        .btn-layout-toggle {
-            flex: 1;
-            padding: 9px 6px;
-            font-size: 0.65rem;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border: none;
-            background: var(--node-card);
-            color: var(--text);
-            transition: background 0.15s, color 0.15s;
-            border-right: var(--thickness) solid var(--border);
-        }
-
-        .btn-layout-toggle:last-child { border-right: none; }
-
-        .btn-layout-toggle.active {
-            background: #00f2ff;
-            color: #000;
-        }
-
         .theme-container {
-            margin: 10px 15px;
+            margin: 15px 15px 10px 15px;
             padding: 10px;
             background: #000;
             border: var(--thickness) solid var(--border);
@@ -191,29 +141,6 @@
         .item .move-name { display: block; font-size: 1.2rem; color: var(--text); }
         body.theme-toon .item.active .move-name { color: #000; }
 
-        .jjs-bar {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            height: 42px;
-            border: var(--thickness) solid var(--border);
-            background: var(--node-card);
-            color: var(--text);
-            box-shadow: 4px 4px 0px #000;
-            font-size: 0.85rem;
-            cursor: pointer;
-            margin-bottom: 12px;
-        }
-        .jjs-bar-icon-box {
-            width: 42px; height: 100%; display: flex; align-items: center; justify-content: center; border-right: var(--thickness) solid var(--border); background: rgba(0,0,0,0.2);
-        }
-        .jjs-bar-icon-box svg { width: 18px; height: 18px; fill: currentColor; }
-        .jjs-bar-text { flex-grow: 1; padding: 0 12px; font-size: 0.8rem; text-transform: uppercase; font-weight: bold; }
-
-        .jjs-c-skill { border-left: calc(var(--thickness) * 2) solid #ff7b7b; }
-        .jjs-c-special { border-left: calc(var(--thickness) * 2) solid #ffb37b; }
-        .jjs-c-awakening { border-left: calc(var(--thickness) * 2) solid #ffff7b; }
-
         .main { flex: 1; overflow-y: auto; padding: 40px; height: 100%; display: flex; flex-direction: column; }
 
         .editor-header { display: flex; flex-direction: column; gap: 15px; border-left: var(--thickness) solid var(--accent); padding-left: 20px; margin-bottom: 40px; }
@@ -223,8 +150,16 @@
         .tooltip-field label { display: block; font-size: 0.65rem; color: var(--accent); text-transform: uppercase; margin-bottom: 5px; }
         .tooltip-field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #333; }
 
-        .node-card { background: var(--panel); border: var(--thickness) solid var(--border); margin-bottom: 20px; overflow: hidden; box-shadow: 6px 6px 0px rgba(0,0,0,1); transition: background 0.2s, border-color 0.2s; }
-        body.theme-toon .node-card { box-shadow: 6px 6px 0px #fff; }
+        .node-card { 
+            background: var(--panel); 
+            border: var(--thickness) solid var(--border); 
+            margin-bottom: 30px; 
+            overflow: hidden; 
+            box-shadow: 10px 10px 0px rgba(0,0,0,1); 
+            transition: background 0.2s, border-color 0.2s; 
+            flex-shrink: 0; /* CRITICAL FIX: Stops nodes from trying to stretch and flattening into lines */
+        }
+        body.theme-toon .node-card { box-shadow: 10px 10px 0px #fff; }
 
         .node-head { background: #222; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: var(--thickness) solid var(--border); }
         body.theme-retro  .node-head { background: #1a1a1a; }
@@ -235,10 +170,16 @@
 
         .node-head strong { color: var(--accent); font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; }
 
-        .timeline-track-canvas {
-            display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,0.25); padding: 20px; border: var(--thickness) solid var(--border); box-shadow: 5px 5px 0px #000; margin-top: 15px;
-        }
+        .node-grid { padding: 25px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
 
+        .field { background: #000; border: calc(var(--thickness)/2) solid var(--border); padding: 12px; box-shadow: 4px 4px 0px #000; }
+        body.theme-toon .field { border-color: #fff; box-shadow: 4px 4px 0px #fff; }
+        .field label { display: block; font-size: 0.65rem; color: #666; text-transform: uppercase; margin-bottom: 5px; }
+        body.theme-matrix .field label { color: #00aa44; }
+        body.theme-nova   .field label { color: #8a4dbb; }
+        body.theme-toon   .field label { color: #aaa; }
+        .field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #222; }
+        
         .empty-state { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 1.5rem; color: #555; text-transform: uppercase; }
 
         .jjs-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.75); z-index: 999; display: none; align-items: center; justify-content: center; }
@@ -260,47 +201,6 @@
         .btn-modal-confirm { background: var(--accent); color: #000; border: calc(var(--thickness)/2) solid var(--border); padding: 10px 20px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; }
         body.theme-toon .btn-modal-confirm { background: #fff; }
         .btn-modal-confirm:hover { filter: brightness(1.2); }
-
-        /* STUDIO STRUCTURAL OVERRIDES (Un-flattens property layouts) */
-        .workspace-controls { display: flex; gap: 10px; align-items: center; }
-        .btn-studio-action { background: #000; color: var(--text); border: 2px solid var(--border); padding: 6px 12px; font-size: 0.65rem; cursor: pointer; text-transform: uppercase; font-weight: bold; box-shadow: 2px 2px 0px #000; }
-        .btn-studio-action:hover { background: var(--accent); color: #000; }
-        body.theme-toon .btn-studio-action { border-color: #fff; box-shadow: 2px 2px 0px #fff; }
-        body.theme-toon .btn-studio-action:hover { background: #fff; color: #000; }
-
-        .node-shorthand-summary { font-size: 0.65rem; opacity: 0.5; margin-left: 15px; font-weight: normal; text-transform: none; letter-spacing: 0px; display: inline-block; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .btn-node-control { background: transparent; border: none; cursor: pointer; font-size: 0.8rem; padding: 4px 8px; }
-        .btn-delete-node { color: #ff4d4d; }
-        .btn-delete-node:hover { color: #ff1a1a; }
-
-        .category-section { margin-bottom: 25px; border: var(--thickness) solid var(--border); background: rgba(0,0,0,0.15); box-shadow: 4px 4px 0px #000; }
-        body.theme-toon .category-section { border-color: #fff; box-shadow: 4px 4px 0px #fff; }
-        .category-section-header { background: #000; padding: 10px 15px; font-size: 0.75rem; font-weight: bold; color: var(--accent); text-transform: uppercase; border-bottom: calc(var(--thickness)/2) solid var(--border); }
-        body.theme-toon .category-section-header { color: #fff; border-color: #fff; }
-        .category-section-body { padding: 15px; display: flex; flex-direction: column; gap: 12px; }
-
-        .property-group { margin-bottom: 12px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 12px; }
-        .property-group:last-child { margin-bottom: 0; }
-        .property-group-title { font-size: 0.65rem; color: var(--accent); text-transform: uppercase; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px; letter-spacing: 0.5px; }
-        body.theme-toon .property-group-title { color: #fff; }
-        .property-group-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
-
-        .field-item { background: #000; border: 1px solid var(--border); padding: 8px 12px; display: flex; flex-direction: column; justify-content: space-between; min-height: 55px; }
-        body.theme-toon .field-item { border-color: #fff; }
-        .field-item label { font-size: 0.6rem; color: #777; text-transform: uppercase; margin-bottom: 4px; display: block; }
-        .field-input-wrapper input { width: 100%; background: transparent; border: none; color: #fff; font-size: 0.85rem; padding: 2px 0; font-family: monospace !important; }
-        .field-input-wrapper input.modded-field { color: var(--accent); font-weight: bold; }
-        body.theme-toon .field-input-wrapper input.modded-field { color: #fff; text-decoration: underline; }
-
-        /* Custom Structured Toggles */
-        .switch-container { position: relative; display: inline-block; width: 34px; height: 16px; margin-top: 4px; }
-        .switch-container input { opacity: 0; width: 0; height: 0; }
-        .switch-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .15s; border: 1px solid var(--border); }
-        body.theme-toon .switch-slider { border-color: #fff; }
-        .switch-slider:before { position: absolute; content: ""; height: 8px; width: 8px; left: 3px; bottom: 3px; background-color: #fff; transition: .15s; }
-        .switch-container input:checked + .switch-slider { background-color: var(--accent); }
-        body.theme-toon .switch-container input:checked + .switch-slider { background-color: #fff; }
-        .switch-container input:checked + .switch-slider:before { transform: translateX(18px); background-color: #000; }
     </style>
 </head>
 <body>
@@ -310,11 +210,6 @@
         <h2 style="margin:0; color: var(--accent); text-transform: uppercase; font-size: 1.6rem;">JJS STUDIO</h2>
         <span style="font-size:0.7rem; color:#555;">V2.8.8 STABLE</span>
         <div id="engine-info" class="engine-status">CHECKING...</div>
-    </div>
-
-    <div class="layout-toggle-container">
-        <button class="btn-layout-toggle active" id="btn-layout-editor" onclick="switchActiveLayout('editor')">Studio</button>
-        <button class="btn-layout-toggle" id="btn-layout-tracks" onclick="switchActiveLayout('tracks')">Shenanigans</button>
     </div>
 
     <div class="theme-container">
@@ -370,10 +265,12 @@
     </div>
 
     <div class="container-heading" id="sidebar-list-heading">Moveset List</div>
-    <div class="container-list" id="sidebar-dynamic-list"></div>
+    <div class="container-list" id="sidebar-dynamic-list">
+        </div>
 </div>
 
-<div class="main" id="main-timeline"></div>
+<div class="main" id="main-timeline">
+    </div>
 
 <div class="jjs-modal-overlay" id="jjs-system-modal" onclick="closeJJSModal(event)">
     <div class="jjs-modal-box" onclick="event.stopPropagation()">
@@ -397,11 +294,7 @@
 <script>
     let dynamicCustomThemes = {};
     let activeModalMode = '';
-    let currentRoot = 'default'; 
-    let currentLayout = 'editor'; 
-    let allContainers = []; 
-    let currentContainerIndex = 0;
-    let collapsedNodes = {}; 
+    let allContainers = [];
 
     const MASTER_SCHEMA = {
         "ANIM": { "Speed": 1, "FadeTime": 0.1, "Looped": false, "Weight": 1, "START": 0, "END": 0 },
@@ -425,126 +318,52 @@
 
     window.addEventListener('DOMContentLoaded', () => {
         checkEngine();
+
         const savedData = localStorage.getItem('jjs_studio_custom_registry');
         if (savedData) dynamicCustomThemes = JSON.parse(savedData);
-        const savedLayout = localStorage.getItem('jjs_studio_active_layout') || 'editor';
+
         rebuildDropdownList();
-        switchActiveLayout(savedLayout);
-    });
-
-    function switchActiveLayout(layoutMode) {
-        currentLayout = layoutMode;
-        localStorage.setItem('jjs_studio_active_layout', layoutMode);
-        
-        document.getElementById('btn-layout-editor').classList.toggle('active', layoutMode === 'editor');
-        document.getElementById('btn-layout-tracks').classList.toggle('active', layoutMode === 'tracks');
-
-        const rootName = (layoutMode === 'tracks') ? 'shenanigans' : 'default';
-        currentRoot = rootName;
-        document.body.classList.toggle('root-shenanigans', rootName === 'shenanigans');
-
-        const picker = document.getElementById('global-theme-picker');
-        if (picker) previewTheme(picker.value);
-
         renderSidebarContents();
         renderWorkspaceContents();
-    }
+    });
 
     function renderSidebarContents() {
         const heading = document.getElementById('sidebar-list-heading');
         const list = document.getElementById('sidebar-dynamic-list');
         list.innerHTML = '';
 
-        if (currentLayout === 'editor') {
-            heading.innerText = "Moveset List";
-            if (allContainers.length === 0) {
-                list.innerHTML = '<div style="text-align:center; padding-top: 30px; font-size: 0.8rem; color: #555;">No build loaded yet. Paste Base64 inside actual Import action!</div>';
-                return;
-            }
-
-            allContainers.forEach((c, i) => {
-                const btn = document.createElement('div');
-                btn.className = 'item' + (i === currentContainerIndex ? ' active' : '');
-                btn.id = `btn-${i}`;
-                btn.onclick = () => selectContainer(i);
-                
-                const kName = c.K_NAME || 'BUILD';
-                const moveName = c.NAME || 'UNNAMED';
-                
-                btn.innerHTML = `
-                    <span class="type-tag">${kName}</span>
-                    <span class="move-name">${moveName}</span>
-                `;
-                list.appendChild(btn);
-            });
-        } else {
-            heading.innerText = "Main Target Containers";
-            list.innerHTML = `
-                <div class="jjs-bar jjs-c-skill" onclick="alert('Container mapped to SKILL track')">
-                    <div class="jjs-bar-icon-box">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6"/></svg>
-                    </div>
-                    <div class="jjs-bar-text">Skill Container</div>
-                </div>
-                <div class="jjs-bar jjs-c-special" onclick="alert('Container mapped to SPECIAL track')">
-                    <div class="jjs-bar-icon-box">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/></svg>
-                    </div>
-                    <div class="jjs-bar-text">Special Container</div>
-                </div>
-                <div class="jjs-bar jjs-c-awakening" onclick="alert('Container mapped to AWAKENING track')">
-                    <div class="jjs-bar-icon-box">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
-                    </div>
-                    <div class="jjs-bar-text">Awakening Container</div>
-                </div>
-            `;
+        heading.innerText = "Moveset List";
+        if (allContainers.length === 0) {
+            list.innerHTML = '<div style="text-align:center; padding-top: 30px; font-size: 0.8rem; color: #555;">No build loaded yet. Paste build data inside Import!</div>';
+            return;
         }
+
+        allContainers.forEach((c, i) => {
+            const btn = document.createElement('div');
+            btn.className = 'item';
+            btn.id = `btn-${i}`;
+            btn.onclick = () => selectContainer(i);
+            
+            const kName = c.K_NAME || 'BUILD';
+            const moveName = c.NAME || 'UNNAMED';
+            
+            btn.innerHTML = `
+                <span class="type-tag">${kName}</span>
+                <span class="move-name">${moveName}</span>
+            `;
+            list.appendChild(btn);
+        });
     }
 
     function renderWorkspaceContents() {
         const workspace = document.getElementById('main-timeline');
         workspace.innerHTML = '';
 
-        if (currentLayout === 'editor') {
-            if (allContainers.length === 0) {
-                workspace.innerHTML = '<div class="empty-state">LOAD A COMPRESSED BUILD TO BEGIN EDITING</div>';
-                return;
-            }
-            selectContainer(currentContainerIndex);
-        } else {
-            workspace.innerHTML = `
-                <div class="editor-header">
-                    <h1>Workspace Studio Preview</h1>
-                    <div class="tooltip-field">
-                        <label>Global Module ID Identifier</label>
-                        <input value="Manifest_Profile_Core" readonly>
-                    </div>
-                </div>
-                <div class="node-card">
-                    <div class="node-head"><strong>Active Target Properties</strong></div>
-                    <div class="node-grid" style="padding:25px; display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:15px;">
-                        <div class="field-item"><label>Playback Speed</label><input value="1.00" readonly></div>
-                        <div class="field-item"><label>Global Interpolation</label><input value="Linear" readonly></div>
-                        <div class="field-item"><label>Safety Assert Override</label><input value="disabled" readonly></div>
-                        <div class="field-item"><label>Frame Padding Count</label><input value="4" readonly></div>
-                    </div>
-                </div>
-                <div class="node-card">
-                    <div class="node-head"><strong>Instanced Sequence Timeline Preview</strong></div>
-                    <div class="timeline-track-canvas">
-                        <div class="jjs-bar">
-                            <div class="jjs-bar-icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
-                            <div class="jjs-bar-text">[1] Wait Action Track</div>
-                        </div>
-                        <div class="jjs-bar">
-                            <div class="jjs-bar-icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-                            <div class="jjs-bar-text">[HollowPurple] Animation Asset</div>
-                        </div>
-                    </div>
-                </div>
-            `;
+        if (allContainers.length === 0) {
+            workspace.innerHTML = '<div class="empty-state">LOAD A COMPRESSED BUILD TO BEGIN EDITING</div>';
+            return;
         }
+        selectContainer(0);
     }
 
     function checkEngine() {
@@ -557,47 +376,63 @@
     }
 
     function loadCode(raw) {
-        if (!raw || !window.pako) return;
+        if (!raw) return;
+        
+        // Check 1: See if the string is just an uncompressed raw text JSON moveset structure
         try {
-            const binary = atob(raw.trim());
+            const parsedData = JSON.parse(raw.trim());
+            allContainers = Array.isArray(parsedData) ? parsedData : [parsedData];
+            renderSidebarContents();
+            renderWorkspaceContents();
+            return;
+        } catch(e) {
+            // Not raw JSON, proceed to base64 pako block
+        }
+
+        if (!window.pako) {
+            alert("Pako library engine is unavailable.");
+            return;
+        }
+
+        try {
+            // Clean out all format spaces/newlines to prevent atob encoding byte drops
+            const cleaned = raw.replace(/\s/g, '');
+            const binary = atob(cleaned);
             const bytes = new Uint8Array(binary.length);
             for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
             
             let decodedText;
             try {
+                // Try standard zlib/gzip headered inflate stream
                 const inflated = pako.inflate(bytes);
                 decodedText = new TextDecoder().decode(inflated);
             } catch(e) {
-                decodedText = new TextDecoder().decode(bytes); 
+                try {
+                    // Fallback try raw deflate mode (no compression headers)
+                    const inflatedRaw = pako.inflateRaw(bytes);
+                    decodedText = new TextDecoder().decode(inflatedRaw);
+                } catch(err) {
+                    // Final fallback attempt raw string bytes decode
+                    decodedText = new TextDecoder().decode(bytes);
+                }
             }
             
             const data = JSON.parse(decodedText);
             allContainers = Array.isArray(data) ? data : [data];
-            currentContainerIndex = 0;
-            collapsedNodes = {};
-            
-            if (currentLayout !== 'editor') currentLayout = 'editor';
             
             renderSidebarContents();
             renderWorkspaceContents();
         } catch(e) { 
             console.error("IMPORT ERROR:", e); 
-            alert("IMPORT FAILED: Invalid compressed JSON data payload or config template."); 
+            alert("IMPORT FAILED: The provided data could not be parsed or decompressed properly. Make sure you copied the entire code block."); 
         }
     }
 
     function generateBuildExportCode() {
         if (!window.pako) throw new Error("Engine not loaded yet.");
-        if (allContainers.length === 0) throw new Error("No build data loaded to compress.");
+        if (allContainers.length === 0) throw new Error("No build loaded to export.");
 
-        const exportData = JSON.parse(JSON.stringify(allContainers));
-        exportData.forEach(container => {
-            if (container.DATA && typeof container.DATA === 'object') {
-                container.DATA = JSON.stringify(container.DATA);
-            }
-        });
-
-        const jsonString = JSON.stringify(exportData);
+        const jsonString = JSON.stringify(allContainers);
         const compressed = pako.deflate(jsonString);
         
         let binary = '';
@@ -605,12 +440,12 @@
         for (let i = 0; i < compressed.length; i += chunkSize) {
             binary += String.fromCharCode.apply(null, compressed.slice(i, i + chunkSize));
         }
+        
         return btoa(binary);
     }
 
     function selectContainer(index) {
-        if (currentLayout !== 'editor' || allContainers.length === 0) return;
-        currentContainerIndex = index;
+        if (allContainers.length === 0) return;
 
         document.querySelectorAll('.item').forEach(b => b.classList.remove('active'));
         const activeBtn = document.getElementById(`btn-${index}`);
@@ -622,36 +457,13 @@
 
         timeline.innerHTML += `
             <div class="editor-header">
-                <h1 style="margin:0; font-size:2.3rem; text-transform:uppercase; color: var(--accent);">${container.NAME || 'UNNAMED'}</h1>
-                <div style="display: flex; gap: 15px; align-items: center; margin-top: 5px; flex-wrap: wrap; width: 100%;">
-                    <div class="tooltip-field" style="margin-top: 0; flex: 1; min-width: 250px;">
-                        <label>Internal Container Name</label>
-                        <input readonly value="${container.K_NAME || 'BUILD'}">
-                    </div>
-                    <div class="workspace-controls">
-                        <button class="btn-studio-action" onclick="toggleAllNodes(false)"><i class="fa-solid fa-folder-open"></i> Expand All</button>
-                        <button class="btn-studio-action" onclick="toggleAllNodes(true)"><i class="fa-solid fa-folder"></i> Collapse All</button>
-                        <select class="theme-select" id="node-view-mode" onchange="renderActiveNodes()" style="max-width: 160px; height: 32px;">
-                            <option value="stream">Sequential List</option>
-                            <option value="grouped">Group By Track</option>
-                        </select>
-                    </div>
-                </div>
-                <div style="margin-top: 12px; width: 100%;">
-                    <input type="text" id="node-search-filter" placeholder="🔍 Filter nodes or property tags..." oninput="renderActiveNodes()" style="width: 100%; background: #000; border: 2px solid var(--border); color: #fff; padding: 10px; font-size: 0.8rem;">
+                <h1 style="margin:0; font-size:2.5rem; text-transform:uppercase;">${container.NAME || 'UNNAMED'}</h1>
+                <div class="tooltip-field">
+                    <label>Internal Container Name</label>
+                    <input readonly value="${container.K_NAME || 'BUILD'}">
                 </div>
             </div>
-            <div id="nodes-workspace-container"></div>
         `;
-
-        renderActiveNodes();
-    }
-
-    function renderActiveNodes() {
-        const container = allContainers[currentContainerIndex];
-        const nodesTarget = document.getElementById('nodes-workspace-container');
-        if (!nodesTarget) return;
-        nodesTarget.innerHTML = '';
 
         let moveData = [];
         try {
@@ -659,113 +471,27 @@
             moveData = inner.Line || inner.DATA?.Line || [];
         } catch(e) { moveData = container.Line || []; }
 
-        const filterText = document.getElementById('node-search-filter')?.value.toLowerCase() || '';
-        const viewMode = document.getElementById('node-view-mode')?.value || 'stream';
-
-        let filteredNodes = moveData.map((node, originalIndex) => ({ node, originalIndex })).filter(item => {
-            if (!filterText) return true;
-            const typeName = (NODE_NAME_MAP[item.node.K_NAME] || item.node.K_NAME).toLowerCase();
-            if (typeName.includes(filterText)) return true;
-            return Object.entries(item.node).some(([k, v]) => 
-                k.toLowerCase().includes(filterText) || String(v).toLowerCase().includes(filterText)
-            );
-        });
-
-        if (filteredNodes.length === 0) {
-            nodesTarget.innerHTML = '<div style="text-align:center; padding: 40px; color: #555; text-transform: uppercase; font-size:0.8rem;">No matching properties found</div>';
-            return;
-        }
-
-        if (viewMode === 'stream') {
-            filteredNodes.forEach((item) => {
-                nodesTarget.appendChild(createNodeCardElement(item.node, item.originalIndex));
-            });
-        } else {
-            const categorized = {
-                "Animations & Track Logic": [],
-                "Audio & Particle Effects": [],
-                "Combat States & Hitboxes": [],
-                "Miscellaneous Actions": []
-            };
-
-            filteredNodes.forEach(item => {
-                const kName = item.node.K_NAME;
-                if (["ANIM", "WAIT", "LOOP", "SKILL"].includes(kName)) {
-                    categorized["Animations & Track Logic"].push(item);
-                } else if (["SFX", "VISUAL", "PROJECTILE"].includes(kName)) {
-                    categorized["Audio & Particle Effects"].push(item);
-                } else if (["HITCNCL", "ULTGIB", "HPGIB", "EVGIB", "GRAB", "COUNTER", "STATE"].includes(kName)) {
-                    categorized["Combat States & Hitboxes"].push(item);
-                } else {
-                    categorized["Miscellaneous Actions"].push(item);
-                }
-            });
-
-            Object.entries(categorized).forEach(([catName, items]) => {
-                if (items.length === 0) return;
-
-                const catWrapper = document.createElement('div');
-                catWrapper.className = 'category-section';
-                catWrapper.innerHTML = `<div class="category-section-header">${catName} (${items.length})</div>`;
-                
-                const catGrid = document.createElement('div');
-                catGrid.className = 'category-section-body';
-                
-                items.forEach(item => {
-                    catGrid.appendChild(createNodeCardElement(item.node, item.originalIndex));
-                });
-                
-                catWrapper.appendChild(catGrid);
-                nodesTarget.appendChild(catWrapper);
-            });
-        }
-    }
-
-    function createNodeCardElement(node, originalIndex) {
-        const card = document.createElement('div');
-        card.className = 'node-card';
-        card.id = `node-card-${originalIndex}`;
-        
-        const nodeTypeName = NODE_NAME_MAP[node.K_NAME] || node.K_NAME;
-        const isCollapsed = collapsedNodes[originalIndex] ?? false;
-
-        let trackColor = '#ffcc33'; 
-        if (["ANIM", "WAIT"].includes(node.K_NAME)) trackColor = '#b026ff'; 
-        if (["SFX", "VISUAL"].includes(node.K_NAME)) trackColor = '#00f0ff'; 
-        if (["HITCNCL", "COUNTER", "GRAB"].includes(node.K_NAME)) trackColor = '#ff2a4b'; 
-        if (["ULTGIB", "HPGIB", "EVGIB"].includes(node.K_NAME)) trackColor = '#00ff66'; 
-
-        card.style.borderLeft = `calc(var(--thickness) * 2) solid ${trackColor}`;
-
-        let summary = '';
-        if (node.Duration !== undefined) summary += `Duration: ${node.Duration}s | `;
-        if (node.Speed !== undefined) summary += `Speed: ${node.Speed}x | `;
-        if (node.SoundId !== undefined) summary += `Sound: ${node.SoundId} | `;
-        if (node.VisualType !== undefined) summary += `Type: ${node.VisualType} | `;
-        if (node.TagName !== undefined) summary += `Tag: ${node.TagName} | `;
-        if (summary.endsWith(' | ')) summary = summary.slice(0, -3);
-
-        card.innerHTML = `
-            <div class="node-head" onclick="toggleNodeCollapse(${originalIndex})" style="cursor: pointer; user-select: none;">
-                <div style="display: flex; align-items: center; gap: 12px; overflow: hidden;">
-                    <i class="fa-solid ${isCollapsed ? 'fa-chevron-right' : 'fa-chevron-down'}" style="color: ${trackColor}; font-size: 0.75rem;"></i>
+        moveData.forEach((node, i) => {
+            const card = document.createElement('div');
+            card.className = 'node-card';
+            
+            const nodeTypeName = NODE_NAME_MAP[node.K_NAME] || node.K_NAME;
+            
+            card.innerHTML = `
+                <div class="node-head">
                     <strong>${nodeTypeName}</strong>
-                    <span class="node-shorthand-summary">${summary}</span>
+                    <span style="color:var(--accent); font-size: 0.8rem; font-weight:bold;">#${i+1}</span>
                 </div>
-                <div style="display: flex; align-items: center; gap: 15px; flex-shrink:0;">
-                    <span style="opacity: 0.4; font-size: 0.7rem;">#${originalIndex + 1}</span>
-                    <button class="btn-node-control btn-delete-node" onclick="deleteNodeItem(event, ${originalIndex})" title="Delete Module Frame"><i class="fa-solid fa-trash"></i></button>
-                </div>
-            </div>
-            <div class="node-body-content" style="display: ${isCollapsed ? 'none' : 'block'};">
-                <div style="padding: 15px;">${renderProps(node.K_NAME, node, originalIndex)}</div>
-            </div>
-        `;
-        return card;
+                <div class="node-grid">${renderProps(node.K_NAME, node)}</div>
+            `;
+            timeline.appendChild(card);
+        });
     }
 
-    function renderProps(type, node, nodeIndex) {
+    function renderProps(type, node) {
+        let html = '';
         const data = { ...node };
+        
         if (data.Preview && typeof data.Preview === 'string') {
             const s = data.Preview.split(",");
             data.START = s[0]; data.END = s[1];
@@ -774,153 +500,23 @@
         const temp = MASTER_SCHEMA[type] || {};
         const keys = new Set([...Object.keys(temp), ...Object.keys(data)]);
         
-        const groups = {
-            "Timing & Duration": ["START", "END", "Duration", "Interval", "Count", "Time", "FadeTime", "HoldTime", "Window"],
-            "Core Configuration": ["Speed", "Weight", "Looped", "Volume", "Pitch", "SoundId", "Velocity", "UseCamera", "VisualType", "Limb", "Color", "Transparency", "Scale", "Amount"],
-            "Identifiers & Logic": ["SkillName", "Action", "Type", "Power", "TagName", "Id", "Distance", "ResetOnHit", "Active", "StateType"]
-        };
-        
-        let sortedKeys = Array.from(keys).sort();
-        let groupedHtml = '';
-        
-        Object.entries(groups).forEach(([groupName, groupKeys]) => {
-            let fieldsInGroup = sortedKeys.filter(k => groupKeys.includes(k) && k !== 'K_NAME' && k !== 'Preview' && k !== 'AnimationId');
-            if (fieldsInGroup.length === 0) return;
+        Array.from(keys).sort().forEach(k => {
+            if (k === 'K_NAME' || k === 'Preview' || k === 'AnimationId') return;
+            const val = data[k] !== undefined ? data[k] : temp[k];
             
-            groupedHtml += `
-                <div class="property-group">
-                    <div class="property-group-title">${groupName}</div>
-                    <div class="property-group-grid">
-            `;
-            
-            fieldsInGroup.forEach(k => {
-                const val = data[k] !== undefined ? data[k] : temp[k];
-                const isModded = data[k] !== undefined;
-                const styleClass = isModded ? 'modded-field' : 'default-field';
-                
-                let inputHtml = '';
-                if (typeof val === 'boolean' || val === 'true' || val === 'false') {
-                    const isChecked = val === true || val === 'true';
-                    inputHtml = `
-                        <label class="switch-container">
-                            <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="updateNodeProperty(${nodeIndex}, '${k}', this.checked)">
-                            <span class="switch-slider"></span>
-                        </label>
-                    `;
-                } else if (!isNaN(val) && val !== '' && typeof val !== 'boolean') {
-                    inputHtml = `<input type="number" step="0.01" value="${val}" oninput="updateNodeProperty(${nodeIndex}, '${k}', parseFloat(this.value))" class="${styleClass}">`;
-                } else {
-                    inputHtml = `<input type="text" value="${val}" oninput="updateNodeProperty(${nodeIndex}, '${k}', this.value)" class="${styleClass}">`;
-                }
-                
-                groupedHtml += `
-                    <div class="field-item">
-                        <label>${k} ${isModded ? '⚡' : ''}</label>
-                        <div class="field-input-wrapper">${inputHtml}</div>
-                    </div>
-                `;
-            });
-            groupedHtml += `</div></div>`;
+            const isModded = data[k] !== undefined;
+            const styleAttribute = isModded ? 'style="color: var(--accent);"' : 'style="opacity: 0.5;"';
+
+            html += `<div class="field">
+                <label>${k}</label>
+                <input readonly value="${val}" ${styleAttribute}>
+            </div>`;
         });
-        
-        let remainingKeys = sortedKeys.filter(k => 
-            !groups["Timing & Duration"].includes(k) && 
-            !groups["Core Configuration"].includes(k) && 
-            !groups["Identifiers & Logic"].includes(k) &&
-            k !== 'K_NAME' && k !== 'Preview' && k !== 'AnimationId'
-        );
-        
-        if (remainingKeys.length > 0) {
-            groupedHtml += `
-                <div class="property-group">
-                    <div class="property-group-title">Other Structural Vectors</div>
-                    <div class="property-group-grid">
-            `;
-            remainingKeys.forEach(k => {
-                const val = data[k] !== undefined ? data[k] : temp[k];
-                const isModded = data[k] !== undefined;
-                const styleClass = isModded ? 'modded-field' : 'default-field';
-                groupedHtml += `
-                    <div class="field-item">
-                        <label>${k}</label>
-                        <div class="field-input-wrapper">
-                            <input type="text" value="${val}" oninput="updateNodeProperty(${nodeIndex}, '${k}', this.value)" class="${styleClass}">
-                        </div>
-                    </div>
-                `;
-            });
-            groupedHtml += `</div></div>`;
-        }
-        return groupedHtml;
-    }
-
-    function updateNodeProperty(nodeIndex, key, value) {
-        if (allContainers.length === 0) return;
-        const container = allContainers[currentContainerIndex];
-        let targetLine = null;
-        
-        if (container.Line) {
-            targetLine = container.Line;
-        } else if (container.DATA) {
-            if (typeof container.DATA === 'string') {
-                try { container.DATA = JSON.parse(container.DATA); } catch(e) {}
-            }
-            targetLine = container.DATA.Line || container.DATA.DATA?.Line;
-        }
-
-        if (targetLine && targetLine[nodeIndex]) {
-            if (key === 'START' || key === 'END') {
-                let currentPreview = targetLine[nodeIndex].Preview || "0,0";
-                let parts = currentPreview.split(",");
-                if (key === 'START') parts[0] = value;
-                if (key === 'END') parts[1] = value;
-                targetLine[nodeIndex].Preview = parts.join(",");
-                targetLine[nodeIndex][key] = value;
-            } else {
-                targetLine[nodeIndex][key] = value;
-            }
-        }
-    }
-
-    function toggleNodeCollapse(index) {
-        collapsedNodes[index] = !(collapsedNodes[index] ?? false);
-        renderActiveNodes();
-    }
-
-    function toggleAllNodes(collapseAll) {
-        const container = allContainers[currentContainerIndex];
-        let moveData = [];
-        try {
-            const inner = typeof container.DATA === 'string' ? JSON.parse(container.DATA) : container.DATA;
-            moveData = inner.Line || inner.DATA?.Line || [];
-        } catch(e) { moveData = container.Line || []; }
-
-        moveData.forEach((_, i) => { collapsedNodes[i] = collapseAll; });
-        renderActiveNodes();
-    }
-
-    function deleteNodeItem(event, index) {
-        event.stopPropagation();
-        if (!confirm(`Permanently drop Frame Module #${index + 1}?`)) return;
-
-        const container = allContainers[currentContainerIndex];
-        if (container.Line) {
-            container.Line.splice(index, 1);
-        } else {
-            try {
-                if (typeof container.DATA === 'string') container.DATA = JSON.parse(container.DATA);
-                let targetLine = container.DATA?.Line || container.DATA?.DATA?.Line;
-                if (targetLine) targetLine.splice(index, 1);
-            } catch(e) {}
-        }
-        delete collapsedNodes[index];
-        renderActiveNodes();
+        return html;
     }
 
     function previewTheme(styleName) {
-        const isShena = document.body.classList.contains('root-shenanigans');
         document.body.className = '';
-        if (isShena) document.body.classList.add('root-shenanigans');
         document.body.removeAttribute('style');
 
         document.getElementById('custom-editor-ui').style.display = (styleName === 'custom') ? 'block' : 'none';
@@ -932,7 +528,9 @@
             const cfg = dynamicCustomThemes[styleName];
             if (cfg) applyConfigToLayout(cfg);
         } else {
-            if (styleName !== 'default') document.body.classList.add('theme-' + styleName);
+            if (styleName !== 'default') {
+                document.body.classList.add('theme-' + styleName);
+            }
         }
     }
 
@@ -1008,7 +606,7 @@
         const picker = document.getElementById('global-theme-picker');
         const activeKey = picker.value;
         if (activeKey.startsWith('saved_')) {
-            if (confirm(`Permanently delete layout design "${dynamicCustomThemes[activeKey].name}"?`)) {
+            if (confirm(`Are you sure you want to permanently delete "${dynamicCustomThemes[activeKey].name}"?`)) {
                 delete dynamicCustomThemes[activeKey];
                 localStorage.setItem('jjs_studio_custom_registry', JSON.stringify(dynamicCustomThemes));
                 rebuildDropdownList();
@@ -1021,13 +619,17 @@
     function rebuildDropdownList() {
         const targetGroup = document.getElementById('custom-themes-group');
         targetGroup.innerHTML = '';
+
         for (const [key, theme] of Object.entries(dynamicCustomThemes)) {
             const opt = document.createElement('option');
-            opt.value = key; opt.textContent = theme.name;
+            opt.value = key;
+            opt.textContent = theme.name;
             targetGroup.appendChild(opt);
         }
+
         const createOpt = document.createElement('option');
-        createOpt.value = 'custom'; createOpt.textContent = '[Create New Theme...]';
+        createOpt.value = 'custom';
+        createOpt.textContent = '[Create New Theme...]';
         targetGroup.appendChild(createOpt);
     }
 
@@ -1042,40 +644,25 @@
         overlay.style.display = 'flex';
 
         if (mode === 'import') {
-            titleEl.innerHTML = '<i class="fa-solid fa-file-import"></i> Unified Import Center';
-            ioBox.placeholder = "Paste configuration template strings OR compressed base64 Pako payload here...";
+            titleEl.innerHTML = '<i class="fa-solid fa-file-import"></i> Import Center';
+            ioBox.placeholder = "Paste compressed base64 data here...";
             ioBox.readOnly = false;
             actionBtn.innerText = "Execute Import";
         } else if (mode === 'export') {
-            titleEl.innerHTML = '<i class="fa-solid fa-file-export"></i> Unified Export Center';
+            titleEl.innerHTML = '<i class="fa-solid fa-file-export"></i> Export Center';
             ioBox.readOnly = true;
             actionBtn.innerText = "Copy to Clipboard";
 
-            let exportPayload = {};
-            const activeThemeKey = document.getElementById('global-theme-picker').value;
-
-            if (activeThemeKey === 'custom') {
-                exportPayload.themeConfig = {
-                    name:      document.getElementById('val-name').value,
-                    bg:        document.getElementById('val-bg').value,
-                    panel:     document.getElementById('val-panel').value,
-                    node:      document.getElementById('val-node').value,
-                    accent:    document.getElementById('val-accent').value,
-                    text:      document.getElementById('val-text').value,
-                    border:    document.getElementById('val-border').value,
-                    thickness: document.getElementById('val-thick').value + 'px',
-                    bgImg:     document.getElementById('val-bgimg').value
-                };
-            } else if (activeThemeKey.startsWith('saved_')) {
-                exportPayload.themeConfig = dynamicCustomThemes[activeThemeKey];
-            } else {
-                exportPayload.themeConfig = { activeTheme: activeThemeKey, activeRoot: currentRoot };
-            }
-
             if (allContainers.length > 0) {
-                try { exportPayload.compressedBuild = generateBuildExportCode(); } catch(err) { console.warn(err); }
+                try {
+                    ioBox.value = generateBuildExportCode();
+                } catch(err) {
+                    console.error(err);
+                    ioBox.value = "ERROR: Failed to compress data build.";
+                }
+            } else {
+                ioBox.value = "ERROR: No data loaded to export.";
             }
-            ioBox.value = JSON.stringify(exportPayload, null, 2);
         }
     }
 
@@ -1089,50 +676,23 @@
         const ioBox = document.getElementById('modal-io-box');
         
         if (activeModalMode === 'export') {
-            if (ioBox.value.startsWith("ERROR:")) { closeJJSModal(null); return; }
+            if (ioBox.value.startsWith("ERROR:")) {
+                closeJJSModal(null);
+                return;
+            }
             ioBox.select();
             document.execCommand('copy');
-            alert('Studio project export copied to clipboard!');
+            alert('Export code copied to clipboard successfully!');
             closeJJSModal(null);
+            
         } else if (activeModalMode === 'import') {
             const rawVal = ioBox.value.trim();
-            if (rawVal === '') return;
-
-            try {
-                const parsed = JSON.parse(rawVal);
-                if (parsed.themeConfig) {
-                    const cfg = parsed.themeConfig;
-                    const uniqueKey = 'saved_' + Date.now();
-                    dynamicCustomThemes[uniqueKey] = {
-                        name: cfg.name || 'Imported Design', bg: cfg.bg || '#1a1a1a', panel: cfg.panel || '#111111',
-                        node: cfg.node || '#252525', accent: cfg.accent || '#ffcc33', text: cfg.text || '#e0e0e0',
-                        border: cfg.border || '#000000', thickness: cfg.thickness || '4px', bgImg: cfg.bgImg || ''
-                    };
-                    localStorage.setItem('jjs_studio_custom_registry', JSON.stringify(dynamicCustomThemes));
-                    rebuildDropdownList();
-                    document.getElementById('global-theme-picker').value = uniqueKey;
-                    previewTheme(uniqueKey);
-                }
-
-                if (parsed.compressedBuild) {
-                    loadCode(parsed.compressedBuild);
-                } else if (!parsed.themeConfig) {
-                    const uniqueKey = 'saved_' + Date.now();
-                    dynamicCustomThemes[uniqueKey] = {
-                        name: parsed.name || 'Imported Design', bg: parsed.bg || '#1a1a1a', panel: parsed.panel || '#111111',
-                        node: parsed.node || '#252525', accent: parsed.accent || '#ffcc33', text: parsed.text || '#e0e0e0',
-                        border: parsed.border || '#000000', thickness: parsed.thickness || '4px', bgImg: parsed.bgImg || ''
-                    };
-                    localStorage.setItem('jjs_studio_custom_registry', JSON.stringify(dynamicCustomThemes));
-                    rebuildDropdownList();
-                    document.getElementById('global-theme-picker').value = uniqueKey;
-                    previewTheme(uniqueKey);
-                }
-                closeJJSModal(null);
-            } catch(e) {
-                loadCode(rawVal);
-                closeJJSModal(null);
+            if (rawVal === '') {
+                alert("Please paste your moveset code data before executing.");
+                return;
             }
+            loadCode(rawVal);
+            closeJJSModal(null);
         }
     }
 </script>
