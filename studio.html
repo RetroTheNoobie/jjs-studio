@@ -63,7 +63,7 @@
         .sidebar-header { padding: 20px 25px 12px 25px; border-bottom: var(--thickness) solid var(--border); text-align: center; display: flex; flex-direction: column; gap: 5px; }
         .engine-status { font-size: 0.7rem; padding: 4px 8px; background: #222; border: 1px solid #444; width: fit-content; margin: 0 auto; color: #fff; }
 
-        /* Root & Layout Toggles */
+        /* Layout Toggles */
         .layout-toggle-container { margin: 12px 15px 4px 15px; display: flex; gap: 0; border: var(--thickness) solid var(--border); box-shadow: 4px 4px 0px #000; overflow: hidden; }
         .btn-layout-toggle { flex: 1; padding: 9px 6px; font-size: 0.65rem; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; border: none; background: var(--node-card); color: var(--text); transition: background 0.15s, color 0.15s; border-right: var(--thickness) solid var(--border); }
         .btn-layout-toggle:last-child { border-right: none; }
@@ -95,6 +95,8 @@
         /* Lists */
         .container-heading { padding: 0 15px; font-size: 0.65rem; color: var(--accent); opacity: 0.8; margin-bottom: 6px; text-transform: uppercase; font-weight: bold; }
         .container-list { padding: 0 15px 15px 15px; display: block; flex-grow: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--accent) #000;}
+        
+        /* Studio Standard Item Style */
         .item { padding: 18px; background: var(--node-card); margin-bottom: 12px; cursor: pointer; border: var(--thickness) solid var(--border); box-shadow: 4px 4px 0px #000; transition: transform 0.1s, box-shadow 0.1s, background 0.2s; }
         body.theme-toon .item { box-shadow: 4px 4px 0px #fff; }
         .item:hover { background: #333; transform: translate(-2px, -2px); box-shadow: 6px 6px 0px #000; }
@@ -107,12 +109,24 @@
         .item .move-name { display: block; font-size: 1.2rem; color: var(--text); }
         body.theme-toon .item.active .move-name { color: #000; }
 
-        .jjs-bar { display: flex; align-items: center; width: 100%; height: 42px; border: var(--thickness) solid var(--border); background: var(--node-card); color: var(--text); box-shadow: 4px 4px 0px #000; font-size: 0.85rem; cursor: pointer; margin-bottom: 12px; }
-        .jjs-bar-icon-box { width: 42px; height: 100%; display: flex; align-items: center; justify-content: center; border-right: var(--thickness) solid var(--border); background: rgba(0,0,0,0.2); }
-        .jjs-bar-text { flex-grow: 1; padding: 0 12px; font-size: 0.8rem; text-transform: uppercase; font-weight: bold; }
-        .jjs-c-skill { border-left: calc(var(--thickness) * 2) solid #ff7b7b; }
-        .jjs-c-special { border-left: calc(var(--thickness) * 2) solid #ffb37b; }
-        .jjs-c-awakening { border-left: calc(var(--thickness) * 2) solid #ffff7b; }
+        /* Shenanigans Styled Container Items */
+        .jjs-bar { display: flex; align-items: center; width: 100%; height: 54px; border: var(--thickness) solid var(--border); background: var(--node-card); color: var(--text); box-shadow: 4px 4px 0px #000; transition: transform 0.1s, box-shadow 0.1s, background 0.2s; cursor: pointer; margin-bottom: 12px; }
+        body.theme-toon .jjs-bar { box-shadow: 4px 4px 0px #fff; }
+        .jjs-bar:hover { background: #333; transform: translate(-2px, -2px); box-shadow: 6px 6px 0px #000; }
+        .jjs-bar.active { background: var(--accent); color: #000; border-color: var(--border) !important; }
+        body.theme-toon .jjs-bar.active { background: #fff; color: #000; }
+        .jjs-bar.active .jjs-bar-text span { color: inherit; }
+        
+        .jjs-bar-icon-box { width: 46px; height: 100%; display: flex; align-items: center; justify-content: center; border-right: var(--thickness) solid var(--border); background: rgba(0,0,0,0.2); font-size: 1.1rem; }
+        .jjs-bar-text { flex-grow: 1; padding: 0 14px; display: flex; flex-direction: column; justify-content: center; }
+        .jjs-bar-text .bar-move-name { font-size: 1.05rem; font-weight: bold; text-transform: uppercase; }
+        .jjs-bar-text .bar-type-tag { font-size: 0.55rem; color: var(--accent); letter-spacing: 0.5px; margin-top: 1px; }
+
+        /* Left border track color markers */
+        .jjs-track-skill { border-left: calc(var(--thickness) * 2.5) solid #ff7b7b !important; }
+        .jjs-track-special { border-left: calc(var(--thickness) * 2.5) solid #ffb37b !important; }
+        .jjs-track-awakening { border-left: calc(var(--thickness) * 2.5) solid #ffff7b !important; }
+        .jjs-track-unknown { border-left: calc(var(--thickness) * 2.5) solid #8e44ad !important; }
 
         /* Workspace Elements */
         .main { flex: 1; overflow-y: auto; padding: 40px; height: 100%; display: flex; flex-direction: column; }
@@ -140,7 +154,6 @@
         .field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #222; }
         .field input:focus { border-bottom-color: var(--accent); }
 
-        .timeline-track-canvas { display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,0.25); padding: 20px; border: var(--thickness) solid var(--border); box-shadow: 5px 5px 0px #000; margin-top: 15px; }
         .empty-state { text-align: center; margin-top: 100px; border: var(--thickness) dashed var(--border); padding: 40px; background: #111; max-width: 500px; margin-left: auto; margin-right: auto; box-shadow: 10px 10px 0 #000; }
         body.theme-retro .empty-state { background: #fff; }
 
@@ -164,7 +177,6 @@
         body.theme-toon .btn-modal-confirm { background: #fff; }
         .btn-modal-confirm:hover { filter: brightness(1.2); }
 
-        /* Specific styles for intercept modal buttons */
         .modal-msg { font-size: 0.9rem; margin-bottom: 20px; color: #bbb; line-height: 1.4; text-align: center; }
         .modal-actions-col { display: flex; flex-direction: column; gap: 10px; width: 100%; }
         .btn-merge { background: #3498db; color: #fff; }
@@ -174,6 +186,7 @@
 </head>
 <body>
 
+<!-- INTERCEPT SAFETY MODAL (MERGE OR REPLACE) -->
 <div class="jjs-modal-overlay" id="safety-modal">
     <div class="jjs-modal-box">
         <div class="jjs-modal-header">
@@ -190,6 +203,7 @@
     </div>
 </div>
 
+<!-- STANDARD IO MODAL -->
 <div class="jjs-modal-overlay" id="jjs-system-modal" onclick="closeJJSModal(event)">
     <div class="jjs-modal-box" onclick="event.stopPropagation()">
         <div class="jjs-modal-header">
@@ -216,11 +230,13 @@
         <div id="engine-info" class="engine-status">CHECKING...</div>
     </div>
 
+    <!-- Layout Toggle -->
     <div class="layout-toggle-container">
         <button class="btn-layout-toggle active" id="btn-layout-editor" onclick="switchActiveLayout('editor')">Studio</button>
         <button class="btn-layout-toggle" id="btn-layout-tracks" onclick="switchActiveLayout('tracks')">Shenanigans</button>
     </div>
 
+    <!-- Theme Control panel -->
     <div class="theme-container">
         <div style="width:100%; display:flex; justify-content:space-between; align-items:center;">
             <label>Select Workspace Theme</label>
@@ -244,6 +260,7 @@
         </div>
     </div>
 
+    <!-- Custom Theme Config Panel -->
     <div class="custom-panel" id="custom-editor-ui">
         <h4>Theme Creator Engine</h4>
         <div class="config-row" style="margin-bottom:12px;">
@@ -264,6 +281,7 @@
         <button style="background:#2ecc71; color:#000; border:2px solid #000; font-size:0.7rem; padding:8px; width:100%; font-weight:bold; cursor:pointer; text-transform:uppercase;" onclick="saveCustomTheme()">Save &amp; Apply</button>
     </div>
 
+    <!-- Actions -->
     <div class="jjs-action-container">
         <button class="btn-jjs-action" onclick="openJJSModal('import')" style="background: var(--accent); color: #000;">
             <i class="fa-solid fa-file-import" style="color: #000;"></i> Import
@@ -418,7 +436,6 @@
         }
     }
 
-    // Custom Theme Helper Functions
     function applyLiveVar(property, value) { if (document.getElementById('global-theme-picker').value === 'custom') document.body.style.setProperty(property, value); }
     function applyLiveBg(url) {
         if (document.getElementById('global-theme-picker').value === 'custom') {
@@ -496,7 +513,6 @@
             let exportPayload = {};
             const activeThemeKey = document.getElementById('global-theme-picker').value;
 
-            // Bundle Theme Data
             if (activeThemeKey === 'custom') {
                 exportPayload.themeConfig = {
                     name: document.getElementById('val-name').value, bg: document.getElementById('val-bg').value,
@@ -510,7 +526,6 @@
                 exportPayload.themeConfig = { activeTheme: activeThemeKey, activeRoot: currentRoot };
             }
 
-            // Generate ZSTD Build Data
             if (currentMoves.length > 0) {
                 try {
                     exportPayload.compressedBuild = generateBuildExportCode();
@@ -533,14 +548,12 @@
             if (rawVal === '') return alert("Please provide data first.");
 
             try {
-                // Try treating as Unified JSON object (Theme + Build)
                 const parsed = JSON.parse(rawVal);
                 if (parsed.themeConfig) loadImportedTheme(parsed.themeConfig);
                 if (parsed.compressedBuild) loadZSTDCode(parsed.compressedBuild);
-                else if (!parsed.themeConfig) loadImportedTheme(parsed); // Legacy theme JSONs
+                else if (!parsed.themeConfig) loadImportedTheme(parsed); 
                 closeJJSModal(null);
             } catch(e) {
-                // Not JSON, assume direct ZSTD Base64
                 loadZSTDCode(rawVal);
                 closeJJSModal(null);
             }
@@ -612,30 +625,57 @@
         const list = document.getElementById('sidebar-dynamic-list');
         list.innerHTML = '';
 
-        if (currentLayout === 'editor') {
-            heading.innerText = "Moveset List";
-            if (currentMoves.length === 0) return;
+        heading.innerText = "Moveset List";
+        if (currentMoves.length === 0) {
+            list.innerHTML = '<div style="font-size:0.65rem; color:#444; text-align:center; padding:20px; border:2px dashed #222;">NO MOVES REGISTERED</div>';
+            return;
+        }
 
-            currentMoves.forEach((m, i) => {
+        currentMoves.forEach((m, i) => {
+            const isSelected = (i === activeIndex);
+            const moveType = (m.K_NAME || '').toUpperCase();
+            
+            if (currentLayout === 'editor') {
+                // Style Option A: Standard Studio item layout
                 const btn = document.createElement('div');
-                btn.className = `item ${i === activeIndex ? 'active' : ''}`;
+                btn.className = `item ${isSelected ? 'active' : ''}`;
                 btn.onclick = () => loadMove(i);
                 btn.innerHTML = `<span class="type-tag">${m.K_NAME || "Move Group"}</span><span class="move-name">${m.NAME || "Unnamed Move"}</span>`;
                 list.appendChild(btn);
-            });
-        } else {
-            // Shenanigans Tracks View 
-            heading.innerText = "Main Target Containers";
-            list.innerHTML = `
-                <div class="jjs-bar jjs-c-skill" onclick="alert('Container mapped to SKILL track')"><div class="jjs-bar-icon-box"><i class="fa-solid fa-bolt"></i></div><div class="jjs-bar-text">Skill Track</div></div>
-                <div class="jjs-bar jjs-c-special" onclick="alert('Container mapped to SPECIAL track')"><div class="jjs-bar-icon-box"><i class="fa-solid fa-fire"></i></div><div class="jjs-bar-text">Special Track</div></div>
-                <div class="jjs-bar jjs-c-awakening" onclick="alert('Container mapped to AWAKENING track')"><div class="jjs-bar-icon-box"><i class="fa-solid fa-burst"></i></div><div class="jjs-bar-text">Awakening Track</div></div>
-            `;
-        }
+            } else {
+                // Style Option B: Shenanigans track bar wrapper layout populated with real moveset entries
+                const bar = document.createElement('div');
+                
+                // Determine track specific coloring parameters dynamically based on move signature mapping
+                let trackStyleClass = 'jjs-track-unknown';
+                let iconMarkup = '<i class="fa-solid fa-question"></i>';
+                
+                if (moveType === 'SKILL') {
+                    trackStyleClass = 'jjs-track-skill';
+                    iconMarkup = '<i class="fa-solid fa-bolt"></i>';
+                } else if (moveType === 'SPECIAL') {
+                    trackStyleClass = 'jjs-track-special';
+                    iconMarkup = '<i class="fa-solid fa-fire"></i>';
+                } else if (moveType === 'AWAKENING' || moveType === 'ULTGIB') {
+                    trackStyleClass = 'jjs-track-awakening';
+                    iconMarkup = '<i class="fa-solid fa-burst"></i>';
+                }
+
+                bar.className = `jjs-bar ${trackStyleClass} ${isSelected ? 'active' : ''}`;
+                bar.onclick = () => loadMove(i);
+                bar.innerHTML = `
+                    <div class="jjs-bar-icon-box">${iconMarkup}</div>
+                    <div class="jjs-bar-text">
+                        <span class="bar-move-name">${m.NAME || "Unnamed Move"}</span>
+                        <span class="bar-type-tag">${m.K_NAME || "Generic Track"}</span>
+                    </div>
+                `;
+                list.appendChild(bar);
+            }
+        });
     }
 
     function loadMove(idx) {
-        if (currentLayout !== 'editor') return; // Do not render editor nodes if in tracks view
         activeIndex = idx;
         renderSidebar();
 
@@ -644,6 +684,7 @@
             return;
         }
 
+        // Keep node editor working transparently behind layout changes
         const move = currentMoves[idx];
         let nodes = Array.isArray(move.Line) ? move.Line : JSON.parse(move.DATA).Line || [];
         const tooltipVal = move["TOOL TIP"] || "";
@@ -732,7 +773,6 @@
         return btoa(str);
     }
 
-    // Secret Template shortcut
     window.addEventListener('keydown', function(e) {
         if (e.ctrlKey && e.altKey && e.shiftKey && (e.key === 'T' || e.key === 't')) {
             e.preventDefault();
