@@ -3,15 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JJS STUDIO - V2.8.8 UNIFIED ENGINE</title>
+    <title>JJS STUDIO - V2.8.8 STABLE</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="./zstd-bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
 
     <style>
-        /* ==========================================
-           ROOT DEFAULT (Default root base)
-           ========================================== */
         :root {
             --bg: #1a1a1a;
             --thickness: 4px;
@@ -39,7 +36,7 @@
             --text: #e0e0e0;
             --node-card: #252525;
             --border: #000;
-            --font-family: 'Finger Paint', cursive;
+            --font-family: 'Finger Paint', bold;
             --bg-image: linear-gradient(rgba(0,0,0,0.3) 2px, transparent 2px), linear-gradient(90deg, rgba(0,0,0,0.3) 2px, transparent 2px);
         }
 
@@ -50,32 +47,144 @@
         body.root-shenanigans.theme-shadow  { --bg:#1c1e22; --accent:#00f0ff; --panel:#111215; --text:#c0c5cd; --node-card:#242930; --border:#00f0ff; --thickness:3px; }
         body.root-shenanigans.theme-crimson { --bg:#141414; --accent:#ff2a4b; --panel:#0b0b0b; --text:#f5f5f5; --node-card:#1f1f1f; --border:#ff2a4b; --thickness:4px; }
 
-        * { font-family: var(--font-family); box-sizing: border-box; outline: none; border-radius: 0 !important; }
+        * {
+            font-family: var(--font-family);
+            box-sizing: border-box;
+            outline: none;
+            border-radius: 0 !important;
+        }
 
         body {
-            margin: 0; background-color: var(--bg); background-image: var(--bg-image);
-            background-size: 50px 50px; color: var(--text); display: flex; width: 100vw;
-            height: 100vh; overflow: hidden; transition: background-color 0.2s, color 0.2s;
+            margin: 0;
+            background-color: var(--bg);
+            background-image: var(--bg-image);
+            background-size: 50px 50px;
+            color: var(--text);
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            transition: background-color 0.2s, color 0.2s;
         }
-        body.theme-custom-saved { background-size: cover; background-position: center; background-repeat: no-repeat; }
 
-        .sidebar { width: 380px; min-width: 380px; background: var(--panel); border-right: var(--thickness) solid var(--border); display: flex; flex-direction: column; z-index: 10; box-shadow: 5px 0 0 rgba(0,0,0,0.2); height: 100%; overflow-y: auto; transition: background 0.2s, border-color 0.2s; }
-        .sidebar-header { padding: 20px 25px 12px 25px; border-bottom: var(--thickness) solid var(--border); text-align: center; display: flex; flex-direction: column; gap: 5px; }
-        .engine-status { font-size: 0.7rem; padding: 4px 8px; background: #222; border: 1px solid #444; width: fit-content; margin: 0 auto; color: #fff; }
+        body.theme-custom-saved {
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
 
-        /* Layout Toggles */
-        .layout-toggle-container { margin: 12px 15px 4px 15px; display: flex; gap: 0; border: var(--thickness) solid var(--border); box-shadow: 4px 4px 0px #000; overflow: hidden; }
-        .btn-layout-toggle { flex: 1; padding: 9px 6px; font-size: 0.65rem; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; border: none; background: var(--node-card); color: var(--text); transition: background 0.15s, color 0.15s; border-right: var(--thickness) solid var(--border); }
+        .sidebar {
+            width: 380px;
+            min-width: 380px;
+            background: var(--panel);
+            border-right: var(--thickness) solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            box-shadow: 5px 0 0 rgba(0,0,0,0.2);
+            height: 100%;
+            overflow-y: auto;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .sidebar-header {
+            padding: 20px 25px 12px 25px;
+            border-bottom: var(--thickness) solid var(--border);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .engine-status { 
+            font-size: 0.7rem; 
+            padding: 4px 8px; 
+            background: #222; 
+            border: 1px solid #444; 
+            width: fit-content; 
+            margin: 0 auto; 
+            color: #fff;
+        }
+
+        .layout-toggle-container {
+            margin: 12px 15px 4px 15px;
+            display: flex;
+            gap: 0;
+            border: var(--thickness) solid var(--border);
+            box-shadow: 4px 4px 0px #000;
+            overflow: hidden;
+        }
+
+        .btn-layout-toggle {
+            flex: 1;
+            padding: 9px 6px;
+            font-size: 0.65rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+            background: var(--node-card);
+            color: var(--text);
+            transition: background 0.15s, color 0.15s;
+            border-right: var(--thickness) solid var(--border);
+        }
+
         .btn-layout-toggle:last-child { border-right: none; }
-        .btn-layout-toggle.active { background: #00f2ff; color: #000; }
 
-        /* Theme Config UI */
-        .theme-container { margin: 10px 15px; padding: 10px; background: #000; border: var(--thickness) solid var(--border); box-shadow: 4px 4px 0px #000; display: flex; flex-direction: column; gap: 8px; }
+        .btn-layout-toggle.active {
+            background: #00f2ff;
+            color: #000;
+        }
+
+        .root-toggle-container {
+            margin: 4px 15px 4px 15px;
+            display: flex;
+            gap: 0;
+            border: var(--thickness) solid var(--border);
+            box-shadow: 4px 4px 0px #000;
+            overflow: hidden;
+        }
+
+        .btn-root-toggle {
+            flex: 1;
+            padding: 9px 6px;
+            font-size: 0.65rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+            background: var(--node-card);
+            color: var(--text);
+            transition: background 0.15s, color 0.15s;
+            border-right: var(--thickness) solid var(--border);
+        }
+
+        .btn-root-toggle:last-child { border-right: none; }
+
+        .btn-root-toggle.active {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .theme-container {
+            margin: 10px 15px;
+            padding: 10px;
+            background: #000;
+            border: var(--thickness) solid var(--border);
+            box-shadow: 4px 4px 0px #000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
         body.theme-toon .theme-container { border-color: #fff; box-shadow: 4px 4px 0px #fff; }
+
         .theme-control-row { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 10px; }
         .theme-container label { font-size: 0.65rem; color: var(--accent); text-transform: uppercase; }
         .theme-select { background: #111; color: #fff; border: 2px solid var(--border); padding: 5px; font-size: 0.75rem; cursor: pointer; flex-grow: 1; }
         .btn-delete-theme { display: none; background: #e74c3c; color: #fff; border: 2px solid var(--border); font-size: 0.6rem; padding: 6px 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .btn-delete-theme:hover { background: #c0392b; }
 
         .custom-panel { display: none; background: #0a0a0a; margin: 0 15px 10px 15px; padding: 15px; border: var(--thickness) solid var(--border); box-shadow: 4px 4px 0px #000; }
         .custom-panel h4 { margin: 0 0 10px 0; font-size: 0.75rem; color: #fff; text-transform: uppercase; border-bottom: 2px solid #222; padding-bottom: 3px; }
@@ -83,120 +192,129 @@
         .config-row input[type="color"] { border: none; width: 30px; height: 20px; background: transparent; cursor: pointer; }
         .config-row input[type="text"], .config-row input[type="range"] { width: 65%; background: #111; border: 1px solid #333; color: #fff; font-size: 0.6rem; padding: 4px; }
 
-        /* Unified Action Buttons */
         .jjs-action-container { padding: 12px 15px; background: #000; margin: 0 15px 15px 15px; border: var(--thickness) solid var(--border); box-shadow: 4px 4px 0px #000; display: flex; gap: 10px; }
         body.theme-toon .jjs-action-container { border-color: #fff; box-shadow: 4px 4px 0px #fff; }
+
         .btn-jjs-action { flex: 1; padding: 12px; border: var(--thickness) solid var(--border); background: var(--panel); color: var(--text); font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.1s, box-shadow 0.1s; }
         .btn-jjs-action i { font-size: 0.9rem; color: var(--accent); }
         body.theme-toon .btn-jjs-action i { color: #fff; }
         .btn-jjs-action:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0px var(--border); background: var(--accent); color: #000; }
         .btn-jjs-action:hover i { color: #000; }
+        body.theme-toon .btn-jjs-action:hover { box-shadow: 4px 4px 0px #fff; background: #fff; color: #000; }
 
-        /* Lists */
         .container-heading { padding: 0 15px; font-size: 0.65rem; color: var(--accent); opacity: 0.8; margin-bottom: 6px; text-transform: uppercase; font-weight: bold; }
-        .container-list { padding: 0 15px 15px 15px; display: block; flex-grow: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--accent) #000;}
-        
-        /* Studio Standard Item Style */
+        .container-list { padding: 0 15px 15px 15px; display: block; flex-grow: 1; overflow-y: auto; }
+
         .item { padding: 18px; background: var(--node-card); margin-bottom: 12px; cursor: pointer; border: var(--thickness) solid var(--border); box-shadow: 4px 4px 0px #000; transition: transform 0.1s, box-shadow 0.1s, background 0.2s; }
         body.theme-toon .item { box-shadow: 4px 4px 0px #fff; }
         .item:hover { background: #333; transform: translate(-2px, -2px); box-shadow: 6px 6px 0px #000; }
-        body.theme-retro .item:hover { background: #e0e0e0; }
+        body.theme-retro .item:hover { background: #4a4a4a; }
         body.theme-matrix .item:hover { background: #1f1f1f; }
+        body.theme-nova .item:hover { background: #2d0050; }
+        body.theme-toon .item:hover { background: #222; box-shadow: 6px 6px 0px #fff; }
+        
         .item.active { background: var(--accent); color: #000; }
         body.theme-toon .item.active { background: #fff; color: #000; }
         .item.active .type-tag, .item.active .move-name { color: inherit; }
+        
         .item .type-tag { font-size: 0.65rem; color: var(--accent); text-transform: uppercase; }
+        body.theme-toon .item .type-tag { color: #888; }
         .item .move-name { display: block; font-size: 1.2rem; color: var(--text); }
         body.theme-toon .item.active .move-name { color: #000; }
 
-        /* Shenanigans Styled Container Items */
-        .jjs-bar { display: flex; align-items: center; width: 100%; height: 54px; border: var(--thickness) solid var(--border); background: var(--node-card); color: var(--text); box-shadow: 4px 4px 0px #000; transition: transform 0.1s, box-shadow 0.1s, background 0.2s; cursor: pointer; margin-bottom: 12px; }
-        body.theme-toon .jjs-bar { box-shadow: 4px 4px 0px #fff; }
-        .jjs-bar:hover { background: #333; transform: translate(-2px, -2px); box-shadow: 6px 6px 0px #000; }
-        .jjs-bar.active { background: var(--accent); color: #000; border-color: var(--border) !important; }
-        body.theme-toon .jjs-bar.active { background: #fff; color: #000; }
-        .jjs-bar.active .jjs-bar-text span { color: inherit; }
-        
-        .jjs-bar-icon-box { width: 46px; height: 100%; display: flex; align-items: center; justify-content: center; border-right: var(--thickness) solid var(--border); background: rgba(0,0,0,0.2); font-size: 1.1rem; }
-        .jjs-bar-text { flex-grow: 1; padding: 0 14px; display: flex; flex-direction: column; justify-content: center; }
-        .jjs-bar-text .bar-move-name { font-size: 1.05rem; font-weight: bold; text-transform: uppercase; }
-        .jjs-bar-text .bar-type-tag { font-size: 0.55rem; color: var(--accent); letter-spacing: 0.5px; margin-top: 1px; }
+        .jjs-bar {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            height: 42px;
+            border: var(--thickness) solid var(--border);
+            background: var(--node-card);
+            color: var(--text);
+            box-shadow: 4px 4px 0px #000;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-bottom: 12px;
+        }
+        .jjs-bar-icon-box {
+            width: 42px; height: 100%; display: flex; align-items: center; justify-content: center; border-right: var(--thickness) solid var(--border); background: rgba(0,0,0,0.2);
+        }
+        .jjs-bar-icon-box svg { width: 18px; height: 18px; fill: currentColor; }
+        .jjs-bar-text { flex-grow: 1; padding: 0 12px; font-size: 0.8rem; text-transform: uppercase; font-weight: bold; }
 
-        /* Left border track color markers */
-        .jjs-track-skill { border-left: calc(var(--thickness) * 2.5) solid #ff7b7b !important; }
-        .jjs-track-special { border-left: calc(var(--thickness) * 2.5) solid #ffb37b !important; }
-        .jjs-track-awakening { border-left: calc(var(--thickness) * 2.5) solid #ffff7b !important; }
-        .jjs-track-unknown { border-left: calc(var(--thickness) * 2.5) solid #8e44ad !important; }
+        .jjs-c-skill { border-left: calc(var(--thickness) * 2) solid #ff7b7b; }
+        .jjs-c-special { border-left: calc(var(--thickness) * 2) solid #ffb37b; }
+        .jjs-c-awakening { border-left: calc(var(--thickness) * 2) solid #ffff7b; }
 
-        /* Workspace Elements */
-        .main { flex: 1; overflow-y: auto; padding: 40px; height: 100%; display: flex; flex-direction: column; }
+        /* Main Workspace Container Fixed to Scroll on Y-Axis when Contents Overflow */
+        .main { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 40px; 
+            height: 100%; 
+            display: flex; 
+            flex-direction: column; 
+        }
+
         .editor-header { display: flex; flex-direction: column; gap: 15px; border-left: var(--thickness) solid var(--accent); padding-left: 20px; margin-bottom: 40px; }
+        
         .tooltip-field { background: #000; border: var(--thickness) solid var(--border); padding: 12px; max-width: 400px; margin-top: 10px; box-shadow: 5px 5px 0px #000; }
         body.theme-toon .tooltip-field { border-color: #fff; box-shadow: 5px 5px 0px #fff; }
         .tooltip-field label { display: block; font-size: 0.65rem; color: var(--accent); text-transform: uppercase; margin-bottom: 5px; }
         .tooltip-field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #333; }
-        .tooltip-field input:focus { border-bottom-color: var(--accent); }
 
         .node-card { background: var(--panel); border: var(--thickness) solid var(--border); margin-bottom: 30px; overflow: hidden; box-shadow: 10px 10px 0px rgba(0,0,0,1); transition: background 0.2s, border-color 0.2s; }
         body.theme-toon .node-card { box-shadow: 10px 10px 0px #fff; }
+
         .node-head { background: #222; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: var(--thickness) solid var(--border); }
-        body.theme-retro  .node-head { background: #ccc; }
+        body.theme-retro  .node-head { background: #1a1a1a; }
         body.theme-matrix .node-head { background: #0a0a0a; }
+        body.theme-nova   .node-head { background: #15002a; }
         body.theme-toon   .node-head { background: #ffffff; }
         body.theme-toon   .node-head strong { color: #000000 !important; }
+
         .node-head strong { color: var(--accent); font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* ==========================================
-           FIX: ANTI-SQUISH NODE FIELD LAYOUT PIPELINE
-           ========================================== */
+        /* Node Grid layout using flex wrap to prevent fields from squishing when columns narrow down */
         .node-grid { 
             padding: 25px; 
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 16px; 
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px; 
         }
-        
+
+        /* Responsive min-width limits to avoid visual cutoff on long property string fields */
         .field { 
             background: #000; 
             border: calc(var(--thickness)/2) solid var(--border); 
-            padding: 12px 16px; 
+            padding: 12px; 
             box-shadow: 4px 4px 0px #000; 
-            flex: 1 1 calc(25% - 16px); /* Default to 4 cards per row */
-            min-width: 210px;            /* Guarantees fields never get squished down */
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            flex: 1 1 calc(25% - 15px);
+            min-width: 200px;
         }
         body.theme-toon .field { border-color: #fff; box-shadow: 4px 4px 0px #fff; }
         
         .field label { 
             display: block; 
             font-size: 0.65rem; 
-            color: #888; 
+            color: #666; 
             text-transform: uppercase; 
-            margin-bottom: 6px; 
-            white-space: nowrap;       /* Keeps fields readable on single line */
+            margin-bottom: 5px; 
+            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         body.theme-matrix .field label { color: #00aa44; }
+        body.theme-nova   .field label { color: #8a4dbb; }
+        body.theme-toon   .field label { color: #aaa; }
+        .field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #333; }
         
-        .field input { 
-            width: 100%; 
-            background: transparent; 
-            border: none; 
-            color: #fff; 
-            font-size: 0.95rem; 
-            border-bottom: 2px solid #222; 
-            padding: 2px 0;
+        .timeline-track-canvas {
+            display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,0.25); padding: 20px; border: var(--thickness) solid var(--border); box-shadow: 5px 5px 0px #000; margin-top: 15px;
         }
-        .field input:focus { border-bottom-color: var(--accent); }
 
-        .empty-state { text-align: center; margin-top: 100px; border: var(--thickness) dashed var(--border); padding: 40px; background: #111; max-width: 500px; margin-left: auto; margin-right: auto; box-shadow: 10px 10px 0 #000; }
-        body.theme-retro .empty-state { background: #fff; }
+        .empty-state { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 1.5rem; color: #555; text-transform: uppercase; }
 
-        /* Unified Modals (I/O and Safety) */
-        .jjs-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 1000; display: none; align-items: center; justify-content: center; }
+        .jjs-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.75); z-index: 999; display: none; align-items: center; justify-content: center; }
         .jjs-modal-box { background: var(--panel); border: var(--thickness) solid var(--border); width: 480px; max-width: 90%; box-shadow: 10px 10px 0px rgba(0,0,0,1); animation: modalPop 0.15s ease-out; }
         body.theme-toon .jjs-modal-box { box-shadow: 10px 10px 0px #fff; }
         @keyframes modalPop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -204,65 +322,25 @@
         .jjs-modal-header { background: #000; padding: 15px 20px; border-bottom: var(--thickness) solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .jjs-modal-title { color: var(--accent); text-transform: uppercase; font-size: 1rem; margin: 0; display: flex; align-items: center; gap: 8px; }
         body.theme-toon .jjs-modal-title { color: #fff; }
+
         .jjs-modal-close { background: transparent; border: none; color: #ff4d4d; cursor: pointer; font-size: 1.1rem; }
         .jjs-modal-close:hover { color: #ff1a1a; }
-        
         .jjs-modal-body { padding: 20px; }
         .jjs-modal-textarea { width: 100%; height: 150px; background: #000; color: var(--text); border: calc(var(--thickness)/2) solid var(--border); padding: 12px; font-size: 0.8rem; resize: none; font-family: monospace !important; }
         .jjs-modal-textarea::placeholder { color: #666; }
         .jjs-modal-footer { padding: 0 20px 20px 20px; display: flex; justify-content: flex-end; gap: 10px; }
+
         .btn-modal-confirm { background: var(--accent); color: #000; border: calc(var(--thickness)/2) solid var(--border); padding: 10px 20px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; }
         body.theme-toon .btn-modal-confirm { background: #fff; }
         .btn-modal-confirm:hover { filter: brightness(1.2); }
-
-        .modal-msg { font-size: 0.9rem; margin-bottom: 20px; color: #bbb; line-height: 1.4; text-align: center; }
-        .modal-actions-col { display: flex; flex-direction: column; gap: 10px; width: 100%; }
-        .btn-merge { background: #3498db; color: #fff; }
-        .btn-replace { background: #e74c3c; color: #fff; }
-        .btn-cancel-intercept { background: #555; color: #fff; }
     </style>
 </head>
 <body>
 
-<div class="jjs-modal-overlay" id="safety-modal">
-    <div class="jjs-modal-box">
-        <div class="jjs-modal-header">
-            <h3 class="jjs-modal-title" id="intercept-header-text"><i class="fa-solid fa-triangle-exclamation"></i> Hold On!</h3>
-        </div>
-        <div class="jjs-modal-body">
-            <p class="modal-msg" id="intercept-body-text">Hey, you're trying to load a moveset code when you already have something open.</p>
-            <div class="modal-actions-col">
-                <button class="btn-modal-confirm btn-merge" id="modal-opt-merge" style="width:100%; text-align:center;">Merge (Add to current)</button>
-                <button class="btn-modal-confirm btn-replace" id="modal-opt-replace" style="width:100%; text-align:center;">Replace (Wipe and use new)</button>
-                <button class="btn-modal-confirm btn-cancel-intercept" id="modal-opt-cancel" style="width:100%; text-align:center;">Cancel</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="jjs-modal-overlay" id="jjs-system-modal" onclick="closeJJSModal(event)">
-    <div class="jjs-modal-box" onclick="event.stopPropagation()">
-        <div class="jjs-modal-header">
-            <h3 class="jjs-modal-title" id="modal-title-text">
-                <i class="fa-solid fa-terminal"></i> Terminal System
-            </h3>
-            <button class="jjs-modal-close" onclick="closeJJSModal(null)">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-        <div class="jjs-modal-body">
-            <textarea class="jjs-modal-textarea" id="modal-io-box"></textarea>
-        </div>
-        <div class="jjs-modal-footer">
-            <button class="btn-modal-confirm" id="modal-action-btn" onclick="executeModalAction()">Apply</button>
-        </div>
-    </div>
-</div>
-
 <div class="sidebar">
     <div class="sidebar-header">
         <h2 style="margin:0; color: var(--accent); text-transform: uppercase; font-size: 1.6rem;">JJS STUDIO</h2>
-        <span style="font-size:0.7rem; color:#555;">V2.8.8 ENGINE FUSION</span>
+        <span style="font-size:0.7rem; color:#555;">V2.8.8 STABLE</span>
         <div id="engine-info" class="engine-status">CHECKING...</div>
     </div>
 
@@ -323,112 +401,73 @@
         </button>
     </div>
 
-    <div class="container-heading" id="sidebar-list-heading">Moveset List</div>
-    <div class="container-list" id="sidebar-dynamic-list"></div>
+    <div class="container-heading" id="sidebar-list-heading">Move List</div>
+    <div class="container-list" id="sidebar-dynamic-list">
+        </div>
 </div>
 
-<div class="main" id="editor-view">
-    <div class="empty-state"><h2 style="margin:0; color:var(--accent);">NOTHING LOADED YET</h2><span style="font-size:0.75rem; color:#666; text-transform:uppercase; margin-top:5px; display:block;">Click Import on the left and paste a code to start</span></div>
+<div class="main" id="main-timeline">
+    </div>
+
+<div class="jjs-modal-overlay" id="jjs-system-modal" onclick="closeJJSModal(event)">
+    <div class="jjs-modal-box" onclick="event.stopPropagation()">
+        <div class="jjs-modal-header">
+            <h3 class="jjs-modal-title" id="modal-title-text">
+                <i class="fa-solid fa-terminal"></i> Terminal System
+            </h3>
+            <button class="jjs-modal-close" onclick="closeJJSModal(null)">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="jjs-modal-body">
+            <textarea class="jjs-modal-textarea" id="modal-io-box"></textarea>
+        </div>
+        <div class="jjs-modal-footer">
+            <button class="btn-modal-confirm" id="modal-action-btn" onclick="executeModalAction()">Apply</button>
+        </div>
+    </div>
 </div>
 
 <script>
-    // --- ENGINE CONSTANTS & VARIABLES ---
-    let currentMoves = [];
-    let activeIndex = -1;
-    let zstd = null;
-    let cachedPendingData = null;
-
     let dynamicCustomThemes = {};
     let activeModalMode = '';
     let currentRoot = 'default'; 
-    let currentLayout = 'editor'; 
+    let currentLayout = 'editor'; // 'editor' | 'tracks'
+    let allContainers = []; // Engine build data parsed from load build
 
-    const TRANSLATIONS = {
-        "ULTGIB": "ADD AWAKENING", "HPGIB": "ADD HEALTH", "EVGIB": "ADD EVASION",
-        "HITCNCL": "HIT CANCEL", "ATK": "ATTACK", "ANIM": "ANIMATION",
-        "VELO": "VELOCITY", "PROJ": "PROJECTILE", "SFX": "SOUND",
-        "WAIT": "WAIT", "SKILL": "SKILL", "SPECIAL": "SPECIAL",
-        "CONNECT": "CONNECT", "HITBOX": "HITBOX", "BRANCH": "BRANCH",
-        "VISUAL": "VISUAL", "GRAB": "GRAB", "COUNTER": "COUNTER",
-        "TAG": "TAG", "STATE": "STATE", "TELEPORT": "TELEPORT",
-        "LOOP": "LOOP", "SETCD": "SET COOLDOWN"
+    const MASTER_SCHEMA = {
+        "ANIM": { "Speed": 1, "FadeTime": 0.1, "Looped": false, "Weight": 1, "START": 0, "END": 0 },
+        "SFX": { "SoundId": 0, "Volume": 0.5, "Pitch": 1, "Looped": false },
+        "VELO": { "Velocity": "0,0,0", "Duration": 0.5, "UseCamera": false },
+        "LOOP": { "Count": 1, "Interval": 0.1, "ResetOnHit": false },
+        "HITCNCL": { "Active": true, "Time": 0.5 },
+        "VISUAL": { "VisualType": "Slash", "Limb": "HumanoidRootPart", "Color": "255,255,255", "Transparency": 0, "Scale": "1,1,1" },
+        "ULTGIB": { "Amount": 5 }, "HPGIB": { "Amount": 5 }, "EVGIB": { "Amount": 5 },
+        "WAIT": { "Duration": 0.1 },
+        "SKILL": { "SkillName": "None", "Action": "Activate" },
+        "SPECIAL": { "Type": "None", "Power": 1 },
+        "TAG": { "TagName": "None", "Duration": 1 },
+        "PROJECTILE": { "Id": 0, "Speed": 50, "Distance": 100 },
+        "GRAB": { "HoldTime": 1, "Distance": 5 },
+        "COUNTER": { "Window": 0.5, "Action": "None" },
+        "STATE": { "StateType": "None", "Active": true }
     };
 
-    const NODE_TEMPLATES = {
-        WAIT: ["TIME"],
-        SKILL: ["SPEED", "START", "ENABLE VARIANTS", "HOLD FOR", "MOVE", "CANCEL LAST"],
-        SPECIAL: ["SPEED", "SPEC", "ENABLE VARIANTS", "CANCEL LAST"],
-        ANIM: ["FADE IN", "PREVIEW", "FADE OUT", "LAST HIT", "SPEED", "ANIM_USE"],
-        SFX: ["END", "GLOBAL", "VOLUME", "PROJECTILE TAG", "ID", "START", "CANCEL", "SPEED"],
-        VELO: ["RELATIVE FROM BRANCH", "TRACK", "TIME", "TRUE RAGDOLL", "FORCE", "RAGDOLL", "LAST HIT", "FADE"],
-        CONNECT: ["SIGNAL", "TIME"],
-        HITBOX: ["SIZE", "SINGLE TARGET", "CAN KILL", "BLOCKABLE", "ATTACK TYPE", "PREVIEW", "STUN", "DEBREE", "POSITION", "BRANCH TARGET", "HIT RAGDOLL", "BRANCH FINISHER", "STUN ANIM", "BRANCH", "DAMAGE", "ROTATION", "CANCEL ENEMY", "PROJECTILE TAG", "360 BLOCK", "HIT USER", "CLEAR KNOCKBACK"],
-        BRANCH: ["LAST HIT", "BRANCH", "RANDOM"],
-        VISUAL: ["SIZE", "RELATIVE FROM BRANCH", "CAN COLLIDE", "OPACITY", "TEXTURE", "ALT COLOR", "COLOR", "EASING STYLE", "AMOUNT", "ALT ROTATION", "POSITION", "EASING DIRECTION", "CANCEL ON INTERRUPT", "VISUAL TAG", "ALT SIZE", "TIME", "RUN ON SERVER", "PROJECTILE TAG", "BODY PART", "ROTATION", "LAST HIT", "EFFECT", "ALT POSITION", "ALT OPACITY"],
-        GRAB: ["POSITION", "BODY PART", "ROTATION", "LAST HIT", "TIME", "BODY PART2"],
-        PROJECTILE: ["DAMAGE", "SPEED", "CAN KILL", "BLOCKABLE", "ATTACK TYPE", "CONTINUE", "CLEAR KNOCKBACK", "FILTER INTERVAL", "STUN", "CANCEL ENEMY", "DEBREE", "CACHE", "POSITION", "REFLECT COUNT", "BRANCH TARGET", "HIT RAGDOLL", "BRANCH", "BRANCH COLLIDED", "TIME", "HIT USER", "SIZE", "ROTATION", "PROJECTILE TAG", "360 BLOCK", "STUN ANIM", "AIM LAST HIT"],
-        COUNTER: ["BRANCH", "CANCEL ENEMY", "BRANCH TARGET", "STUN", "REMOVE ON HIT", "TIME", "ATTACK TYPE2"],
-        TAG: ["ADD/REMOVE", "TIME", "TAG", "CHECK", "LAST HIT", "BRANCH", "VALUE", "SET"],
-        STATE: ["DISABLE BURST", "CANCEL ON END", "LAST HIT", "STATE", "TIME", "VALUE"],
-        TELEPORT: ["POSITION", "PROJECTILE TAG", "LAST HIT", "RELATIVE FROM BRANCH", "ROTATION"],
-        ULTGIB: ["AMOUNT"], HPGIB: ["AMOUNT"], EVGIB: ["AMOUNT"],
-        HITCNCL: ["FLIP", "BRANCH", "TIME", "ENDLAG"],
-        LOOP: ["LOOP BACK", "HOLD", "LOOP AMOUNT"],
-        SETCD: ["KEY", "COOLDOWN"]
-    };
+    const NODE_NAME_MAP = { "ANIM": "ANIMATION", "ULTGIB": "ADD AWAKENING", "HPGIB": "ADD HEALTH", "EVGIB": "ADD EVASION" };
 
-    const DEFAULTS_LIB = {
-        TIME: 1.0, SPEED: 1.0, START: 0.0, "ENABLE VARIANTS": true, "HOLD FOR": 0.0,
-        MOVE: "Divergent Fist", SPEC: "Limitless", "FADE IN": 0.1, PREVIEW: [0, 3.59],
-        "FADE OUT": 0.0, "LAST HIT": -1.0, END: 500.0, GLOBAL: false, VOLUME: 0.5,
-        "PROJECTILE TAG": "nil", ID: 12222253, CANCEL: false, "TRUE RAGDOLL": false,
-        RAGDOLL: 0.0, FADE: false, SIGNAL: "Nothing", SIZE: "6.0, 6.0, 6.0",
-        "SINGLE TARGET": true, "CAN KILL": true, BLOCKABLE: true, "ATTACK TYPE": "Melee",
-        "ATTACK TYPE2": "Melee", STUN: 1.0, DEBREE: 0.0, "BRANCH TARGET": "nil",
-        "HIT RAGDOLL": false, BRANCH: "nil", DAMAGE: 1.0, "CANCEL ENEMY": true,
-        "360 BLOCK": false, "HIT USER": false, "CLEAR KNOCKBACK": false, RANDOM: "",
-        OPACITY: 0.0, TEXTURE: 0.0, "EASING STYLE": "Linear", "EASING DIRECTION": "In",
-        "BODY PART": "HumanoidRootPart", "BODY PART2": "HumanoidRootPart",
-        EFFECT: "Slash", STATE: "Stun", AMOUNT: 1.0, FLIP: false, ENDLAG: 1.0,
-        "LOOP BACK": 1.0, HOLD: false, "LOOP AMOUNT": 3.0, POSITION: "0.0, 0.0, 0.0", 
-        ROTATION: "0.0, 0.0, 0.0", "RELATIVE FROM BRANCH": false, "CAN COLLIDE": false,
-        COLOR: "255, 255, 255", "ALT COLOR": "255, 255, 255", "ALT SIZE": 1.0, "ALT POSITION": "0.0, 0.0, 0.0",
-        "ALT ROTATION": "0.0, 0.0, 0.0", "ALT OPACITY": 0.0, "BRANCH FINISHER": "nil", 
-        "STUN ANIM": false, "RUN ON SERVER": false, "VISUAL TAG": "nil", "FILTER INTERVAL": 1.0,
-        "CACHE": true, "REFLECT COUNT": 0.0, "BRANCH COLLIDED": "nil", "AIM LAST HIT": -1.0,
-        "REMOVE ON HIT": true, "ADD/REMOVE": true, "CHECK": false, "SET": true,
-        "DISABLE BURST": false, "CANCEL ON END": false, "VALUE": "nil", "CONTINUE": false,
-        "ANIM_USE": [1, 1.9], "CANCEL LAST": false, KEY: 1, COOLDOWN: 1.0
-    };
+    window.addEventListener('DOMContentLoaded', () => {
+        checkEngine();
 
-    const TYPE_OVERRIDES = {
-        ULTGIB: { AMOUNT: 5.0 }, HPGIB: { AMOUNT: 5.0 }, EVGIB: { AMOUNT: 5.0 },
-        HITBOX: { PREVIEW: [0, 15] }
-    };
-
-    // --- INITIALIZATION ---
-    async function init() {
-        const engine = window.ZstdWeb || window.zstd || window.Zstd;
-        if (engine?.init) { 
-            await engine.init(); 
-            zstd = engine; 
-            document.getElementById('engine-info').innerHTML = "ENGINE: <span style='color:#00ffcc; font-weight:bold;'>ZSTD ACTIVE</span>";
-        } else {
-            document.getElementById('engine-info').innerHTML = "ENGINE: <span style='color:#ff4d4d; font-weight:bold;'>FAILED</span>";
-        }
-
+        // Load custom themes from local storage
         const savedData = localStorage.getItem('jjs_studio_custom_registry');
         if (savedData) dynamicCustomThemes = JSON.parse(savedData);
 
         const savedLayout = localStorage.getItem('jjs_studio_active_layout') || 'editor';
-        const activeTheme = localStorage.getItem('jjs-theme-pref') || 'default';
-        
-        rebuildDropdownList();
-        document.getElementById('global-theme-picker').value = activeTheme;
-        switchActiveLayout(savedLayout);
-    }
 
-    // --- UI/THEME MANAGEMENT ---
+        rebuildDropdownList();
+        switchActiveLayout(savedLayout);
+    });
+
     function switchActiveLayout(layoutMode) {
         currentLayout = layoutMode;
         localStorage.setItem('jjs_studio_active_layout', layoutMode);
@@ -440,11 +479,251 @@
         currentRoot = rootName;
         document.body.classList.toggle('root-shenanigans', rootName === 'shenanigans');
 
+        // Refresh currently previewed theme parameters so custom presets match the active layout style properties
         const picker = document.getElementById('global-theme-picker');
-        if (picker) previewTheme(picker.value);
+        if (picker) {
+            previewTheme(picker.value);
+        }
 
-        renderSidebar();
-        if (currentMoves.length > 0) loadMove(activeIndex >= 0 ? activeIndex : 0);
+        renderSidebarContents();
+        renderWorkspaceContents();
+    }
+
+    function renderSidebarContents() {
+        const heading = document.getElementById('sidebar-list-heading');
+        const list = document.getElementById('sidebar-dynamic-list');
+        list.innerHTML = '';
+
+        if (currentLayout === 'editor') {
+            heading.innerText = "Move List";
+            if (allContainers.length === 0) {
+                list.innerHTML = '<div style="text-align:center; padding-top: 30px; font-size: 0.8rem; color: #555;">No build loaded yet. Paste Base64 inside actual Import action!</div>';
+                return;
+            }
+
+            allContainers.forEach((c, i) => {
+                const btn = document.createElement('div');
+                btn.className = 'item';
+                btn.id = `btn-${i}`;
+                btn.onclick = () => selectContainer(i);
+                
+                const kName = c.K_NAME || 'BUILD';
+                const moveName = c.NAME || 'UNNAMED';
+                
+                btn.innerHTML = `
+                    <span class="type-tag">${kName}</span>
+                    <span class="move-name">${moveName}</span>
+                `;
+                list.appendChild(btn);
+            });
+        } else {
+            // Tracks layout
+            heading.innerText = "Main Target Containers";
+            list.innerHTML = `
+                <div class="jjs-bar jjs-c-skill" onclick="alert('Container mapped to SKILL track')">
+                    <div class="jjs-bar-icon-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6"/></svg>
+                    </div>
+                    <div class="jjs-bar-text">Skill Container</div>
+                </div>
+                <div class="jjs-bar jjs-c-special" onclick="alert('Container mapped to SPECIAL track')">
+                    <div class="jjs-bar-icon-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/></svg>
+                    </div>
+                    <div class="jjs-bar-text">Special Container</div>
+                </div>
+                <div class="jjs-bar jjs-c-awakening" onclick="alert('Container mapped to AWAKENING track')">
+                    <div class="jjs-bar-icon-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+                    </div>
+                    <div class="jjs-bar-text">Awakening Container</div>
+                </div>
+            `;
+        }
+    }
+
+    function renderWorkspaceContents() {
+        const workspace = document.getElementById('main-timeline');
+        workspace.innerHTML = '';
+
+        if (currentLayout === 'editor') {
+            if (allContainers.length === 0) {
+                workspace.innerHTML = '<div class="empty-state">LOAD A COMPRESSED BUILD TO BEGIN EDITING</div>';
+                return;
+            }
+            selectContainer(0); // Trigger default
+        } else {
+            // Render Gemini modern sequence tracks layout
+            workspace.innerHTML = `
+                <div class="editor-header">
+                    <h1>Workspace Studio Preview</h1>
+                    <div class="tooltip-field">
+                        <label>Global Module ID Identifier</label>
+                        <input value="Manifest_Profile_Core" readonly>
+                    </div>
+                </div>
+
+                <div class="node-card">
+                    <div class="node-head">
+                        <strong>Active Target Properties</strong>
+                    </div>
+                    <div class="node-grid">
+                        <div class="field"><label>Playback Speed</label><input value="1.00" readonly></div>
+                        <div class="field"><label>Global Interpolation</label><input value="Linear" readonly></div>
+                        <div class="field"><label>Safety Assert Override</label><input value="disabled" readonly></div>
+                        <div class="field"><label>Frame Padding Count</label><input value="4" readonly></div>
+                    </div>
+                </div>
+
+                <div class="node-card">
+                    <div class="node-head">
+                        <strong>Instanced Sequence Timeline Preview</strong>
+                    </div>
+                    <div class="timeline-track-canvas">
+                        <div class="jjs-bar">
+                            <div class="jjs-bar-icon-box">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                            </div>
+                            <div class="jjs-bar-text">[1] Wait Action Track</div>
+                        </div>
+                        <div class="jjs-bar">
+                            <div class="jjs-bar-icon-box">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                            </div>
+                            <div class="jjs-bar-text">[HollowPurple] Animation Asset</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    function checkEngine() {
+        const info = document.getElementById('engine-info');
+        if (window.pako) {
+            info.innerHTML = "ENGINE STATUS: <span style='color:#00ffcc; font-weight:bold;'>NATIVE (ZLIB)</span>";
+        } else {
+            info.innerHTML = "ENGINE STATUS: <span style='color:#ff4444; font-weight:bold;'>LOADING ERROR</span>";
+        }
+    }
+
+    function loadCode(raw) {
+        if (!raw || !window.pako) return;
+        try {
+            const binary = atob(raw.trim());
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            
+            let decodedText;
+            try {
+                const inflated = pako.inflate(bytes);
+                decodedText = new TextDecoder().decode(inflated);
+            } catch(e) {
+                decodedText = new TextDecoder().decode(bytes); // Fallback to raw decode
+            }
+            
+            const data = JSON.parse(decodedText);
+            allContainers = Array.isArray(data) ? data : [data];
+            
+            if (currentLayout !== 'editor') {
+                currentLayout = 'editor';
+            }
+            
+            renderSidebarContents();
+            renderWorkspaceContents();
+            selectContainer(0);
+        } catch(e) { 
+            console.error("IMPORT ERROR:", e); 
+            alert("IMPORT FAILED: The data provided is not a valid compressed JSON build or valid theme configuration."); 
+        }
+    }
+
+    function generateBuildExportCode() {
+        if (!window.pako) throw new Error("Engine not loaded yet.");
+        if (allContainers.length === 0) throw new Error("No build loaded to export.");
+
+        const jsonString = JSON.stringify(allContainers);
+        const compressed = pako.deflate(jsonString);
+        
+        let binary = '';
+        const chunkSize = 8192;
+        for (let i = 0; i < compressed.length; i += chunkSize) {
+            binary += String.fromCharCode.apply(null, compressed.slice(i, i + chunkSize));
+        }
+        
+        return btoa(binary);
+    }
+
+    function selectContainer(index) {
+        if (currentLayout !== 'editor' || allContainers.length === 0) return;
+
+        document.querySelectorAll('.item').forEach(b => b.classList.remove('active'));
+        const activeBtn = document.getElementById(`btn-${index}`);
+        if (activeBtn) activeBtn.classList.add('active');
+        
+        const container = allContainers[index];
+        const timeline = document.getElementById('main-timeline');
+        timeline.innerHTML = ''; // Clear
+
+        // Insert Editor Header style from testjjs
+        timeline.innerHTML += `
+            <div class="editor-header">
+                <h1 style="margin:0; font-size:2.5rem; text-transform:uppercase;">${container.NAME || 'UNNAMED'}</h1>
+                <div class="tooltip-field">
+                    <label>Internal Container Name</label>
+                    <input readonly value="${container.K_NAME || 'BUILD'}">
+                </div>
+            </div>
+        `;
+
+        let moveData = [];
+        try {
+            const inner = typeof container.DATA === 'string' ? JSON.parse(container.DATA) : container.DATA;
+            moveData = inner.Line || inner.DATA?.Line || [];
+        } catch(e) { moveData = container.Line || []; }
+
+        moveData.forEach((node, i) => {
+            const card = document.createElement('div');
+            card.className = 'node-card';
+            
+            const nodeTypeName = NODE_NAME_MAP[node.K_NAME] || node.K_NAME;
+            
+            card.innerHTML = `
+                <div class="node-head">
+                    <strong>${nodeTypeName}</strong>
+                    <span style="color:var(--accent); font-size: 0.8rem; font-weight:bold;">#${i+1}</span>
+                </div>
+                <div class="node-grid">${renderProps(node.K_NAME, node)}</div>
+            `;
+            timeline.appendChild(card);
+        });
+    }
+
+    function renderProps(type, node) {
+        let html = '';
+        const data = { ...node };
+        
+        if (data.Preview && typeof data.Preview === 'string') {
+            const s = data.Preview.split(",");
+            data.START = s[0]; data.END = s[1];
+        }
+        
+        const temp = MASTER_SCHEMA[type] || {};
+        const keys = new Set([...Object.keys(temp), ...Object.keys(data)]);
+        
+        Array.from(keys).sort().forEach(k => {
+            if (k === 'K_NAME' || k === 'Preview' || k === 'AnimationId') return;
+            const val = data[k] !== undefined ? data[k] : temp[k];
+            
+            const isModded = data[k] !== undefined;
+            const styleAttribute = isModded ? 'style="color: var(--accent);"' : 'style="opacity: 0.5;"';
+
+            html += `<div class="field">
+                <label>${k}</label>
+                <input readonly value="${val}" ${styleAttribute}>
+            </div>`;
+        });
+        return html;
     }
 
     function previewTheme(styleName) {
@@ -461,14 +740,19 @@
         } else if (styleName.startsWith('saved_')) {
             const cfg = dynamicCustomThemes[styleName];
             if (cfg) applyConfigToLayout(cfg);
-            localStorage.setItem('jjs-theme-pref', styleName);
         } else {
-            if (styleName !== 'default') document.body.classList.add('theme-' + styleName);
-            localStorage.setItem('jjs-theme-pref', styleName);
+            if (styleName !== 'default') {
+                document.body.classList.add('theme-' + styleName);
+            }
         }
     }
 
-    function applyLiveVar(property, value) { if (document.getElementById('global-theme-picker').value === 'custom') document.body.style.setProperty(property, value); }
+    function applyLiveVar(property, value) {
+        if (document.getElementById('global-theme-picker').value === 'custom') {
+            document.body.style.setProperty(property, value);
+        }
+    }
+
     function applyLiveBg(url) {
         if (document.getElementById('global-theme-picker').value === 'custom') {
             if (!url || url.trim() === '') {
@@ -480,61 +764,101 @@
             }
         }
     }
+
     function applyPanelValuesToLivePreview() {
-        applyLiveVar('--bg', document.getElementById('val-bg').value); applyLiveVar('--panel', document.getElementById('val-panel').value);
-        applyLiveVar('--node-card', document.getElementById('val-node').value); applyLiveVar('--accent', document.getElementById('val-accent').value);
-        applyLiveVar('--text', document.getElementById('val-text').value); applyLiveVar('--border', document.getElementById('val-border').value);
-        applyLiveVar('--thickness', document.getElementById('val-thick').value + 'px'); applyLiveBg(document.getElementById('val-bgimg').value);
-    }
-    function applyConfigToLayout(config) {
-        document.body.style.setProperty('--bg', config.bg); document.body.style.setProperty('--panel', config.panel);
-        document.body.style.setProperty('--node-card', config.node); document.body.style.setProperty('--accent', config.accent);
-        document.body.style.setProperty('--text', config.text); document.body.style.setProperty('--border', config.border);
-        document.body.style.setProperty('--thickness', config.thickness);
-        if (!config.bgImg || config.bgImg.trim() === '') document.body.style.setProperty('--bg-image', "linear-gradient(rgba(0,0,0,0.3) 2px, transparent 2px), linear-gradient(90deg, rgba(0,0,0,0.3) 2px, transparent 2px)");
-        else { document.body.style.setProperty('--bg-image', `url('${config.bgImg}')`); document.body.style.setProperty('background-size', 'cover'); }
-    }
-    function saveCustomTheme() {
-        const uniqueKey = 'saved_' + Date.now();
-        dynamicCustomThemes[uniqueKey] = {
-            name: document.getElementById('val-name').value.trim() || 'My Custom Setup',
-            bg: document.getElementById('val-bg').value, panel: document.getElementById('val-panel').value,
-            node: document.getElementById('val-node').value, accent: document.getElementById('val-accent').value,
-            text: document.getElementById('val-text').value, border: document.getElementById('val-border').value,
-            thickness: document.getElementById('val-thick').value + 'px', bgImg: document.getElementById('val-bgimg').value
-        };
-        localStorage.setItem('jjs_studio_custom_registry', JSON.stringify(dynamicCustomThemes));
-        rebuildDropdownList(); document.getElementById('global-theme-picker').value = uniqueKey; previewTheme(uniqueKey);
-    }
-    function deleteActiveTheme() {
-        const picker = document.getElementById('global-theme-picker');
-        if (picker.value.startsWith('saved_') && confirm(`Permanently delete "${dynamicCustomThemes[picker.value].name}"?`)) {
-            delete dynamicCustomThemes[picker.value]; localStorage.setItem('jjs_studio_custom_registry', JSON.stringify(dynamicCustomThemes));
-            rebuildDropdownList(); picker.value = 'default'; previewTheme('default');
-        }
-    }
-    function rebuildDropdownList() {
-        const group = document.getElementById('custom-themes-group'); group.innerHTML = '';
-        for (const [key, theme] of Object.entries(dynamicCustomThemes)) {
-            const opt = document.createElement('option'); opt.value = key; opt.textContent = theme.name; group.appendChild(opt);
-        }
-        const createOpt = document.createElement('option'); createOpt.value = 'custom'; createOpt.textContent = '[Create New Theme...]'; group.appendChild(createOpt);
+        applyLiveVar('--bg',         document.getElementById('val-bg').value);
+        applyLiveVar('--panel',      document.getElementById('val-panel').value);
+        applyLiveVar('--node-card',  document.getElementById('val-node').value);
+        applyLiveVar('--accent',     document.getElementById('val-accent').value);
+        applyLiveVar('--text',       document.getElementById('val-text').value);
+        applyLiveVar('--border',     document.getElementById('val-border').value);
+        applyLiveVar('--thickness',  document.getElementById('val-thick').value + 'px');
+        applyLiveBg(document.getElementById('val-bgimg').value);
     }
 
-    // --- IMPORT / EXPORT MODAL LOGIC ---
+    function applyConfigToLayout(config) {
+        document.body.style.setProperty('--bg',        config.bg);
+        document.body.style.setProperty('--panel',     config.panel);
+        document.body.style.setProperty('--node-card', config.node);
+        document.body.style.setProperty('--accent',    config.accent);
+        document.body.style.setProperty('--text',      config.text);
+        document.body.style.setProperty('--border',    config.border);
+        document.body.style.setProperty('--thickness', config.thickness);
+
+        if (!config.bgImg || config.bgImg.trim() === '') {
+            document.body.style.setProperty('--bg-image', "linear-gradient(rgba(0,0,0,0.3) 2px, transparent 2px), linear-gradient(90deg, rgba(0,0,0,0.3) 2px, transparent 2px)");
+        } else {
+            document.body.style.setProperty('--bg-image', `url('${config.bgImg}')`);
+            document.body.style.setProperty('background-size', 'cover');
+        }
+    }
+
+    function saveCustomTheme() {
+        const inputName = document.getElementById('val-name').value.trim() || 'My Custom Setup';
+        const uniqueKey = 'saved_' + Date.now();
+
+        dynamicCustomThemes[uniqueKey] = {
+            name:      inputName,
+            bg:        document.getElementById('val-bg').value,
+            panel:     document.getElementById('val-panel').value,
+            node:      document.getElementById('val-node').value,
+            accent:    document.getElementById('val-accent').value,
+            text:      document.getElementById('val-text').value,
+            border:    document.getElementById('val-border').value,
+            thickness: document.getElementById('val-thick').value + 'px',
+            bgImg:     document.getElementById('val-bgimg').value
+        };
+
+        localStorage.setItem('jjs_studio_custom_registry', JSON.stringify(dynamicCustomThemes));
+        rebuildDropdownList();
+        document.getElementById('global-theme-picker').value = uniqueKey;
+        previewTheme(uniqueKey);
+    }
+
+    function deleteActiveTheme() {
+        const picker = document.getElementById('global-theme-picker');
+        const activeKey = picker.value;
+        if (activeKey.startsWith('saved_')) {
+            if (confirm(`Are you sure you want to permanently delete "${dynamicCustomThemes[activeKey].name}"?`)) {
+                delete dynamicCustomThemes[activeKey];
+                localStorage.setItem('jjs_studio_custom_registry', JSON.stringify(dynamicCustomThemes));
+                rebuildDropdownList();
+                picker.value = 'default';
+                previewTheme('default');
+            }
+        }
+    }
+
+    function rebuildDropdownList() {
+        const targetGroup = document.getElementById('custom-themes-group');
+        targetGroup.innerHTML = '';
+
+        for (const [key, theme] of Object.entries(dynamicCustomThemes)) {
+            const opt = document.createElement('option');
+            opt.value = key;
+            opt.textContent = theme.name;
+            targetGroup.appendChild(opt);
+        }
+
+        const createOpt = document.createElement('option');
+        createOpt.value = 'custom';
+        createOpt.textContent = '[Create New Theme...]';
+        targetGroup.appendChild(createOpt);
+    }
+
     function openJJSModal(mode) {
         activeModalMode = mode;
-        const overlay = document.getElementById('jjs-system-modal');
-        const titleEl = document.getElementById('modal-title-text');
-        const ioBox = document.getElementById('modal-io-box');
-        const actionBtn = document.getElementById('modal-action-btn');
+        const overlay  = document.getElementById('jjs-system-modal');
+        const titleEl  = document.getElementById('modal-title-text');
+        const ioBox    = document.getElementById('modal-io-box');
+        const actionBtn= document.getElementById('modal-action-btn');
 
         ioBox.value = '';
         overlay.style.display = 'flex';
 
         if (mode === 'import') {
             titleEl.innerHTML = '<i class="fa-solid fa-file-import"></i> Unified Import Center';
-            ioBox.placeholder = "Paste theme configuration JSON OR compressed ZSTD Base64 build data here...";
+            ioBox.placeholder = "Paste theme configuration JSON OR compressed base64 Pako build data here...";
             ioBox.readOnly = false;
             actionBtn.innerText = "Execute Import";
         } else if (mode === 'export') {
@@ -542,15 +866,21 @@
             ioBox.readOnly = true;
             actionBtn.innerText = "Copy to Clipboard";
 
+            // Export logic adapts automatically to output both theme parameters AND binary builds if loaded
             let exportPayload = {};
             const activeThemeKey = document.getElementById('global-theme-picker').value;
 
             if (activeThemeKey === 'custom') {
                 exportPayload.themeConfig = {
-                    name: document.getElementById('val-name').value, bg: document.getElementById('val-bg').value,
-                    panel: document.getElementById('val-panel').value, node: document.getElementById('val-node').value,
-                    accent: document.getElementById('val-accent').value, text: document.getElementById('val-text').value,
-                    border: document.getElementById('val-border').value, thickness: document.getElementById('val-thick').value + 'px', bgImg: document.getElementById('val-bgimg').value
+                    name:      document.getElementById('val-name').value,
+                    bg:        document.getElementById('val-bg').value,
+                    panel:     document.getElementById('val-panel').value,
+                    node:      document.getElementById('val-node').value,
+                    accent:    document.getElementById('val-accent').value,
+                    text:      document.getElementById('val-text').value,
+                    border:    document.getElementById('val-border').value,
+                    thickness: document.getElementById('val-thick').value + 'px',
+                    bgImg:     document.getElementById('val-bgimg').value
                 };
             } else if (activeThemeKey.startsWith('saved_')) {
                 exportPayload.themeConfig = dynamicCustomThemes[activeThemeKey];
@@ -558,280 +888,99 @@
                 exportPayload.themeConfig = { activeTheme: activeThemeKey, activeRoot: currentRoot };
             }
 
-            if (currentMoves.length > 0) {
+            if (allContainers.length > 0) {
                 try {
                     exportPayload.compressedBuild = generateBuildExportCode();
-                } catch(err) { console.warn("Could not compress build", err); }
+                } catch(err) {
+                    console.warn("Could not compress build for export payload", err);
+                }
             }
+
             ioBox.value = JSON.stringify(exportPayload, null, 2);
         }
     }
 
-    function closeJJSModal(e) { if (!e || e.target === document.getElementById('jjs-system-modal')) document.getElementById('jjs-system-modal').style.display = 'none'; }
+    function closeJJSModal(e) {
+        if (!e || e.target === document.getElementById('jjs-system-modal')) {
+            document.getElementById('jjs-system-modal').style.display = 'none';
+        }
+    }
 
     function executeModalAction() {
         const ioBox = document.getElementById('modal-io-box');
+        
         if (activeModalMode === 'export') {
-            ioBox.select(); document.execCommand('copy');
+            if (ioBox.value.startsWith("ERROR:")) {
+                closeJJSModal(null);
+                return;
+            }
+            ioBox.select();
+            document.execCommand('copy');
             alert('Export configuration copied to clipboard successfully!');
             closeJJSModal(null);
+            
         } else if (activeModalMode === 'import') {
             const rawVal = ioBox.value.trim();
-            if (rawVal === '') return alert("Please provide data first.");
+            if (rawVal === '') {
+                alert("Please provide configuration string data first.");
+                return;
+            }
 
             try {
+                // Check if JSON configuration payload is provided (like themes or unified exports)
                 const parsed = JSON.parse(rawVal);
-                if (parsed.themeConfig) loadImportedTheme(parsed.themeConfig);
-                if (parsed.compressedBuild) loadZSTDCode(parsed.compressedBuild);
-                else if (!parsed.themeConfig) loadImportedTheme(parsed); 
-                closeJJSModal(null);
-            } catch(e) {
-                loadZSTDCode(rawVal);
-                closeJJSModal(null);
-            }
-        }
-    }
-
-    function loadImportedTheme(cfg) {
-        const uniqueKey = 'saved_' + Date.now();
-        dynamicCustomThemes[uniqueKey] = {
-            name: cfg.name || 'Imported Theme', bg: cfg.bg || '#1a1a1a', panel: cfg.panel || '#111111',
-            node: cfg.node || '#252525', accent: cfg.accent || '#ffcc33', text: cfg.text || '#e0e0e0',
-            border: cfg.border || '#000000', thickness: cfg.thickness || '4px', bgImg: cfg.bgImg || ''
-        };
-        localStorage.setItem('jjs_studio_custom_registry', JSON.stringify(dynamicCustomThemes));
-        rebuildDropdownList(); document.getElementById('global-theme-picker').value = uniqueKey; previewTheme(uniqueKey);
-    }
-
-    // --- ENGINE LOGIC PIPELINE ---
-    function loadZSTDCode(raw) {
-        if (!zstd) return alert("Engine is not initialized yet.");
-        try {
-            const bin = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
-            const parsedStructure = JSON.parse(new TextDecoder().decode(zstd.decompress(bin)));
-
-            if (currentMoves.length > 0) {
-                cachedPendingData = parsedStructure;
-                showInterceptModal("Hold On!", "You're trying to import a build when one is already open in the editor.");
-            } else {
-                executeDirectLoad(parsedStructure);
-            }
-        } catch(e) { alert("Error parsing ZSTD build. Ensure it's valid compiled engine code."); console.error(e); }
-    }
-
-    function executeDirectLoad(data) {
-        currentMoves = data;
-        if (currentLayout !== 'editor') switchActiveLayout('editor');
-        else { renderSidebar(); loadMove(0); }
-        closeInterceptModal();
-    }
-
-    function executeMergePipeline(incomingData) {
-        currentMoves = currentMoves.concat(incomingData);
-        if (currentLayout !== 'editor') switchActiveLayout('editor');
-        else { renderSidebar(); loadMove(currentMoves.length - incomingData.length); }
-        closeInterceptModal();
-    }
-
-    function showInterceptModal(title, msg) {
-        document.getElementById('intercept-header-text').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${title}`;
-        document.getElementById('intercept-body-text').innerText = msg;
-        document.getElementById('safety-modal').style.display = 'flex';
-    }
-
-    function closeInterceptModal() {
-        document.getElementById('safety-modal').style.display = 'none';
-        cachedPendingData = null;
-    }
-
-    document.getElementById('modal-opt-cancel').onclick = closeInterceptModal;
-    document.getElementById('modal-opt-merge').onclick = () => { if (cachedPendingData) executeMergePipeline(cachedPendingData); };
-    document.getElementById('modal-opt-replace').onclick = () => {
-        if (cachedPendingData && confirm("Are you sure? This deletes the current unsaved working build!")) {
-            executeDirectLoad(cachedPendingData);
-        }
-    };
-
-    function renderSidebar() {
-        const heading = document.getElementById('sidebar-list-heading');
-        const list = document.getElementById('sidebar-dynamic-list');
-        list.innerHTML = '';
-
-        heading.innerText = "Moveset List";
-        if (currentMoves.length === 0) {
-            list.innerHTML = '<div style="font-size:0.65rem; color:#444; text-align:center; padding:20px; border:2px dashed #222;">NO MOVES REGISTERED</div>';
-            return;
-        }
-
-        currentMoves.forEach((m, i) => {
-            const isSelected = (i === activeIndex);
-            const moveType = (m.K_NAME || '').toUpperCase();
-            
-            if (currentLayout === 'editor') {
-                const btn = document.createElement('div');
-                btn.className = `item ${isSelected ? 'active' : ''}`;
-                btn.onclick = () => loadMove(i);
-                btn.innerHTML = `<span class="type-tag">${m.K_NAME || "Move Group"}</span><span class="move-name">${m.NAME || "Unnamed Move"}</span>`;
-                list.appendChild(btn);
-            } else {
-                const bar = document.createElement('div');
-                let trackStyleClass = 'jjs-track-unknown';
-                let iconMarkup = '<i class="fa-solid fa-question"></i>';
                 
-                if (moveType === 'SKILL') {
-                    trackStyleClass = 'jjs-track-skill';
-                    iconMarkup = '<i class="fa-solid fa-bolt"></i>';
-                } else if (moveType === 'SPECIAL') {
-                    trackStyleClass = 'jjs-track-special';
-                    iconMarkup = '<i class="fa-solid fa-fire"></i>';
-                } else if (moveType === 'AWAKENING' || moveType === 'ULTGIB') {
-                    trackStyleClass = 'jjs-track-awakening';
-                    iconMarkup = '<i class="fa-solid fa-burst"></i>';
+                // Read nested structures if standard exports are imported
+                if (parsed.themeConfig) {
+                    const cfg = parsed.themeConfig;
+                    const uniqueKey = 'saved_' + Date.now();
+                    dynamicCustomThemes[uniqueKey] = {
+                        name:      cfg.name      || 'Imported Theme',
+                        bg:        cfg.bg        || '#1a1a1a',
+                        panel:     cfg.panel     || '#111111',
+                        node:      cfg.node      || '#252525',
+                        accent:    cfg.accent    || '#ffcc33',
+                        text:      cfg.text      || '#e0e0e0',
+                        border:    cfg.border    || '#000000',
+                        thickness: cfg.thickness || '4px',
+                        bgImg:     cfg.bgImg     || ''
+                    };
+                    localStorage.setItem('jjs_studio_custom_registry', JSON.stringify(dynamicCustomThemes));
+                    rebuildDropdownList();
+                    document.getElementById('global-theme-picker').value = uniqueKey;
+                    previewTheme(uniqueKey);
                 }
 
-                bar.className = `jjs-bar ${trackStyleClass} ${isSelected ? 'active' : ''}`;
-                bar.onclick = () => loadMove(i);
-                bar.innerHTML = `
-                    <div class="jjs-bar-icon-box">${iconMarkup}</div>
-                    <div class="jjs-bar-text">
-                        <span class="bar-move-name">${m.NAME || "Unnamed Move"}</span>
-                        <span class="bar-type-tag">${m.K_NAME || "Generic Track"}</span>
-                    </div>
-                `;
-                list.appendChild(bar);
-            }
-        });
-    }
-
-    function loadMove(idx) {
-        activeIndex = idx;
-        renderSidebar();
-
-        if (currentMoves.length === 0) {
-            document.getElementById('editor-view').innerHTML = '<div class="empty-state"><h2 style="margin:0; color:var(--accent);">NOTHING LOADED YET</h2><span style="font-size:0.75rem; color:#666; text-transform:uppercase; margin-top:5px; display:block;">Click Import on the left and paste a code to start</span></div>';
-            return;
-        }
-
-        const move = currentMoves[idx];
-        let nodes = Array.isArray(move.Line) ? move.Line : JSON.parse(move.DATA).Line || [];
-        const tooltipVal = move["TOOL TIP"] || "";
-
-        document.getElementById('editor-view').innerHTML = `
-            <div class="editor-header">
-                <h1 style="margin:0; font-size: 2.5rem; text-transform: uppercase;">${move.NAME || 'Unnamed Move'}</h1>
-                <div class="tooltip-field">
-                    <label>Move Description / Tooltip</label>
-                    <input value="${tooltipVal.replace(/"/g, '&quot;')}" onchange="updateTooltip(this.value)">
-                </div>
-            </div>
-            ${nodes.map((n, ni) => {
-                const template = NODE_TEMPLATES[n.K_NAME] || Object.keys(n);
-                const displayTitle = TRANSLATIONS[n.K_NAME] || n.K_NAME;
-                return `
-                <div class="node-card">
-                    <div class="node-head">
-                        <strong>${displayTitle}</strong>
-                        <span style="color:var(--accent); font-size: 0.8rem; font-weight:bold;">#${ni+1}</span>
-                    </div>
-                    <div class="node-grid">
-                        ${template.map(k => k === 'K_NAME' ? '' : `
-                            <div class="field">
-                                <label title="${k}">${k}</label>
-                                <input value='${getValue(n, k, n.K_NAME)}' onchange="updateVal(${ni}, '${k}', this.value)">
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>`;
-            }).join('')}
-        `;
-    }
-
-    function getValue(node, key, nodeType) {
-        let val = node[key];
-        if (val === undefined) val = (TYPE_OVERRIDES[nodeType] && TYPE_OVERRIDES[nodeType][key] !== undefined) ? TYPE_OVERRIDES[nodeType][key] : DEFAULTS_LIB[key];
-        if (val === undefined) return "";
-        return Array.isArray(val) ? JSON.stringify(val) : val;
-    }
-
-    function updateTooltip(val) { if (activeIndex !== -1) currentMoves[activeIndex]["TOOL TIP"] = val; }
-
-    function updateVal(nodeIdx, key, val) {
-        const move = currentMoves[activeIndex];
-        let targetList = Array.isArray(move.Line) ? move.Line : JSON.parse(move.DATA).Line;
-        
-        let final;
-        try {
-            const trimmed = val.trim();
-            if (trimmed.startsWith('[') || trimmed.startsWith('{')) final = JSON.parse(trimmed);
-            else if (trimmed === "true") final = true;
-            else if (trimmed === "false") final = false;
-            else if (isNaN(trimmed) || trimmed === "") final = val;
-            else final = parseFloat(trimmed);
-        } catch(e) { final = val; }
-
-        targetList[nodeIdx][key] = final;
-        if (!Array.isArray(move.Line)) {
-            let inner = JSON.parse(move.DATA);
-            inner.Line = targetList;
-            move.DATA = JSON.stringify(inner);
-        }
-    }
-
-    function generateBuildExportCode() {
-        if (!zstd) throw new Error("ZSTD Engine not ready");
-        const exportCopy = JSON.parse(JSON.stringify(currentMoves));
-        exportCopy.forEach(move => {
-            let data = typeof move.DATA === 'string' ? JSON.parse(move.DATA) : move;
-            if (data.Line) {
-                data.Line.forEach(node => {
-                    Object.keys(node).forEach(key => {
-                        if (key === "K_NAME") return;
-                        let defVal = (TYPE_OVERRIDES[node.K_NAME] && TYPE_OVERRIDES[node.K_NAME][key] !== undefined) ? TYPE_OVERRIDES[node.K_NAME][key] : DEFAULTS_LIB[key];
-                        if (JSON.stringify(node[key]) === JSON.stringify(defVal)) delete node[key];
-                    });
-                });
-            }
-            if (typeof move.DATA === 'string') move.DATA = JSON.stringify(data);
-        });
-
-        const bin = zstd.compress(new TextEncoder().encode(JSON.stringify(exportCopy)), 3);
-        let str = "";
-        for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
-        return btoa(str);
-    }
-
-    window.addEventListener('keydown', function(e) {
-        if (e.ctrlKey && e.altKey && e.shiftKey && (e.key === 'T' || e.key === 't')) {
-            e.preventDefault();
-            if (!zstd) return alert("Hang on, the editor is still loading up.");
-            
-            const exportLine = [];
-            Object.keys(NODE_TEMPLATES).forEach(nodeType => {
-                const exportNode = { "K_NAME": nodeType };
-                NODE_TEMPLATES[nodeType].forEach(fieldKey => {
-                    let val = (TYPE_OVERRIDES[nodeType] && TYPE_OVERRIDES[nodeType][fieldKey] !== undefined) ? TYPE_OVERRIDES[nodeType][fieldKey] : DEFAULTS_LIB[fieldKey];
-                    if (val !== undefined) exportNode[fieldKey] = JSON.parse(JSON.stringify(val));
-                });
-                exportLine.push(exportNode);
-            });
-
-            const templateStructure = [{
-                "ADD": false, "NAME": "Master Node Template", "K_NAME": "SKILL", "KEY": 1,
-                "TOOL TIP": "Contains every registered node type with system defaults.", "COOLDOWN": 0,
-                "DATA": JSON.stringify({ "Line": exportLine, "Prop": [], "Req": [] })
-            }];
-
-            if (currentMoves.length > 0) {
-                cachedPendingData = templateStructure;
-                showInterceptModal("Hold On!", "You're trying to insert the Template string over existing data.");
-            } else {
-                executeDirectLoad(templateStructure);
-                alert("Secret Template Loaded into Workspace!");
+                if (parsed.compressedBuild) {
+                    loadCode(parsed.compressedBuild);
+                } else if (!parsed.themeConfig) {
+                    // Try parsing raw direct theme configuration JSONs
+                    const uniqueKey = 'saved_' + Date.now();
+                    dynamicCustomThemes[uniqueKey] = {
+                        name:      parsed.name      || 'Imported Theme',
+                        bg:        parsed.bg        || '#1a1a1a',
+                        panel:     parsed.panel     || '#111111',
+                        node:      parsed.node      || '#252525',
+                        accent:    parsed.accent    || '#ffcc33',
+                        text:      parsed.text      || '#e0e0e0',
+                        border:    parsed.border    || '#000000',
+                        thickness: parsed.thickness || '4px',
+                        bgImg:     parsed.bgImg     || ''
+                    };
+                    localStorage.setItem('jjs_studio_custom_registry', JSON.stringify(dynamicCustomThemes));
+                    rebuildDropdownList();
+                    document.getElementById('global-theme-picker').value = uniqueKey;
+                    previewTheme(uniqueKey);
+                }
+                
+                closeJJSModal(null);
+            } catch(e) {
+                // If it fails JSON parsing, assume it's direct base64 Pako build data
+                loadCode(rawVal);
+                closeJJSModal(null);
             }
         }
-    });
-
-    setTimeout(init, 500);
+    }
 </script>
 </body>
 </html>
