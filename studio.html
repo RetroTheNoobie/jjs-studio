@@ -2,304 +2,296 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JJS STUDIO V1.8.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JJS STUDIO - V2.8.8 UNIFIED ENGINE</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="./zstd-bundle.js"></script>
+
     <style>
-        /* THEME CONFIGURATION STYLES */
-        :root { 
-            --bg: #1a1a1a; 
-            --thickness: 4px; 
-            --accent: #ffcc33; 
+        /* ==========================================
+           ROOT DEFAULT (Default root base)
+           ========================================== */
+        :root {
+            --bg: #1a1a1a;
+            --thickness: 4px;
+            --accent: #ffcc33;
             --panel: #111;
-            --text: #e0e0e0; 
+            --text: #e0e0e0;
             --node-card: #252525;
             --border: #000;
+            --font-family: 'Finger Paint', cursive;
+            --bg-image: linear-gradient(rgba(0,0,0,0.3) 2px, transparent 2px), linear-gradient(90deg, rgba(0,0,0,0.3) 2px, transparent 2px);
         }
 
-        body.theme-retro {
-            --bg: #f0f0f0;
-            --accent: #ff5722;
-            --panel: #dcdcdc;
-            --text: #111;
-            --node-card: #ffffff;
+        body.theme-retro   { --bg:#444444; --accent:#ff5722; --panel:#2a2a2a; --text:#eeeeee; --node-card:#333333; --border:#000; }
+        body.theme-matrix  { --bg:#050505; --accent:#00ff66; --panel:#0d0d0d; --text:#00ff66; --node-card:#141414; --border:#00ff66; }
+        body.theme-nova    { --bg:#120024; --accent:#b026ff; --panel:#090012; --text:#e0b0ff; --node-card:#1c0035; --border:#000; }
+        body.theme-toon    { --bg:#000000; --accent:#ffffff; --panel:#000000; --text:#ffffff; --node-card:#000000; --border:#ffffff; --thickness:6px; }
+        body.theme-shadow  { --bg:#1c1e22; --accent:#00f0ff; --panel:#111215; --text:#c0c5cd; --node-card:#242930; --border:#00f0ff; --thickness:3px; }
+        body.theme-crimson { --bg:#141414; --accent:#ff2a4b; --panel:#0b0b0b; --text:#f5f5f5; --node-card:#1f1f1f; --border:#ff2a4b; --thickness:4px; }
+
+        body.root-shenanigans {
+            --bg: #1a1a1a;
+            --thickness: 4px;
+            --accent: #ffcc33;
+            --panel: #111;
+            --text: #e0e0e0;
+            --node-card: #252525;
             --border: #000;
+            --font-family: 'Finger Paint', cursive;
+            --bg-image: linear-gradient(rgba(0,0,0,0.3) 2px, transparent 2px), linear-gradient(90deg, rgba(0,0,0,0.3) 2px, transparent 2px);
         }
 
-        body.theme-matrix {
-            --bg: #050505;
-            --accent: #00ff66;
-            --panel: #0d0d0d;
-            --text: #00ff66;
-            --node-card: #141414;
-            --border: #00ff66;
-        }
+        body.root-shenanigans.theme-retro   { --bg:#444444; --accent:#ff5722; --panel:#2a2a2a; --text:#eeeeee; --node-card:#333333; --border:#000; }
+        body.root-shenanigans.theme-matrix  { --bg:#050505; --accent:#00ff66; --panel:#0d0d0d; --text:#00ff66; --node-card:#141414; --border:#00ff66; }
+        body.root-shenanigans.theme-nova    { --bg:#120024; --accent:#b026ff; --panel:#090012; --text:#e0b0ff; --node-card:#1c0035; --border:#000; }
+        body.root-shenanigans.theme-toon    { --bg:#000000; --accent:#ffffff; --panel:#000000; --text:#ffffff; --node-card:#000000; --border:#ffffff; --thickness:6px; }
+        body.root-shenanigans.theme-shadow  { --bg:#1c1e22; --accent:#00f0ff; --panel:#111215; --text:#c0c5cd; --node-card:#242930; --border:#00f0ff; --thickness:3px; }
+        body.root-shenanigans.theme-crimson { --bg:#141414; --accent:#ff2a4b; --panel:#0b0b0b; --text:#f5f5f5; --node-card:#1f1f1f; --border:#ff2a4b; --thickness:4px; }
 
-        * { font-family: 'Finger Paint', cursive; box-sizing: border-box; outline: none; border-radius: 0 !important; }
-        
-        body { 
-            margin: 0; 
-            background-color: var(--bg);
-            background-image: 
-                linear-gradient(rgba(0,0,0,0.3) 2px, transparent 2px),
-                linear-gradient(90deg, rgba(0,0,0,0.3) 2px, transparent 2px);
-            background-size: 50px 50px;
-            color: var(--text); 
-            display: flex; 
-            width: 100vw;
-            height: 100vh; 
-            overflow: hidden; 
-            transition: background-color 0.2s, color 0.2s;
-        }
-        
-        .sidebar { 
-            width: 380px; 
-            min-width: 380px;
-            background: var(--panel); 
-            border-right: var(--thickness) solid var(--border); 
-            display: flex; 
-            flex-direction: column; 
-            z-index: 10; 
-            box-shadow: 5px 0 0 rgba(0,0,0,0.2);
-            height: 100%;
-            transition: background 0.2s, border-color 0.2s;
-        }
-        
-        .sidebar-header { 
-            padding: 25px; 
-            border-bottom: var(--thickness) solid var(--border); 
-            text-align: center; 
-        }
+        * { font-family: var(--font-family); box-sizing: border-box; outline: none; border-radius: 0 !important; }
 
-        /* THEME SELECTOR DROPDOWN STYLING */
-        .theme-container {
-            margin: 0 15px 10px 15px;
-            padding: 10px;
-            background: #000;
-            border: var(--thickness) solid var(--border);
-            box-shadow: 4px 4px 0px #000;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+        body {
+            margin: 0; background-color: var(--bg); background-image: var(--bg-image);
+            background-size: 50px 50px; color: var(--text); display: flex; width: 100vw;
+            height: 100vh; overflow: hidden; transition: background-color 0.2s, color 0.2s;
         }
-        .theme-container label {
-            font-size: 0.65rem;
-            color: var(--accent);
-            text-transform: uppercase;
-        }
-        .theme-select {
-            background: #111;
-            color: #fff;
-            border: 2px solid var(--border);
-            padding: 5px;
-            font-size: 0.75rem;
-            cursor: pointer;
-            width: 60%;
-        }
-        
-        .io-container { 
-            padding: 20px; 
-            background: #000; 
-            margin: 15px; 
-            border: var(--thickness) solid var(--border); 
-            box-shadow: 6px 6px 0px #000;
-            transition: border-color 0.2s;
-        }
-        
-        textarea { 
-            width: 100%; 
-            height: 100px; 
-            background: #050505; 
-            color: #2ecc71; 
-            border: calc(var(--thickness)/2) solid var(--border); 
-            font-size: 10px; 
-            resize: none; 
-            margin-bottom: 10px; 
-            padding: 8px; 
-            font-family: monospace; 
-        }
-        
-        .btn { 
-            width: 100%; 
-            padding: 14px; 
-            border: var(--thickness) solid var(--border); 
-            font-weight: bold; 
-            cursor: pointer; 
-            text-transform: uppercase; 
-            transition: transform 0.1s, box-shadow 0.1s; 
-            margin-bottom: 8px; 
-        }
-        
-        .btn-load { background: var(--accent); color: #000; }
-        .btn-save { background: #2ecc71; color: #fff; }
-        
-        .btn:hover { 
-            transform: translate(-4px, -4px); 
-            box-shadow: 6px 6px 0px #000; 
-            filter: brightness(1.1);
-        }
+        body.theme-custom-saved { background-size: cover; background-position: center; background-repeat: no-repeat; }
 
-        .container-list { flex: 1; overflow-y: auto; padding: 15px; scrollbar-width: thin; scrollbar-color: var(--accent) #000; }
-        
-        .item { 
-            padding: 18px; 
-            background: var(--node-card); 
-            margin-bottom: 12px; 
-            cursor: pointer; 
-            border: var(--thickness) solid var(--border);
-            box-shadow: 4px 4px 0px #000;
-            transition: transform 0.1s, box-shadow 0.1s, background 0.2s;
-        }
-        
-        .item:hover { 
-            background: #333; 
-            transform: translate(-2px, -2px);
-            box-shadow: 6px 6px 0px #000;
-        }
+        .sidebar { width: 380px; min-width: 380px; background: var(--panel); border-right: var(--thickness) solid var(--border); display: flex; flex-direction: column; z-index: 10; box-shadow: 5px 0 0 rgba(0,0,0,0.2); height: 100%; overflow-y: auto; transition: background 0.2s, border-color 0.2s; }
+        .sidebar-header { padding: 20px 25px 12px 25px; border-bottom: var(--thickness) solid var(--border); text-align: center; display: flex; flex-direction: column; gap: 5px; }
+        .engine-status { font-size: 0.7rem; padding: 4px 8px; background: #222; border: 1px solid #444; width: fit-content; margin: 0 auto; color: #fff; }
+
+        /* Root & Layout Toggles */
+        .layout-toggle-container { margin: 12px 15px 4px 15px; display: flex; gap: 0; border: var(--thickness) solid var(--border); box-shadow: 4px 4px 0px #000; overflow: hidden; }
+        .btn-layout-toggle { flex: 1; padding: 9px 6px; font-size: 0.65rem; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; border: none; background: var(--node-card); color: var(--text); transition: background 0.15s, color 0.15s; border-right: var(--thickness) solid var(--border); }
+        .btn-layout-toggle:last-child { border-right: none; }
+        .btn-layout-toggle.active { background: #00f2ff; color: #000; }
+
+        /* Theme Config UI */
+        .theme-container { margin: 10px 15px; padding: 10px; background: #000; border: var(--thickness) solid var(--border); box-shadow: 4px 4px 0px #000; display: flex; flex-direction: column; gap: 8px; }
+        body.theme-toon .theme-container { border-color: #fff; box-shadow: 4px 4px 0px #fff; }
+        .theme-control-row { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 10px; }
+        .theme-container label { font-size: 0.65rem; color: var(--accent); text-transform: uppercase; }
+        .theme-select { background: #111; color: #fff; border: 2px solid var(--border); padding: 5px; font-size: 0.75rem; cursor: pointer; flex-grow: 1; }
+        .btn-delete-theme { display: none; background: #e74c3c; color: #fff; border: 2px solid var(--border); font-size: 0.6rem; padding: 6px 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+
+        .custom-panel { display: none; background: #0a0a0a; margin: 0 15px 10px 15px; padding: 15px; border: var(--thickness) solid var(--border); box-shadow: 4px 4px 0px #000; }
+        .custom-panel h4 { margin: 0 0 10px 0; font-size: 0.75rem; color: #fff; text-transform: uppercase; border-bottom: 2px solid #222; padding-bottom: 3px; }
+        .config-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 0.6rem; color: #aaa; }
+        .config-row input[type="color"] { border: none; width: 30px; height: 20px; background: transparent; cursor: pointer; }
+        .config-row input[type="text"], .config-row input[type="range"] { width: 65%; background: #111; border: 1px solid #333; color: #fff; font-size: 0.6rem; padding: 4px; }
+
+        /* Unified Action Buttons */
+        .jjs-action-container { padding: 12px 15px; background: #000; margin: 0 15px 15px 15px; border: var(--thickness) solid var(--border); box-shadow: 4px 4px 0px #000; display: flex; gap: 10px; }
+        body.theme-toon .jjs-action-container { border-color: #fff; box-shadow: 4px 4px 0px #fff; }
+        .btn-jjs-action { flex: 1; padding: 12px; border: var(--thickness) solid var(--border); background: var(--panel); color: var(--text); font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.1s, box-shadow 0.1s; }
+        .btn-jjs-action i { font-size: 0.9rem; color: var(--accent); }
+        body.theme-toon .btn-jjs-action i { color: #fff; }
+        .btn-jjs-action:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0px var(--border); background: var(--accent); color: #000; }
+        .btn-jjs-action:hover i { color: #000; }
+
+        /* Lists */
+        .container-heading { padding: 0 15px; font-size: 0.65rem; color: var(--accent); opacity: 0.8; margin-bottom: 6px; text-transform: uppercase; font-weight: bold; }
+        .container-list { padding: 0 15px 15px 15px; display: block; flex-grow: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--accent) #000;}
+        .item { padding: 18px; background: var(--node-card); margin-bottom: 12px; cursor: pointer; border: var(--thickness) solid var(--border); box-shadow: 4px 4px 0px #000; transition: transform 0.1s, box-shadow 0.1s, background 0.2s; }
+        body.theme-toon .item { box-shadow: 4px 4px 0px #fff; }
+        .item:hover { background: #333; transform: translate(-2px, -2px); box-shadow: 6px 6px 0px #000; }
         body.theme-retro .item:hover { background: #e0e0e0; }
         body.theme-matrix .item:hover { background: #1f1f1f; }
-        
-        .item.active { 
-            background: var(--accent); 
-            color: #000;
-        }
-        
-        .item.active .type-tag, .item.active .move-name { color: #000; }
+        .item.active { background: var(--accent); color: #000; }
+        body.theme-toon .item.active { background: #fff; color: #000; }
+        .item.active .type-tag, .item.active .move-name { color: inherit; }
         .item .type-tag { font-size: 0.65rem; color: var(--accent); text-transform: uppercase; }
         .item .move-name { display: block; font-size: 1.2rem; color: var(--text); }
-        .item.active .move-name { color: #000; }
+        body.theme-toon .item.active .move-name { color: #000; }
 
-        .main { flex: 1; overflow-y: auto; padding: 40px; height: 100%; }
-        
-        .editor-header { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 15px; 
-            border-left: var(--thickness) solid var(--accent); 
-            padding-left: 20px; 
-            margin-bottom: 40px; 
-        }
-        
-        .tooltip-field { 
-            background: #000; 
-            border: var(--thickness) solid var(--border); 
-            padding: 12px; 
-            max-width: 400px; 
-            margin-top: 10px; 
-            box-shadow: 5px 5px 0px #000;
-        }
-        
+        .jjs-bar { display: flex; align-items: center; width: 100%; height: 42px; border: var(--thickness) solid var(--border); background: var(--node-card); color: var(--text); box-shadow: 4px 4px 0px #000; font-size: 0.85rem; cursor: pointer; margin-bottom: 12px; }
+        .jjs-bar-icon-box { width: 42px; height: 100%; display: flex; align-items: center; justify-content: center; border-right: var(--thickness) solid var(--border); background: rgba(0,0,0,0.2); }
+        .jjs-bar-text { flex-grow: 1; padding: 0 12px; font-size: 0.8rem; text-transform: uppercase; font-weight: bold; }
+        .jjs-c-skill { border-left: calc(var(--thickness) * 2) solid #ff7b7b; }
+        .jjs-c-special { border-left: calc(var(--thickness) * 2) solid #ffb37b; }
+        .jjs-c-awakening { border-left: calc(var(--thickness) * 2) solid #ffff7b; }
+
+        /* Workspace Elements */
+        .main { flex: 1; overflow-y: auto; padding: 40px; height: 100%; display: flex; flex-direction: column; }
+        .editor-header { display: flex; flex-direction: column; gap: 15px; border-left: var(--thickness) solid var(--accent); padding-left: 20px; margin-bottom: 40px; }
+        .tooltip-field { background: #000; border: var(--thickness) solid var(--border); padding: 12px; max-width: 400px; margin-top: 10px; box-shadow: 5px 5px 0px #000; }
+        body.theme-toon .tooltip-field { border-color: #fff; box-shadow: 5px 5px 0px #fff; }
         .tooltip-field label { display: block; font-size: 0.65rem; color: var(--accent); text-transform: uppercase; margin-bottom: 5px; }
         .tooltip-field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #333; }
         .tooltip-field input:focus { border-bottom-color: var(--accent); }
-        
-        .node-card { 
-            background: var(--panel); 
-            border: var(--thickness) solid var(--border); 
-            margin-bottom: 30px; 
-            overflow: hidden; 
-            box-shadow: 10px 10px 0px rgba(0,0,0,1); 
-            transition: background 0.2s, border-color 0.2s;
-        }
-        
-        .node-head { 
-            background: #222; 
-            padding: 15px 25px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border-bottom: var(--thickness) solid var(--border); 
-        }
-        body.theme-retro .node-head { background: #ccc; }
+
+        .node-card { background: var(--panel); border: var(--thickness) solid var(--border); margin-bottom: 30px; overflow: hidden; box-shadow: 10px 10px 0px rgba(0,0,0,1); transition: background 0.2s, border-color 0.2s; }
+        body.theme-toon .node-card { box-shadow: 10px 10px 0px #fff; }
+        .node-head { background: #222; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: var(--thickness) solid var(--border); }
+        body.theme-retro  .node-head { background: #ccc; }
         body.theme-matrix .node-head { background: #0a0a0a; }
-        
+        body.theme-toon   .node-head { background: #ffffff; }
+        body.theme-toon   .node-head strong { color: #000000 !important; }
         .node-head strong { color: var(--accent); font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; }
-        
+
         .node-grid { padding: 25px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
-        
-        .field { 
-            background: #000; 
-            border: calc(var(--thickness)/2) solid var(--border); 
-            padding: 12px; 
-            box-shadow: 4px 4px 0px #000;
-        }
-        
+        .field { background: #000; border: calc(var(--thickness)/2) solid var(--border); padding: 12px; box-shadow: 4px 4px 0px #000; }
+        body.theme-toon .field { border-color: #fff; box-shadow: 4px 4px 0px #fff; }
         .field label { display: block; font-size: 0.65rem; color: #666; text-transform: uppercase; margin-bottom: 5px; }
         body.theme-matrix .field label { color: #00aa44; }
         .field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #222; }
         .field input:focus { border-bottom-color: var(--accent); }
 
+        .timeline-track-canvas { display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,0.25); padding: 20px; border: var(--thickness) solid var(--border); box-shadow: 5px 5px 0px #000; margin-top: 15px; }
         .empty-state { text-align: center; margin-top: 100px; border: var(--thickness) dashed var(--border); padding: 40px; background: #111; max-width: 500px; margin-left: auto; margin-right: auto; box-shadow: 10px 10px 0 #000; }
         body.theme-retro .empty-state { background: #fff; }
 
-        /* SAFETY CUSTOM PROMPT DIALOG SCREEN OVERLAYS */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85); display: none; align-items: center;
-            justify-content: center; z-index: 1000;
-        }
-        .modal-box {
-            background: #111; border: var(--thickness) solid #000;
-            padding: 30px; max-width: 520px; width: 90%; box-shadow: 15px 15px 0 #000; text-align: center;
-        }
-        .modal-title { font-size: 1.4rem; color: var(--accent); margin-top: 0; margin-bottom: 15px; text-transform: uppercase; }
-        .modal-body { font-size: 0.9rem; margin-bottom: 25px; color: #bbb; line-height: 1.4; }
-        .modal-actions { display: flex; flex-direction: column; gap: 10px; }
-        .btn-modal { padding: 12px; border: var(--thickness) solid #000; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.9rem; margin-bottom: 0; }
-        .btn-cancel { background: #555; color: #fff; }
+        /* Unified Modals (I/O and Safety) */
+        .jjs-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 1000; display: none; align-items: center; justify-content: center; }
+        .jjs-modal-box { background: var(--panel); border: var(--thickness) solid var(--border); width: 480px; max-width: 90%; box-shadow: 10px 10px 0px rgba(0,0,0,1); animation: modalPop 0.15s ease-out; }
+        body.theme-toon .jjs-modal-box { box-shadow: 10px 10px 0px #fff; }
+        @keyframes modalPop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .jjs-modal-header { background: #000; padding: 15px 20px; border-bottom: var(--thickness) solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .jjs-modal-title { color: var(--accent); text-transform: uppercase; font-size: 1rem; margin: 0; display: flex; align-items: center; gap: 8px; }
+        body.theme-toon .jjs-modal-title { color: #fff; }
+        .jjs-modal-close { background: transparent; border: none; color: #ff4d4d; cursor: pointer; font-size: 1.1rem; }
+        .jjs-modal-close:hover { color: #ff1a1a; }
+        
+        .jjs-modal-body { padding: 20px; }
+        .jjs-modal-textarea { width: 100%; height: 150px; background: #000; color: var(--text); border: calc(var(--thickness)/2) solid var(--border); padding: 12px; font-size: 0.8rem; resize: none; font-family: monospace !important; }
+        .jjs-modal-textarea::placeholder { color: #666; }
+        .jjs-modal-footer { padding: 0 20px 20px 20px; display: flex; justify-content: flex-end; gap: 10px; }
+        .btn-modal-confirm { background: var(--accent); color: #000; border: calc(var(--thickness)/2) solid var(--border); padding: 10px 20px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; }
+        body.theme-toon .btn-modal-confirm { background: #fff; }
+        .btn-modal-confirm:hover { filter: brightness(1.2); }
+
+        /* Specific styles for intercept modal buttons */
+        .modal-msg { font-size: 0.9rem; margin-bottom: 20px; color: #bbb; line-height: 1.4; text-align: center; }
+        .modal-actions-col { display: flex; flex-direction: column; gap: 10px; width: 100%; }
         .btn-merge { background: #3498db; color: #fff; }
         .btn-replace { background: #e74c3c; color: #fff; }
-        .btn-modal:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 #000; }
+        .btn-cancel-intercept { background: #555; color: #fff; }
     </style>
 </head>
 <body>
 
-<!-- custom prompt modular workflow container markup -->
-<div class="modal-overlay" id="safety-modal">
-    <div class="modal-box">
-        <h3 class="modal-title" id="modal-header-text">Hold On!</h3>
-        <p class="modal-body" id="modal-body-text">Hey, you're trying to load a moveset code when you already have something open.</p>
-        <div class="modal-actions">
-            <button class="btn-modal btn-merge" id="modal-opt-merge">Merge (Add the moves together)</button>
-            <button class="btn-modal btn-replace" id="modal-opt-replace">Replace (Wipe current and use new code)</button>
-            <button class="btn-modal btn-cancel" id="modal-opt-cancel">Cancel (Don't do anything)</button>
+<div class="jjs-modal-overlay" id="safety-modal">
+    <div class="jjs-modal-box">
+        <div class="jjs-modal-header">
+            <h3 class="jjs-modal-title" id="intercept-header-text"><i class="fa-solid fa-triangle-exclamation"></i> Hold On!</h3>
+        </div>
+        <div class="jjs-modal-body">
+            <p class="modal-msg" id="intercept-body-text">Hey, you're trying to load a moveset code when you already have something open.</p>
+            <div class="modal-actions-col">
+                <button class="btn-modal-confirm btn-merge" id="modal-opt-merge" style="width:100%; text-align:center;">Merge (Add to current)</button>
+                <button class="btn-modal-confirm btn-replace" id="modal-opt-replace" style="width:100%; text-align:center;">Replace (Wipe and use new)</button>
+                <button class="btn-modal-confirm btn-cancel-intercept" id="modal-opt-cancel" style="width:100%; text-align:center;">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="jjs-modal-overlay" id="jjs-system-modal" onclick="closeJJSModal(event)">
+    <div class="jjs-modal-box" onclick="event.stopPropagation()">
+        <div class="jjs-modal-header">
+            <h3 class="jjs-modal-title" id="modal-title-text">
+                <i class="fa-solid fa-terminal"></i> Terminal System
+            </h3>
+            <button class="jjs-modal-close" onclick="closeJJSModal(null)">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="jjs-modal-body">
+            <textarea class="jjs-modal-textarea" id="modal-io-box"></textarea>
+        </div>
+        <div class="jjs-modal-footer">
+            <button class="btn-modal-confirm" id="modal-action-btn" onclick="executeModalAction()">Apply</button>
         </div>
     </div>
 </div>
 
 <div class="sidebar">
     <div class="sidebar-header">
-        <h2 style="margin:0; color: var(--accent); text-transform: uppercase; letter-spacing: 1px;">JJS STUDIO</h2>
-        <span style="font-size:0.7rem; color:#555;">V1.8.0 // THEMES ATTACHED</span>
+        <h2 style="margin:0; color: var(--accent); text-transform: uppercase; font-size: 1.6rem;">JJS STUDIO</h2>
+        <span style="font-size:0.7rem; color:#555;">V2.8.8 ENGINE FUSION</span>
+        <div id="engine-info" class="engine-status">CHECKING...</div>
     </div>
 
-    <!-- CLEAN QUICK THEME SELECT PANEL -->
+    <div class="layout-toggle-container">
+        <button class="btn-layout-toggle active" id="btn-layout-editor" onclick="switchActiveLayout('editor')">Studio</button>
+        <button class="btn-layout-toggle" id="btn-layout-tracks" onclick="switchActiveLayout('tracks')">Shenanigans</button>
+    </div>
+
     <div class="theme-container">
-        <label>Visual Style</label>
-        <select class="theme-select" id="theme-selector" onchange="switchTheme(this.value)">
-            <option value="default">Default Dark</option>
-            <option value="retro">Comic Retro</option>
-            <option value="matrix">Midnight Matrix</option>
-        </select>
+        <div style="width:100%; display:flex; justify-content:space-between; align-items:center;">
+            <label>Select Workspace Theme</label>
+        </div>
+        <div class="theme-control-row">
+            <select class="theme-select" id="global-theme-picker" onchange="previewTheme(this.value)">
+                <optgroup label="Standard Themes">
+                    <option value="default" selected>Default Dark</option>
+                    <option value="retro">Comic Retro</option>
+                    <option value="matrix">Midnight Matrix</option>
+                    <option value="nova">Moonlit Nova</option>
+                    <option value="toon">Toon Slate</option>
+                    <option value="shadow">Cyber Shadow</option>
+                    <option value="crimson">Crimson</option>
+                </optgroup>
+                <optgroup label="Saved Custom Themes" id="custom-themes-group">
+                    <option value="custom">[Create New Theme...]</option>
+                </optgroup>
+            </select>
+            <button class="btn-delete-theme" id="delete-theme-trigger" onclick="deleteActiveTheme()">Del</button>
+        </div>
     </div>
 
-    <div class="io-container">
-        <textarea id="kluv-io" placeholder="PASTE YOUR MOVESET CODE HERE..."></textarea>
-        <button class="btn btn-load" onclick="triggerImportPipeline()">Load Character</button>
-        <button class="btn btn-save" onclick="exportData()">Get Export Code</button>
+    <div class="custom-panel" id="custom-editor-ui">
+        <h4>Theme Creator Engine</h4>
+        <div class="config-row" style="margin-bottom:12px;">
+            <label>Theme Name</label>
+            <input type="text" id="val-name" value="My Custom Setup" style="width:65%;">
+        </div>
+        <div class="config-row"><label>BG Color</label><input type="color" id="val-bg" value="#1a1a1a" oninput="applyLiveVar('--bg', this.value)"></div>
+        <div class="config-row"><label>Panel Color</label><input type="color" id="val-panel" value="#111111" oninput="applyLiveVar('--panel', this.value)"></div>
+        <div class="config-row"><label>Node Card</label><input type="color" id="val-node" value="#252525" oninput="applyLiveVar('--node-card', this.value)"></div>
+        <div class="config-row"><label>Accent</label><input type="color" id="val-accent" value="#ffcc33" oninput="applyLiveVar('--accent', this.value)"></div>
+        <div class="config-row"><label>Text Color</label><input type="color" id="val-text" value="#e0e0e0" oninput="applyLiveVar('--text', this.value)"></div>
+        <div class="config-row"><label>Border Color</label><input type="color" id="val-border" value="#000000" oninput="applyLiveVar('--border', this.value)"></div>
+        <div class="config-row"><label>Borders</label><input type="range" id="val-thick" min="0" max="12" value="4" oninput="applyLiveVar('--thickness', this.value + 'px')"></div>
+        <div class="config-row" style="flex-direction:column; align-items:flex-start; gap:4px; margin-bottom:12px;">
+            <label>Background Image URL</label>
+            <input type="text" id="val-bgimg" placeholder="Paste image address..." oninput="applyLiveBg(this.value)" style="width:100%;">
+        </div>
+        <button style="background:#2ecc71; color:#000; border:2px solid #000; font-size:0.7rem; padding:8px; width:100%; font-weight:bold; cursor:pointer; text-transform:uppercase;" onclick="saveCustomTheme()">Save &amp; Apply</button>
     </div>
-    <div id="sidebar-list" class="container-list"></div>
+
+    <div class="jjs-action-container">
+        <button class="btn-jjs-action" onclick="openJJSModal('import')" style="background: var(--accent); color: #000;">
+            <i class="fa-solid fa-file-import" style="color: #000;"></i> Import
+        </button>
+        <button class="btn-jjs-action" onclick="openJJSModal('export')" style="background: #00f2ff; color: #000;">
+            <i class="fa-solid fa-file-export" style="color: #000;"></i> Export
+        </button>
+    </div>
+
+    <div class="container-heading" id="sidebar-list-heading">Moveset List</div>
+    <div class="container-list" id="sidebar-dynamic-list"></div>
 </div>
 
 <div class="main" id="editor-view">
-    <div class="empty-state"><h2 style="margin:0; color:var(--accent);">NOTHING LOADED YET</h2><span style="font-size:0.75rem; color:#666; text-transform:uppercase; margin-top:5px; display:block;">Paste a code on the left and click Load Character to start</span></div>
+    <div class="empty-state"><h2 style="margin:0; color:var(--accent);">NOTHING LOADED YET</h2><span style="font-size:0.75rem; color:#666; text-transform:uppercase; margin-top:5px; display:block;">Click Import on the left and paste a code to start</span></div>
 </div>
 
-<script src="./zstd-bundle.js"></script>
 <script>
+    // --- ENGINE CONSTANTS & VARIABLES ---
     let currentMoves = [];
     let activeIndex = -1;
     let zstd = null;
     let cachedPendingData = null;
+
+    let dynamicCustomThemes = {};
+    let activeModalMode = '';
+    let currentRoot = 'default'; 
+    let currentLayout = 'editor'; 
 
     const TRANSLATIONS = {
         "ULTGIB": "ADD AWAKENING", "HPGIB": "ADD HEALTH", "EVGIB": "ADD EVASION",
@@ -364,156 +356,294 @@
         HITBOX: { PREVIEW: [0, 15] }
     };
 
+    // --- INITIALIZATION ---
     async function init() {
         const engine = window.ZstdWeb || window.zstd || window.Zstd;
-        if (engine?.init) { await engine.init(); zstd = engine; }
-        
-        // Pick up previously configured preference if it exists
-        const activeSetting = localStorage.getItem('jjs-theme-pref') || 'default';
-        document.getElementById('theme-selector').value = activeSetting;
-        switchTheme(activeSetting);
-    }
-
-    function switchTheme(styleName) {
-        document.body.className = '';
-        if (styleName !== 'default') {
-            document.body.classList.add('theme-' + styleName);
+        if (engine?.init) { 
+            await engine.init(); 
+            zstd = engine; 
+            document.getElementById('engine-info').innerHTML = "ENGINE: <span style='color:#00ffcc; font-weight:bold;'>ZSTD ACTIVE</span>";
+        } else {
+            document.getElementById('engine-info').innerHTML = "ENGINE: <span style='color:#ff4d4d; font-weight:bold;'>FAILED</span>";
         }
-        localStorage.setItem('jjs-theme-pref', styleName);
+
+        const savedData = localStorage.getItem('jjs_studio_custom_registry');
+        if (savedData) dynamicCustomThemes = JSON.parse(savedData);
+
+        const savedLayout = localStorage.getItem('jjs_studio_active_layout') || 'editor';
+        const activeTheme = localStorage.getItem('jjs-theme-pref') || 'default';
+        
+        rebuildDropdownList();
+        document.getElementById('global-theme-picker').value = activeTheme;
+        switchActiveLayout(savedLayout);
     }
 
-    function triggerImportPipeline() {
+    // --- UI/THEME MANAGEMENT ---
+    function switchActiveLayout(layoutMode) {
+        currentLayout = layoutMode;
+        localStorage.setItem('jjs_studio_active_layout', layoutMode);
+        
+        document.getElementById('btn-layout-editor').classList.toggle('active', layoutMode === 'editor');
+        document.getElementById('btn-layout-tracks').classList.toggle('active', layoutMode === 'tracks');
+
+        const rootName = (layoutMode === 'tracks') ? 'shenanigans' : 'default';
+        currentRoot = rootName;
+        document.body.classList.toggle('root-shenanigans', rootName === 'shenanigans');
+
+        const picker = document.getElementById('global-theme-picker');
+        if (picker) previewTheme(picker.value);
+
+        renderSidebar();
+        if (currentMoves.length > 0) loadMove(activeIndex >= 0 ? activeIndex : 0);
+    }
+
+    function previewTheme(styleName) {
+        const isShena = document.body.classList.contains('root-shenanigans');
+        document.body.className = '';
+        if (isShena) document.body.classList.add('root-shenanigans');
+        document.body.removeAttribute('style');
+
+        document.getElementById('custom-editor-ui').style.display = (styleName === 'custom') ? 'block' : 'none';
+        document.getElementById('delete-theme-trigger').style.display = styleName.startsWith('saved_') ? 'block' : 'none';
+
+        if (styleName === 'custom') {
+            applyPanelValuesToLivePreview();
+        } else if (styleName.startsWith('saved_')) {
+            const cfg = dynamicCustomThemes[styleName];
+            if (cfg) applyConfigToLayout(cfg);
+            localStorage.setItem('jjs-theme-pref', styleName);
+        } else {
+            if (styleName !== 'default') document.body.classList.add('theme-' + styleName);
+            localStorage.setItem('jjs-theme-pref', styleName);
+        }
+    }
+
+    // Custom Theme Helper Functions
+    function applyLiveVar(property, value) { if (document.getElementById('global-theme-picker').value === 'custom') document.body.style.setProperty(property, value); }
+    function applyLiveBg(url) {
+        if (document.getElementById('global-theme-picker').value === 'custom') {
+            if (!url || url.trim() === '') {
+                document.body.style.setProperty('--bg-image', "linear-gradient(rgba(0,0,0,0.3) 2px, transparent 2px), linear-gradient(90deg, rgba(0,0,0,0.3) 2px, transparent 2px)");
+                document.body.style.removeProperty('background-size');
+            } else {
+                document.body.style.setProperty('--bg-image', `url('${url}')`);
+                document.body.style.setProperty('background-size', 'cover');
+            }
+        }
+    }
+    function applyPanelValuesToLivePreview() {
+        applyLiveVar('--bg', document.getElementById('val-bg').value); applyLiveVar('--panel', document.getElementById('val-panel').value);
+        applyLiveVar('--node-card', document.getElementById('val-node').value); applyLiveVar('--accent', document.getElementById('val-accent').value);
+        applyLiveVar('--text', document.getElementById('val-text').value); applyLiveVar('--border', document.getElementById('val-border').value);
+        applyLiveVar('--thickness', document.getElementById('val-thick').value + 'px'); applyLiveBg(document.getElementById('val-bgimg').value);
+    }
+    function applyConfigToLayout(config) {
+        document.body.style.setProperty('--bg', config.bg); document.body.style.setProperty('--panel', config.panel);
+        document.body.style.setProperty('--node-card', config.node); document.body.style.setProperty('--accent', config.accent);
+        document.body.style.setProperty('--text', config.text); document.body.style.setProperty('--border', config.border);
+        document.body.style.setProperty('--thickness', config.thickness);
+        if (!config.bgImg || config.bgImg.trim() === '') document.body.style.setProperty('--bg-image', "linear-gradient(rgba(0,0,0,0.3) 2px, transparent 2px), linear-gradient(90deg, rgba(0,0,0,0.3) 2px, transparent 2px)");
+        else { document.body.style.setProperty('--bg-image', `url('${config.bgImg}')`); document.body.style.setProperty('background-size', 'cover'); }
+    }
+    function saveCustomTheme() {
+        const uniqueKey = 'saved_' + Date.now();
+        dynamicCustomThemes[uniqueKey] = {
+            name: document.getElementById('val-name').value.trim() || 'My Custom Setup',
+            bg: document.getElementById('val-bg').value, panel: document.getElementById('val-panel').value,
+            node: document.getElementById('val-node').value, accent: document.getElementById('val-accent').value,
+            text: document.getElementById('val-text').value, border: document.getElementById('val-border').value,
+            thickness: document.getElementById('val-thick').value + 'px', bgImg: document.getElementById('val-bgimg').value
+        };
+        localStorage.setItem('jjs_studio_custom_registry', JSON.stringify(dynamicCustomThemes));
+        rebuildDropdownList(); document.getElementById('global-theme-picker').value = uniqueKey; previewTheme(uniqueKey);
+    }
+    function deleteActiveTheme() {
+        const picker = document.getElementById('global-theme-picker');
+        if (picker.value.startsWith('saved_') && confirm(`Permanently delete "${dynamicCustomThemes[picker.value].name}"?`)) {
+            delete dynamicCustomThemes[picker.value]; localStorage.setItem('jjs_studio_custom_registry', JSON.stringify(dynamicCustomThemes));
+            rebuildDropdownList(); picker.value = 'default'; previewTheme('default');
+        }
+    }
+    function rebuildDropdownList() {
+        const group = document.getElementById('custom-themes-group'); group.innerHTML = '';
+        for (const [key, theme] of Object.entries(dynamicCustomThemes)) {
+            const opt = document.createElement('option'); opt.value = key; opt.textContent = theme.name; group.appendChild(opt);
+        }
+        const createOpt = document.createElement('option'); createOpt.value = 'custom'; createOpt.textContent = '[Create New Theme...]'; group.appendChild(createOpt);
+    }
+
+    // --- IMPORT / EXPORT MODAL LOGIC ---
+    function openJJSModal(mode) {
+        activeModalMode = mode;
+        const overlay = document.getElementById('jjs-system-modal');
+        const titleEl = document.getElementById('modal-title-text');
+        const ioBox = document.getElementById('modal-io-box');
+        const actionBtn = document.getElementById('modal-action-btn');
+
+        ioBox.value = '';
+        overlay.style.display = 'flex';
+
+        if (mode === 'import') {
+            titleEl.innerHTML = '<i class="fa-solid fa-file-import"></i> Unified Import Center';
+            ioBox.placeholder = "Paste theme configuration JSON OR compressed ZSTD Base64 build data here...";
+            ioBox.readOnly = false;
+            actionBtn.innerText = "Execute Import";
+        } else if (mode === 'export') {
+            titleEl.innerHTML = '<i class="fa-solid fa-file-export"></i> Unified Export Center';
+            ioBox.readOnly = true;
+            actionBtn.innerText = "Copy to Clipboard";
+
+            let exportPayload = {};
+            const activeThemeKey = document.getElementById('global-theme-picker').value;
+
+            // Bundle Theme Data
+            if (activeThemeKey === 'custom') {
+                exportPayload.themeConfig = {
+                    name: document.getElementById('val-name').value, bg: document.getElementById('val-bg').value,
+                    panel: document.getElementById('val-panel').value, node: document.getElementById('val-node').value,
+                    accent: document.getElementById('val-accent').value, text: document.getElementById('val-text').value,
+                    border: document.getElementById('val-border').value, thickness: document.getElementById('val-thick').value + 'px', bgImg: document.getElementById('val-bgimg').value
+                };
+            } else if (activeThemeKey.startsWith('saved_')) {
+                exportPayload.themeConfig = dynamicCustomThemes[activeThemeKey];
+            } else {
+                exportPayload.themeConfig = { activeTheme: activeThemeKey, activeRoot: currentRoot };
+            }
+
+            // Generate ZSTD Build Data
+            if (currentMoves.length > 0) {
+                try {
+                    exportPayload.compressedBuild = generateBuildExportCode();
+                } catch(err) { console.warn("Could not compress build", err); }
+            }
+            ioBox.value = JSON.stringify(exportPayload, null, 2);
+        }
+    }
+
+    function closeJJSModal(e) { if (!e || e.target === document.getElementById('jjs-system-modal')) document.getElementById('jjs-system-modal').style.display = 'none'; }
+
+    function executeModalAction() {
+        const ioBox = document.getElementById('modal-io-box');
+        if (activeModalMode === 'export') {
+            ioBox.select(); document.execCommand('copy');
+            alert('Export configuration copied to clipboard successfully!');
+            closeJJSModal(null);
+        } else if (activeModalMode === 'import') {
+            const rawVal = ioBox.value.trim();
+            if (rawVal === '') return alert("Please provide data first.");
+
+            try {
+                // Try treating as Unified JSON object (Theme + Build)
+                const parsed = JSON.parse(rawVal);
+                if (parsed.themeConfig) loadImportedTheme(parsed.themeConfig);
+                if (parsed.compressedBuild) loadZSTDCode(parsed.compressedBuild);
+                else if (!parsed.themeConfig) loadImportedTheme(parsed); // Legacy theme JSONs
+                closeJJSModal(null);
+            } catch(e) {
+                // Not JSON, assume direct ZSTD Base64
+                loadZSTDCode(rawVal);
+                closeJJSModal(null);
+            }
+        }
+    }
+
+    function loadImportedTheme(cfg) {
+        const uniqueKey = 'saved_' + Date.now();
+        dynamicCustomThemes[uniqueKey] = {
+            name: cfg.name || 'Imported Theme', bg: cfg.bg || '#1a1a1a', panel: cfg.panel || '#111111',
+            node: cfg.node || '#252525', accent: cfg.accent || '#ffcc33', text: cfg.text || '#e0e0e0',
+            border: cfg.border || '#000000', thickness: cfg.thickness || '4px', bgImg: cfg.bgImg || ''
+        };
+        localStorage.setItem('jjs_studio_custom_registry', JSON.stringify(dynamicCustomThemes));
+        rebuildDropdownList(); document.getElementById('global-theme-picker').value = uniqueKey; previewTheme(uniqueKey);
+    }
+
+    // --- ENGINE LOGIC PIPELINE ---
+    function loadZSTDCode(raw) {
+        if (!zstd) return alert("Engine is not initialized yet.");
         try {
-            const raw = document.getElementById('kluv-io').value.trim();
-            if (!raw) return alert("Oops! Make sure you paste your moveset code into the text box first.");
-            
             const bin = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
             const parsedStructure = JSON.parse(new TextDecoder().decode(zstd.decompress(bin)));
 
             if (currentMoves.length > 0) {
                 cachedPendingData = parsedStructure;
-                showInterceptModal("Hold On!", "Hey, you're trying to import another code when there's one already in the editor.");
+                showInterceptModal("Hold On!", "You're trying to import a build when one is already open in the editor.");
             } else {
                 executeDirectLoad(parsedStructure);
             }
-        } catch(e) { alert("Error: That code doesn't look right. Make sure it was copied correctly."); }
+        } catch(e) { alert("Error parsing ZSTD build. Ensure it's valid compiled engine code."); console.error(e); }
     }
 
     function executeDirectLoad(data) {
         currentMoves = data;
-        renderSidebar();
-        loadMove(0);
-        closeModal();
+        if (currentLayout !== 'editor') switchActiveLayout('editor');
+        else { renderSidebar(); loadMove(0); }
+        closeInterceptModal();
     }
 
     function executeMergePipeline(incomingData) {
         currentMoves = currentMoves.concat(incomingData);
-        renderSidebar();
-        loadMove(currentMoves.length - incomingData.length);
-        closeModal();
+        if (currentLayout !== 'editor') switchActiveLayout('editor');
+        else { renderSidebar(); loadMove(currentMoves.length - incomingData.length); }
+        closeInterceptModal();
     }
 
     function showInterceptModal(title, msg) {
-        document.getElementById('modal-header-text').innerText = title;
-        document.getElementById('modal-body-text').innerText = msg;
+        document.getElementById('intercept-header-text').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${title}`;
+        document.getElementById('intercept-body-text').innerText = msg;
         document.getElementById('safety-modal').style.display = 'flex';
     }
 
-    function closeModal() {
+    function closeInterceptModal() {
         document.getElementById('safety-modal').style.display = 'none';
         cachedPendingData = null;
     }
 
-    document.getElementById('modal-opt-cancel').onclick = () => closeModal();
-    
-    document.getElementById('modal-opt-merge').onclick = () => {
-        if (cachedPendingData) executeMergePipeline(cachedPendingData);
-    };
-    
+    document.getElementById('modal-opt-cancel').onclick = closeInterceptModal;
+    document.getElementById('modal-opt-merge').onclick = () => { if (cachedPendingData) executeMergePipeline(cachedPendingData); };
     document.getElementById('modal-opt-replace').onclick = () => {
-        if (!cachedPendingData) return;
-        if (confirm("Are you totally sure? This will delete the moveset you are currently working on!")) {
-            if (confirm("Last warning: You'll lose your current unsaved changes if you replace it. Ready?")) {
-                executeDirectLoad(cachedPendingData);
-            }
+        if (cachedPendingData && confirm("Are you sure? This deletes the current unsaved working build!")) {
+            executeDirectLoad(cachedPendingData);
         }
     };
-
-    window.addEventListener('keydown', function(e) {
-        if (e.ctrlKey && e.altKey && e.shiftKey && (e.key === 'T' || e.key === 't')) {
-            e.preventDefault();
-            generateTemplateDataIntercept();
-        }
-    });
-
-    function generateTemplateDataIntercept() {
-        if (!zstd) return alert("Hang on, the editor is still loading up.");
-        
-        const uiLine = [];
-        const exportLine = [];
-        
-        Object.keys(NODE_TEMPLATES).forEach(nodeType => {
-            const uiNode = { "K_NAME": nodeType };
-            const exportNode = { "K_NAME": nodeType };
-            
-            NODE_TEMPLATES[nodeType].forEach(fieldKey => {
-                let val = (TYPE_OVERRIDES[nodeType] && TYPE_OVERRIDES[nodeType][fieldKey] !== undefined)
-                    ? TYPE_OVERRIDES[nodeType][fieldKey]
-                    : DEFAULTS_LIB[fieldKey];
-                    
-                if (val !== undefined) {
-                    uiNode[fieldKey] = JSON.parse(JSON.stringify(val));
-                }
-            });
-            
-            uiLine.push(uiNode);
-            exportLine.push(exportNode);
-        });
-
-        const uiStructure = [
-            {
-                "ADD": false, "NAME": "Master Node Template", "K_NAME": "SKILL", "KEY": 1,
-                "TOOL TIP": "Contains every registered node type with system defaults.", "COOLDOWN": 0,
-                "DATA": JSON.stringify({ "Line": uiLine, "Prop": [], "Req": [] })
-            }
-        ];
-
-        const exportStructure = [
-            {
-                "ADD": false, "NAME": "Master Node Template", "K_NAME": "SKILL", "KEY": 1,
-                "TOOL TIP": "Contains every registered node type with system defaults.", "COOLDOWN": 0,
-                "DATA": JSON.stringify({ "Line": exportLine, "Prop": [], "Req": [] })
-            }
-        ];
-
-        try {
-            const bin = zstd.compress(new TextEncoder().encode(JSON.stringify(exportStructure)), 3);
-            let str = ""; for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
-            document.getElementById('kluv-io').value = btoa(str);
-        } catch(err) { console.error("Template build failed."); }
-
-        if (currentMoves.length > 0) {
-            cachedPendingData = uiStructure;
-            showInterceptModal("Hold On!", "Hey, you're trying to insert a template string.");
-        } else {
-            executeDirectLoad(uiStructure);
-            alert("Secret Template Loaded! The template code has been pasted into the text box.");
-        }
-    }
 
     function renderSidebar() {
-        const list = document.getElementById('sidebar-list');
-        list.innerHTML = currentMoves.map((m, i) => `
-            <div class="item ${i === activeIndex ? 'active' : ''}" onclick="loadMove(${i})">
-                <span class="type-tag">${m.K_NAME || "Move Group"}</span>
-                <span class="move-name">${m.NAME || "Unnamed Move"}</span>
-            </div>
-        `).join('');
+        const heading = document.getElementById('sidebar-list-heading');
+        const list = document.getElementById('sidebar-dynamic-list');
+        list.innerHTML = '';
+
+        if (currentLayout === 'editor') {
+            heading.innerText = "Moveset List";
+            if (currentMoves.length === 0) return;
+
+            currentMoves.forEach((m, i) => {
+                const btn = document.createElement('div');
+                btn.className = `item ${i === activeIndex ? 'active' : ''}`;
+                btn.onclick = () => loadMove(i);
+                btn.innerHTML = `<span class="type-tag">${m.K_NAME || "Move Group"}</span><span class="move-name">${m.NAME || "Unnamed Move"}</span>`;
+                list.appendChild(btn);
+            });
+        } else {
+            // Shenanigans Tracks View 
+            heading.innerText = "Main Target Containers";
+            list.innerHTML = `
+                <div class="jjs-bar jjs-c-skill" onclick="alert('Container mapped to SKILL track')"><div class="jjs-bar-icon-box"><i class="fa-solid fa-bolt"></i></div><div class="jjs-bar-text">Skill Track</div></div>
+                <div class="jjs-bar jjs-c-special" onclick="alert('Container mapped to SPECIAL track')"><div class="jjs-bar-icon-box"><i class="fa-solid fa-fire"></i></div><div class="jjs-bar-text">Special Track</div></div>
+                <div class="jjs-bar jjs-c-awakening" onclick="alert('Container mapped to AWAKENING track')"><div class="jjs-bar-icon-box"><i class="fa-solid fa-burst"></i></div><div class="jjs-bar-text">Awakening Track</div></div>
+            `;
+        }
     }
 
     function loadMove(idx) {
+        if (currentLayout !== 'editor') return; // Do not render editor nodes if in tracks view
         activeIndex = idx;
         renderSidebar();
+
+        if (currentMoves.length === 0) {
+            document.getElementById('editor-view').innerHTML = '<div class="empty-state"><h2 style="margin:0; color:var(--accent);">NOTHING LOADED YET</h2><span style="font-size:0.75rem; color:#666; text-transform:uppercase; margin-top:5px; display:block;">Click Import on the left and paste a code to start</span></div>';
+            return;
+        }
+
         const move = currentMoves[idx];
         let nodes = Array.isArray(move.Line) ? move.Line : JSON.parse(move.DATA).Line || [];
         const tooltipVal = move["TOOL TIP"] || "";
@@ -533,6 +663,7 @@
                 <div class="node-card">
                     <div class="node-head">
                         <strong>${displayTitle}</strong>
+                        <span style="color:var(--accent); font-size: 0.8rem; font-weight:bold;">#${ni+1}</span>
                     </div>
                     <div class="node-grid">
                         ${template.map(k => k === 'K_NAME' ? '' : `
@@ -549,20 +680,12 @@
 
     function getValue(node, key, nodeType) {
         let val = node[key];
-        if (val === undefined) {
-            val = (TYPE_OVERRIDES[nodeType] && TYPE_OVERRIDES[nodeType][key] !== undefined) 
-                  ? TYPE_OVERRIDES[nodeType][key] 
-                  : DEFAULTS_LIB[key];
-        }
+        if (val === undefined) val = (TYPE_OVERRIDES[nodeType] && TYPE_OVERRIDES[nodeType][key] !== undefined) ? TYPE_OVERRIDES[nodeType][key] : DEFAULTS_LIB[key];
         if (val === undefined) return "";
         return Array.isArray(val) ? JSON.stringify(val) : val;
     }
 
-    function updateTooltip(val) {
-        if (activeIndex !== -1) {
-            currentMoves[activeIndex]["TOOL TIP"] = val;
-        }
-    }
+    function updateTooltip(val) { if (activeIndex !== -1) currentMoves[activeIndex]["TOOL TIP"] = val; }
 
     function updateVal(nodeIdx, key, val) {
         const move = currentMoves[activeIndex];
@@ -586,8 +709,8 @@
         }
     }
 
-    function exportData() {
-        if (currentMoves.length === 0) return alert("Nothing to export! Load a character first.");
+    function generateBuildExportCode() {
+        if (!zstd) throw new Error("ZSTD Engine not ready");
         const exportCopy = JSON.parse(JSON.stringify(currentMoves));
         exportCopy.forEach(move => {
             let data = typeof move.DATA === 'string' ? JSON.parse(move.DATA) : move;
@@ -595,26 +718,51 @@
                 data.Line.forEach(node => {
                     Object.keys(node).forEach(key => {
                         if (key === "K_NAME") return;
-                        let defVal = (TYPE_OVERRIDES[node.K_NAME] && TYPE_OVERRIDES[node.K_NAME][key] !== undefined) 
-                                     ? TYPE_OVERRIDES[node.K_NAME][key] 
-                                     : DEFAULTS_LIB[key];
-                        if (JSON.stringify(node[key]) === JSON.stringify(defVal)) {
-                            delete node[key];
-                        }
+                        let defVal = (TYPE_OVERRIDES[node.K_NAME] && TYPE_OVERRIDES[node.K_NAME][key] !== undefined) ? TYPE_OVERRIDES[node.K_NAME][key] : DEFAULTS_LIB[key];
+                        if (JSON.stringify(node[key]) === JSON.stringify(defVal)) delete node[key];
                     });
                 });
             }
             if (typeof move.DATA === 'string') move.DATA = JSON.stringify(data);
         });
 
-        try {
-            const bin = zstd.compress(new TextEncoder().encode(JSON.stringify(exportCopy)), 3);
-            let str = "";
-            for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
-            document.getElementById('kluv-io').value = btoa(str);
-            alert("Done! Your clean moveset code has been copied to the text box.");
-        } catch(err) { alert("Something went wrong trying to save your changes."); }
+        const bin = zstd.compress(new TextEncoder().encode(JSON.stringify(exportCopy)), 3);
+        let str = "";
+        for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
+        return btoa(str);
     }
+
+    // Secret Template shortcut
+    window.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.altKey && e.shiftKey && (e.key === 'T' || e.key === 't')) {
+            e.preventDefault();
+            if (!zstd) return alert("Hang on, the editor is still loading up.");
+            
+            const exportLine = [];
+            Object.keys(NODE_TEMPLATES).forEach(nodeType => {
+                const exportNode = { "K_NAME": nodeType };
+                NODE_TEMPLATES[nodeType].forEach(fieldKey => {
+                    let val = (TYPE_OVERRIDES[nodeType] && TYPE_OVERRIDES[nodeType][fieldKey] !== undefined) ? TYPE_OVERRIDES[nodeType][fieldKey] : DEFAULTS_LIB[fieldKey];
+                    if (val !== undefined) exportNode[fieldKey] = JSON.parse(JSON.stringify(val));
+                });
+                exportLine.push(exportNode);
+            });
+
+            const templateStructure = [{
+                "ADD": false, "NAME": "Master Node Template", "K_NAME": "SKILL", "KEY": 1,
+                "TOOL TIP": "Contains every registered node type with system defaults.", "COOLDOWN": 0,
+                "DATA": JSON.stringify({ "Line": exportLine, "Prop": [], "Req": [] })
+            }];
+
+            if (currentMoves.length > 0) {
+                cachedPendingData = templateStructure;
+                showInterceptModal("Hold On!", "You're trying to insert the Template string over existing data.");
+            } else {
+                executeDirectLoad(templateStructure);
+                alert("Secret Template Loaded into Workspace!");
+            }
+        }
+    });
 
     setTimeout(init, 500);
 </script>
