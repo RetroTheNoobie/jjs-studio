@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Native Zstandard Web Integration Framework Bundle Source -->
     <script src="./zstd-bundle.js"></script>
 
     <style>
@@ -67,12 +66,6 @@
             height: 100vh;
             overflow: hidden;
             transition: background-color 0.2s, color 0.2s;
-        }
-
-        body.theme-custom-saved {
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
         }
 
         .sidebar {
@@ -149,109 +142,81 @@
             flex-direction: column;
             gap: 8px;
         }
-        body.theme-toon .theme-container { border-color: #fff; box-shadow: 4px 4px 0px #fff; }
 
         .theme-control-row { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 10px; }
         .theme-container label { font-size: 0.65rem; color: var(--accent); text-transform: uppercase; }
         .theme-select { background: #111; color: #fff; border: 2px solid var(--border); padding: 5px; font-size: 0.75rem; cursor: pointer; flex-grow: 1; }
 
         .jjs-action-container { padding: 12px 15px; background: #000; margin: 0 15px 15px 15px; border: var(--thickness) solid var(--border); box-shadow: 4px 4px 0px #000; display: flex; gap: 10px; }
-        body.theme-toon .jjs-action-container { border-color: #fff; box-shadow: 4px 4px 0px #fff; }
 
         .btn-jjs-action { flex: 1; padding: 12px; border: var(--thickness) solid var(--border); background: var(--panel); color: var(--text); font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.1s, box-shadow 0.1s; }
         .btn-jjs-action i { font-size: 0.9rem; color: var(--accent); }
-        body.theme-toon .btn-jjs-action i { color: #fff; }
         .btn-jjs-action:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0px var(--border); background: var(--accent); color: #000; }
         .btn-jjs-action:hover i { color: #000; }
-        body.theme-toon .btn-jjs-action:hover { box-shadow: 4px 4px 0px #fff; background: #fff; color: #000; }
 
         .container-heading { padding: 0 15px; font-size: 0.65rem; color: var(--accent); opacity: 0.8; margin-bottom: 6px; text-transform: uppercase; font-weight: bold; }
         .container-list { padding: 0 15px 15px 15px; display: block; flex-grow: 1; overflow-y: auto; }
 
         .item { padding: 18px; background: var(--node-card); margin-bottom: 12px; cursor: pointer; border: var(--thickness) solid var(--border); box-shadow: 4px 4px 0px #000; transition: transform 0.1s, box-shadow 0.1s, background 0.2s; }
-        body.theme-toon .item { box-shadow: 4px 4px 0px #fff; }
         .item:hover { background: #333; transform: translate(-2px, -2px); box-shadow: 6px 6px 0px #000; }
-        body.theme-retro .item:hover { background: #4a4a4a; }
-        body.theme-matrix .item:hover { background: #1f1f1f; }
-        body.theme-nova .item:hover { background: #2d0050; }
-        body.theme-toon .item:hover { background: #222; box-shadow: 6px 6px 0px #fff; }
-        
         .item.active { background: var(--accent); color: #000; }
-        body.theme-toon .item.active { background: #fff; color: #000; }
         .item.active .type-tag, .item.active .move-name { color: inherit; }
-        
         .item .type-tag { font-size: 0.65rem; color: var(--accent); text-transform: uppercase; }
-        body.theme-toon .item .type-tag { color: #888; }
         .item .move-name { display: block; font-size: 1.2rem; color: var(--text); }
-        body.theme-toon .item.active .move-name { color: #000; }
 
-        .jjs-bar { display: flex; align-items: center; width: 100%; height: 42px; border: var(--thickness) solid var(--border); background: var(--node-card); color: var(--text); box-shadow: 4px 4px 0px #000; font-size: 0.85rem; cursor: pointer; margin-bottom: 12px; }
-
-        .main { flex: 1; overflow-y: auto; padding: 40px; height: 100%; display: flex; flex-direction: column; }
+        /* THE ANTI-SQUISH WORKSPACE FIX */
+        .main { 
+            flex: 1; 
+            overflow-y: auto; 
+            overflow-x: hidden;
+            padding: 40px; 
+            height: 100%; 
+            display: block; /* Native block scrolling prevents flex squishing completely */
+        }
 
         .editor-header { display: flex; flex-direction: column; gap: 15px; border-left: var(--thickness) solid var(--accent); padding-left: 20px; margin-bottom: 40px; }
         .btn-delete-container { background: #ff4d4d; color: #000; border: var(--thickness) solid var(--border); padding: 10px 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.75rem; text-transform: uppercase; box-shadow: 3px 3px 0px #000; transition: transform 0.1s, box-shadow 0.1s; }
         .btn-delete-container:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0px #000; filter: brightness(1.1); }
         
-        .tooltip-field { background: #000; border: var(--thickness) solid var(--border); padding: 12px; max-width: 400px; margin-top: 10px; box-shadow: 5px 5px 0px #000; }
-        body.theme-toon .tooltip-field { border-color: #fff; box-shadow: 5px 5px 0px #fff; }
+        .tooltip-field { background: #000; border: var(--thickness) solid var(--border); padding: 12px; box-shadow: 5px 5px 0px #000; }
         .tooltip-field label { display: block; font-size: 0.65rem; color: var(--accent); text-transform: uppercase; margin-bottom: 5px; }
         .tooltip-field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #333; }
 
         .node-card { background: var(--panel); border: var(--thickness) solid var(--border); margin-bottom: 20px; overflow: hidden; box-shadow: 6px 6px 0px rgba(0,0,0,1); transition: background 0.2s, border-color 0.2s; }
-        body.theme-toon .node-card { box-shadow: 6px 6px 0px #fff; }
-
         .node-head { background: #222; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: var(--thickness) solid var(--border); user-select: none; }
         .node-head:hover { filter: brightness(1.2); }
-        body.theme-retro  .node-head { background: #1a1a1a; }
-        body.theme-matrix .node-head { background: #0a0a0a; }
-        body.theme-nova   .node-head { background: #15002a; }
-        body.theme-toon   .node-head { background: #ffffff; }
-        body.theme-toon   .node-head strong { color: #000000 !important; }
-
         .node-head strong { color: var(--accent); font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; }
         .btn-delete-node { background: transparent; border: none; color: #ff4d4d; cursor: pointer; font-size: 1.1rem; padding: 5px; transition: color 0.1s; }
         .btn-delete-node:hover { color: #ff1a1a; }
 
         .node-grid { padding: 25px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
-
         .field { background: #000; border: calc(var(--thickness)/2) solid var(--border); padding: 12px; box-shadow: 4px 4px 0px #000; }
-        body.theme-toon .field { border-color: #fff; box-shadow: 4px 4px 0px #fff; }
         .field label { display: block; font-size: 0.65rem; color: #666; text-transform: uppercase; margin-bottom: 5px; }
-        body.theme-matrix .field label { color: #00aa44; }
-        body.theme-nova   .field label { color: #8a4dbb; }
-        body.theme-toon   .field label { color: #aaa; }
         .field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #222; }
-        
-        .timeline-track-canvas { display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,0.25); padding: 20px; border: var(--thickness) solid var(--border); box-shadow: 5px 5px 0px #000; margin-top: 15px; }
-        .empty-state { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 1.5rem; color: #555; text-transform: uppercase; }
+        .field input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+
+        .empty-state { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 1.5rem; color: #555; text-transform: uppercase; text-align: center; line-height: 1.5; }
 
         .jjs-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.75); z-index: 999; display: none; align-items: center; justify-content: center; }
         .jjs-modal-box { background: var(--panel); border: var(--thickness) solid var(--border); width: 480px; max-width: 90%; box-shadow: 10px 10px 0px rgba(0,0,0,1); }
-        body.theme-toon .jjs-modal-box { box-shadow: 10px 10px 0px #fff; }
-
         .jjs-modal-header { background: #000; padding: 15px 20px; border-bottom: var(--thickness) solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .jjs-modal-title { color: var(--accent); text-transform: uppercase; font-size: 1rem; margin: 0; display: flex; align-items: center; gap: 8px; }
-        body.theme-toon .jjs-modal-title { color: #fff; }
         .jjs-modal-close { background: transparent; border: none; color: #ff4d4d; cursor: pointer; font-size: 1.1rem; }
         .jjs-modal-body { padding: 20px; }
         .jjs-modal-textarea { width: 100%; height: 150px; background: #000; color: var(--text); border: calc(var(--thickness)/2) solid var(--border); padding: 12px; font-size: 0.8rem; resize: none; font-family: monospace !important; }
         .jjs-modal-footer { padding: 0 20px 20px 20px; display: flex; justify-content: flex-end; gap: 10px; }
         .btn-modal-confirm { background: var(--accent); color: #000; border: calc(var(--thickness)/2) solid var(--border); padding: 10px 20px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; }
-        body.theme-toon .btn-modal-confirm { background: #fff; }
 
         /* Blender-style Context Menu */
         .context-menu {
             position: fixed; display: none; background: #000; border: var(--thickness) solid var(--border);
             box-shadow: 6px 6px 0px #000; z-index: 9999; padding: 5px 0; min-width: 180px;
         }
-        body.theme-toon .context-menu { border-color: #fff; box-shadow: 6px 6px 0px #fff; }
         .context-menu .menu-item {
             padding: 10px 15px; font-size: 0.75rem; color: var(--text); cursor: pointer; text-transform: uppercase;
             display: flex; justify-content: space-between; align-items: center; font-weight: bold;
         }
         .context-menu .menu-item:hover { background: var(--accent); color: #000; }
-        body.theme-toon .context-menu .menu-item:hover { background: #fff; color: #000; }
         .context-menu .menu-separator { height: var(--thickness); background: var(--border); margin: 5px 0; }
         .context-menu .menu-label { padding: 5px 15px; font-size: 0.6rem; color: #666; text-transform: uppercase; letter-spacing: 1px; }
     </style>
@@ -298,26 +263,27 @@
 
     <div class="container-heading" id="sidebar-list-heading">Moveset List</div>
     <div class="container-list" id="sidebar-dynamic-list">
-        <!-- Injected Dynamically -->
-    </div>
+        </div>
 </div>
 
 <div class="main" id="main-timeline">
-    <!-- Injected Dynamically -->
-</div>
-
-<!-- Blender Style Add Menu -->
-<div id="shift-a-menu" class="context-menu">
-    <div class="menu-label">Create Structure</div>
-    <div class="menu-item" onclick="createNewContainer()">
-        <span><i class="fa-solid fa-folder-plus" style="margin-right:8px;"></i>New Container</span>
     </div>
+
+<div id="shift-a-menu" class="context-menu">
+    <div class="menu-label">Create Container</div>
+    <div class="menu-item" onclick="createNewContainer('Melee')">Melee</div>
+    <div class="menu-item" onclick="createNewContainer('Skill')">Skill</div>
+    <div class="menu-item" onclick="createNewContainer('Special')">Special</div>
+    <div class="menu-item" onclick="createNewContainer('Awakening')">Awakening</div>
+    <div class="menu-item" onclick="createNewContainer('Chase')">Chase</div>
     <div class="menu-separator"></div>
     <div class="menu-label">Add Data Node</div>
     <div class="menu-item" onclick="createNewNode('ANIM')">ANIM</div>
     <div class="menu-item" onclick="createNewNode('WAIT')">WAIT</div>
     <div class="menu-item" onclick="createNewNode('SFX')">SFX</div>
     <div class="menu-item" onclick="createNewNode('VELO')">VELO</div>
+    <div class="menu-item" onclick="createNewNode('HITCNCL')">HITCNCL</div>
+    <div class="menu-item" onclick="createNewNode('VISUAL')">VISUAL</div>
 </div>
 
 <div class="jjs-modal-overlay" id="jjs-system-modal" onclick="closeJJSModal(event)">
@@ -338,16 +304,25 @@
 <script>
     let zstd = null;
     let activeModalMode = '';
-    let currentLayout = 'editor';
     let allContainers = []; 
     let activeContainerIndex = 0;
     let mouseX = 0, mouseY = 0;
+
+    const MASTER_DICTIONARY = [
+        { NAME: "Melee", K_NAME: "BUILD", DATA: JSON.stringify({ Line: [] }) },
+        { NAME: "Skill", K_NAME: "BUILD", DATA: JSON.stringify({ Line: [] }) },
+        { NAME: "Special", K_NAME: "BUILD", DATA: JSON.stringify({ Line: [] }) },
+        { NAME: "Awakening", K_NAME: "BUILD", DATA: JSON.stringify({ Line: [] }) },
+        { NAME: "Chase", K_NAME: "BUILD", DATA: JSON.stringify({ Line: [] }) }
+    ];
 
     const MASTER_SCHEMA = {
         "ANIM": { "SPEED": 1, "FadeTime": 0.1, "Looped": false, "Weight": 1, "ANIM_USE": "New_Anim" },
         "WAIT": { "TIME": 0.1 },
         "SFX": { "SoundId": 0, "Volume": 0.5, "Pitch": 1 },
-        "VELO": { "Velocity": "0,0,0", "Duration": 0.5 }
+        "VELO": { "Velocity": "0,0,0", "Duration": 0.5 },
+        "VISUAL": { "VisualType": "Slash", "Limb": "HumanoidRootPart", "Color": "255,255,255", "Transparency": 0, "Scale": "1,1,1" },
+        "HITCNCL": { "Active": true, "Time": 0.5 }
     };
 
     async function init() {
@@ -367,16 +342,22 @@
         switchActiveLayout(savedLayout);
     });
 
-    // Global Mouse Tracker & Shift+A Listener
     document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
     
     document.addEventListener('keydown', e => {
+        // Shift + A menu trigger
         if (e.shiftKey && e.key.toLowerCase() === 'a') {
             e.preventDefault();
             const menu = document.getElementById('shift-a-menu');
             menu.style.display = 'block';
             menu.style.left = Math.min(mouseX, window.innerWidth - menu.offsetWidth - 10) + 'px';
             menu.style.top = Math.min(mouseY, window.innerHeight - menu.offsetHeight - 10) + 'px';
+        }
+        
+        // Ctrl + Alt + Shift + T : Load Master Code
+        if (e.ctrlKey && e.altKey && e.shiftKey && e.key.toLowerCase() === 't') {
+            e.preventDefault();
+            loadMasterCode();
         }
     });
 
@@ -386,7 +367,16 @@
         }
     });
 
-    // Helper functions to safely parse and save inner data structures
+    function loadMasterCode() {
+        if (allContainers.length > 0) {
+            if (!confirm("Load Master Template? This will OVERWRITE your current workspace.")) return;
+        }
+        allContainers = JSON.parse(JSON.stringify(MASTER_DICTIONARY));
+        activeContainerIndex = 0;
+        renderSidebarContents();
+        renderWorkspaceContents();
+    }
+
     function getInnerData(container) {
         if (!container) return { Line: [] };
         if (typeof container.DATA === 'string') {
@@ -409,9 +399,9 @@
         }
     }
 
-    function createNewContainer() {
+    function createNewContainer(type) {
         document.getElementById('shift-a-menu').style.display = 'none';
-        allContainers.push({ NAME: "New Container", K_NAME: "BUILD", DATA: JSON.stringify({ Line: [] }) });
+        allContainers.push({ NAME: type, K_NAME: "BUILD", DATA: JSON.stringify({ Line: [] }) });
         renderSidebarContents();
         selectContainer(allContainers.length - 1);
     }
@@ -433,7 +423,7 @@
     }
 
     function deleteContainer(index) {
-        if (confirm("Are you sure you want to delete this container?")) {
+        if (confirm("Are you sure you want to completely delete this container?")) {
             allContainers.splice(index, 1);
             activeContainerIndex = Math.min(activeContainerIndex, allContainers.length - 1);
             if (activeContainerIndex < 0) activeContainerIndex = 0;
@@ -462,30 +452,37 @@
         if (node.K_NAME === 'WAIT') return `[${node.TIME || 0}s]`;
         if (node.K_NAME === 'SFX') return `[ID: ${node.SoundId || 0}]`;
         if (node.K_NAME === 'VELO') return `[${node.Velocity || '0,0,0'}]`;
+        if (node.K_NAME === 'VISUAL') return `[${node.VisualType || 'Asset'}]`;
         if (['SKILL', 'SPECIAL', 'AWAKENING', 'BUILD'].includes(node.K_NAME)) return `[${node.NAME || 'Unnamed'}]`;
-        const keys = Object.keys(node).filter(k => k !== 'K_NAME' && k !== 'PREVIEW');
-        if (keys.length > 0) return `[${node[keys[0]]}]`;
         return '';
     }
 
     function switchActiveLayout(layoutMode) {
-        currentLayout = layoutMode;
         localStorage.setItem('jjs_studio_active_layout', layoutMode);
         document.getElementById('btn-layout-editor').classList.toggle('active', layoutMode === 'editor');
         document.getElementById('btn-layout-tracks').classList.toggle('active', layoutMode === 'tracks');
         document.body.classList.toggle('root-shenanigans', layoutMode === 'tracks');
+        // Layouts now display identical structure, just aesthetic changes
         renderSidebarContents();
         renderWorkspaceContents();
     }
 
+    function updateContainerName(index, val) {
+        allContainers[index].NAME = val;
+        renderSidebarContents();
+    }
+
+    function updateContainerKName(index, val) {
+        allContainers[index].K_NAME = val;
+        renderSidebarContents();
+    }
+
     function renderSidebarContents() {
-        const heading = document.getElementById('sidebar-list-heading');
         const list = document.getElementById('sidebar-dynamic-list');
         list.innerHTML = '';
-        heading.innerText = "Moveset List";
 
         if (allContainers.length === 0) {
-            list.innerHTML = '<div style="text-align:center; padding-top: 30px; font-size: 0.8rem; color: #555;">No build loaded yet. Paste via the Import action.</div>';
+            list.innerHTML = '<div style="text-align:center; padding-top: 30px; font-size: 0.8rem; color: #555;">No build loaded. Import or press Shift+A!</div>';
             return;
         }
 
@@ -509,7 +506,7 @@
         workspace.innerHTML = '';
 
         if (allContainers.length === 0) {
-            workspace.innerHTML = '<div class="empty-state">LOAD A BUILD OR PRESS SHIFT+A TO CREATE A CONTAINER</div>';
+            workspace.innerHTML = '<div class="empty-state">LOAD A BUILD OR PRESS SHIFT+A<br>CTRL+ALT+SHIFT+T TO LOAD MASTER DICTIONARY</div>';
             return;
         }
         selectContainer(activeContainerIndex);
@@ -547,92 +544,50 @@
         const timeline = document.getElementById('main-timeline');
         let moveData = getInnerData(container).Line || [];
 
-        if (currentLayout === 'editor') {
-            let html = `
-                <div class="editor-header">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h1 style="margin:0; font-size:2.5rem; text-transform:uppercase;">${container.NAME || 'UNNAMED'}</h1>
-                        <button onclick="deleteContainer(${index})" class="btn-delete-container">
-                            <i class="fa-solid fa-trash"></i> DELETE CONTAINER
-                        </button>
+        let html = `
+            <div class="editor-header">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h1 style="margin:0; font-size:2.5rem; text-transform:uppercase;">${container.NAME || 'UNNAMED'}</h1>
+                    <button onclick="deleteContainer(${index})" class="btn-delete-container">
+                        <i class="fa-solid fa-trash"></i> DELETE CONTAINER
+                    </button>
+                </div>
+                <div style="display: flex; gap: 15px;">
+                    <div class="tooltip-field" style="flex:1;">
+                        <label>Container Name</label>
+                        <input value="${container.NAME || 'UNNAMED'}" oninput="updateContainerName(${index}, this.value)">
                     </div>
-                    <div class="tooltip-field">
-                        <label>Internal Container Name</label>
-                        <input readonly value="${container.K_NAME || 'BUILD'}">
+                    <div class="tooltip-field" style="flex:1;">
+                        <label>Internal Key (K_NAME)</label>
+                        <input value="${container.K_NAME || 'BUILD'}" oninput="updateContainerKName(${index}, this.value)">
                     </div>
+                </div>
+            </div>
+        `;
+        
+        moveData.forEach((node, i) => {
+            html += `
+                <div class="node-card" id="node-${i}">
+                    <div class="node-head" onclick="toggleNode(${i})" style="cursor: pointer;">
+                        <div style="display:flex; align-items:center; gap: 10px;">
+                            <strong>${node.K_NAME}</strong>
+                            <span style="color: #888; font-size: 0.8rem; font-family: monospace;">${getNodeSummary(node)}</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap: 15px;">
+                            <span style="color:var(--accent); font-size: 0.8rem; font-weight:bold;">#${i+1}</span>
+                            <button onclick="deleteNode(${index}, ${i}); event.stopPropagation();" class="btn-delete-node" title="Delete Node">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="node-grid" id="node-grid-${i}" style="display: none;">${renderProps(node.K_NAME, node, index, i)}</div>
                 </div>
             `;
-            
-            moveData.forEach((node, i) => {
-                html += `
-                    <div class="node-card" id="node-${i}">
-                        <div class="node-head" onclick="toggleNode(${i})" style="cursor: pointer;">
-                            <div style="display:flex; align-items:center; gap: 10px;">
-                                <strong>${node.K_NAME}</strong>
-                                <span style="color: #888; font-size: 0.8rem; font-family: monospace;">${getNodeSummary(node)}</span>
-                            </div>
-                            <div style="display:flex; align-items:center; gap: 15px;">
-                                <span style="color:var(--accent); font-size: 0.8rem; font-weight:bold;">#${i+1}</span>
-                                <button onclick="deleteNode(${index}, ${i}); event.stopPropagation();" class="btn-delete-node">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="node-grid" id="node-grid-${i}" style="display: none;">${renderProps(node.K_NAME, node)}</div>
-                    </div>
-                `;
-            });
-            timeline.innerHTML = html;
-        } else {
-            let html = `
-                <div class="editor-header">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h1 style="margin:0; font-size:2.5rem; text-transform:uppercase;">SHENANIGANS TRACK</h1>
-                        <button onclick="deleteContainer(${index})" class="btn-delete-container">
-                            <i class="fa-solid fa-trash"></i> DELETE CONTAINER
-                        </button>
-                    </div>
-                    <div class="tooltip-field">
-                        <label>Global Module Identification Context</label>
-                        <input value="Shenanigans_Profile_Core_${container.K_NAME || 'BUILD'}" readonly>
-                    </div>
-                </div>
-                <div class="node-card">
-                    <div class="node-head"><strong>Active Target Properties</strong></div>
-                    <div class="node-grid" style="display:grid;">
-                        <div class="field"><label>Playback Speed</label><input value="1.00" readonly></div>
-                        <div class="field"><label>Global Interpolation</label><input value="Linear" readonly></div>
-                        <div class="field"><label>Safety Assert Override</label><input value="disabled" readonly></div>
-                        <div class="field"><label>Frame Padding Count</label><input value="4" readonly></div>
-                    </div>
-                </div>
-                <div class="node-card">
-                    <div class="node-head"><strong>Sequence Timeline Tracker Canvas</strong></div>
-                    <div class="timeline-track-canvas" style="padding:25px;">
-            `;
-
-            if (moveData.length === 0) {
-                html += `<div style="font-size:0.75rem; color:#444; font-style:italic;">[Empty Data Line Channel]</div>`;
-            } else {
-                moveData.forEach((node, idx) => {
-                    let nodeProperties = Object.entries(node).filter(([k]) => k !== 'K_NAME').map(([k,v]) => `${k}:${v}`).slice(0, 2).join(', ');
-                    html += `
-                        <div class="jjs-bar" style="margin-bottom:8px;">
-                            <div class="jjs-bar-icon-box" style="color:var(--accent);"><span style="font-size:0.7rem;">#${idx+1}</span></div>
-                            <div class="jjs-bar-text" style="font-size:0.75rem; display:flex; justify-content:space-between; padding-right:15px; font-weight:normal;">
-                                <span style="font-weight:bold; color:var(--text)">[${node.K_NAME}] <span style="color:#888; font-family:monospace;">${getNodeSummary(node)}</span></span>
-                                <span style="color:#777; font-family:monospace !important;">${nodeProperties}</span>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
-            html += `</div></div>`;
-            timeline.innerHTML = html;
-        }
+        });
+        timeline.innerHTML = html;
     }
 
-    function renderProps(type, node) {
+    function renderProps(type, node, cIndex, nIndex) {
         let html = '';
         const data = { ...node };
         if (data.PREVIEW && Array.isArray(data.PREVIEW)) { data.START = data.PREVIEW[0]; data.END = data.PREVIEW[1]; }
@@ -640,18 +595,48 @@
         const keys = new Set([...Object.keys(temp), ...Object.keys(data)]);
         
         Array.from(keys).sort().forEach(k => {
-            if (k === 'K_NAME' || k === 'PREVIEW' || k === 'ANIM_USE') return;
+            if (k === 'K_NAME' || k === 'PREVIEW' || k === 'AnimationId') return;
             const val = data[k] !== undefined ? data[k] : temp[k];
-            const styleAttribute = data[k] !== undefined ? 'style="color: var(--accent);"' : 'style="opacity: 0.5;"';
-            html += `<div class="field"><label>${k}</label><input readonly value="${val}" ${styleAttribute}></div>`;
+            const styleAttribute = data[k] !== undefined ? 'style="color: var(--accent); font-weight:bold;"' : 'style="opacity: 0.5;"';
+            
+            let inputHtml = '';
+            if (typeof val === 'boolean' || val === 'true' || val === 'false') {
+                const isChecked = val === true || val === 'true';
+                inputHtml = `<input type="checkbox" ${isChecked ? 'checked' : ''} onchange="updateNodeProperty(${cIndex}, ${nIndex}, '${k}', this.checked)">`;
+            } else if (!isNaN(val) && val !== '' && typeof val !== 'boolean') {
+                inputHtml = `<input type="number" step="0.01" value="${val}" oninput="updateNodeProperty(${cIndex}, ${nIndex}, '${k}', parseFloat(this.value))" ${styleAttribute}>`;
+            } else {
+                inputHtml = `<input type="text" value="${val}" oninput="updateNodeProperty(${cIndex}, ${nIndex}, '${k}', this.value)" ${styleAttribute}>`;
+            }
+
+            html += `<div class="field"><label>${k}</label>${inputHtml}</div>`;
         });
         return html;
     }
 
+    function updateNodeProperty(cIndex, nIndex, key, value) {
+        let container = allContainers[cIndex];
+        let innerData = getInnerData(container);
+        let node = innerData.Line[nIndex];
+        
+        if (key === 'START' || key === 'END') {
+            let currentPreview = node.PREVIEW || [0, 0];
+            if (key === 'START') currentPreview[0] = value;
+            if (key === 'END') currentPreview[1] = value;
+            node.PREVIEW = currentPreview;
+            node[key] = value; 
+        } else {
+            node[key] = value;
+        }
+        
+        saveInnerData(container, innerData);
+        // Live updates header summaries behind the scenes
+        const headerTextNode = document.querySelector(`#node-${nIndex} .node-head span`);
+        if (headerTextNode) headerTextNode.innerText = getNodeSummary(node);
+    }
+
     function previewTheme(styleName) {
-        const isShena = document.body.classList.contains('root-shenanigans');
         document.body.className = '';
-        if (isShena) document.body.classList.add('root-shenanigans');
         if (styleName !== 'default') document.body.classList.add('theme-' + styleName);
     }
 
