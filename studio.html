@@ -3,71 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JJS STUDIO - V2.8.8 STABLE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
+    <title>JJS STUDIO - PREMIUM EDITION</title>
+    <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="./zstd-bundle.js"></script>
 
     <style>
         :root {
-            --bg: #1a1a1a;
-            --thickness: 4px;
+            --bg: #121317;
+            --panel: #1a1c23;
+            --node-card: #222530;
             --accent: #ffcc33;
-            --panel: #111;
-            --text: #e0e0e0;
-            --node-card: #252525;
-            --border: #000;
-            --font-family: 'Finger Paint', cursive;
-            --bg-image: linear-gradient(rgba(0,0,0,0.3) 2px, transparent 2px), linear-gradient(90deg, rgba(0,0,0,0.3) 2px, transparent 2px);
+            --text: #e2e8f0;
+            --border: #2d313f;
+            --thickness: 3px;
+            --font-main: 'Finger Paint', cursive;
+            --font-code: 'JetBrains Mono', monospace;
         }
 
-        body.theme-retro   { --bg:#444444; --accent:#ff5722; --panel:#2a2a2a; --text:#eeeeee; --node-card:#333333; --border:#000; }
-        body.theme-matrix  { --bg:#050505; --accent:#00ff66; --panel:#0d0d0d; --text:#00ff66; --node-card:#141414; --border:#00ff66; }
-        body.theme-nova    { --bg:#120024; --accent:#b026ff; --panel:#090012; --text:#e0b0ff; --node-card:#1c0035; --border:#000; }
-        body.theme-toon    { --bg:#000000; --accent:#ffffff; --panel:#000000; --text:#ffffff; --node-card:#000000; --border:#ffffff; --thickness:6px; }
+        /* Standard Theme Support Classes */
+        body.theme-retro   { --bg: #3c3f41; --panel: #2b2b2b; --node-card: #313335; --accent: #ff5722; --text: #f5f5f5; --border: #000000; }
+        body.theme-matrix  { --bg: #030704; --panel: #0a0f0d; --node-card: #121a16; --accent: #00ff66; --text: #33ff77; --border: #00ff66; }
+        body.theme-nova    { --bg: #0f051d; --panel: #18092b; --node-card: #240e42; --accent: #cc33ff; --text: #f3e8ff; --border: #4a1d8a; }
+        body.theme-toon    { --bg: #ffffff; --panel: #ffffff; --node-card: #ffffff; --accent: #000000; --text: #000000; --border: #000000; --thickness: 5px; }
         body.theme-shadow  { --bg:#1c1e22; --accent:#00f0ff; --panel:#111215; --text:#c0c5cd; --node-card:#242930; --border:#00f0ff; --thickness:3px; }
         body.theme-crimson { --bg:#141414; --accent:#ff2a4b; --panel:#0b0b0b; --text:#f5f5f5; --node-card:#1f1f1f; --border:#ff2a4b; --thickness:4px; }
 
-        body.root-shenanigans {
-            --bg: #1a1a1a;
-            --thickness: 4px;
-            --accent: #ffcc33;
-            --panel: #111;
-            --text: #e0e0e0;
-            --node-card: #252525;
-            --border: #000;
-            --font-family: 'Finger Paint', bold;
-            --bg-image: linear-gradient(rgba(0,0,0,0.3) 2px, transparent 2px), linear-gradient(90deg, rgba(0,0,0,0.3) 2px, transparent 2px);
-        }
-
-        body.root-shenanigans.theme-retro   { --bg:#444444; --accent:#ff5722; --panel:#2a2a2a; --text:#eeeeee; --node-card:#333333; --border:#000; }
-        body.root-shenanigans.theme-matrix  { --bg:#050505; --accent:#00ff66; --panel:#0d0d0d; --text:#00ff66; --node-card:#141414; --border:#00ff66; }
-        body.root-shenanigans.theme-nova    { --bg:#120024; --accent:#b026ff; --panel:#090012; --text:#e0b0ff; --node-card:#1c0035; --border:#000; }
-        body.root-shenanigans.theme-toon    { --bg:#000000; --accent:#ffffff; --panel:#000000; --text:#ffffff; --node-card:#000000; --border:#ffffff; --thickness:6px; }
-        body.root-shenanigans.theme-shadow  { --bg:#1c1e22; --accent:#00f0ff; --panel:#111215; --text:#c0c5cd; --node-card:#242930; --border:#00f0ff; --thickness:3px; }
-        body.root-shenanigans.theme-crimson { --bg:#141414; --accent:#ff2a4b; --panel:#0b0b0b; --text:#f5f5f5; --node-card:#1f1f1f; --border:#ff2a4b; --thickness:4px; }
-
         * {
-            font-family: var(--font-family);
             box-sizing: border-box;
-            outline: none;
+            font-family: var(--font-main);
             border-radius: 0 !important;
+            outline: none;
         }
 
         body {
             margin: 0;
             background-color: var(--bg);
-            background-image: var(--bg-image);
-            background-size: 50px 50px;
             color: var(--text);
             display: flex;
             width: 100vw;
             height: 100vh;
             overflow: hidden;
-            transition: background-color 0.2s, color 0.2s;
+            transition: background 0.25s, color 0.25s;
         }
 
+        body.theme-custom-saved {
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        /* Sidebar UI Panel */
         .sidebar {
             width: 380px;
             min-width: 380px;
@@ -76,626 +63,835 @@
             display: flex;
             flex-direction: column;
             z-index: 10;
-            box-shadow: 5px 0 0 rgba(0,0,0,0.2);
             height: 100%;
             overflow-y: auto;
             transition: background 0.2s, border-color 0.2s;
+            box-shadow: 5px 0 0 rgba(0,0,0,0.2);
         }
 
         .sidebar-header {
-            padding: 20px 25px 12px 25px;
+            padding: 25px;
             border-bottom: var(--thickness) solid var(--border);
             text-align: center;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
         }
 
-        .engine-status { 
-            font-size: 0.7rem; 
-            padding: 4px 8px; 
-            background: #222; 
-            border: 1px solid #444; 
-            width: fit-content; 
-            margin: 0 auto; 
-            color: #fff;
-        }
-
-        .layout-toggle-container {
-            margin: 12px 15px 4px 15px;
-            display: flex;
-            gap: 0;
-            border: var(--thickness) solid var(--border);
-            box-shadow: 4px 4px 0px #000;
-            overflow: hidden;
-        }
-
-        .btn-layout-toggle {
-            flex: 1;
-            padding: 9px 6px;
-            font-size: 0.65rem;
-            font-weight: bold;
-            cursor: pointer;
+        .engine-status {
+            font-size: 0.7rem;
+            padding: 6px 12px;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--border);
+            width: fit-content;
+            margin: 10px auto 0 auto;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border: none;
-            background: var(--node-card);
-            color: var(--text);
-            transition: background 0.15s, color 0.15s;
-            border-right: var(--thickness) solid var(--border);
-        }
-
-        .btn-layout-toggle:last-child { border-right: none; }
-
-        .btn-layout-toggle.active {
-            background: #00f2ff;
-            color: #000;
         }
 
         .theme-container {
-            margin: 10px 15px;
-            padding: 10px;
-            background: #000;
-            border: var(--thickness) solid var(--border);
-            box-shadow: 4px 4px 0px #000;
+            margin: 15px;
+            padding: 12px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
 
         .theme-control-row { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 10px; }
-        .theme-container label { font-size: 0.65rem; color: var(--accent); text-transform: uppercase; }
-        .theme-select { background: #111; color: #fff; border: 2px solid var(--border); padding: 5px; font-size: 0.75rem; cursor: pointer; flex-grow: 1; }
+        .theme-container label { font-size: 0.7rem; color: var(--accent); text-transform: uppercase; }
+        .theme-select { background: var(--panel); color: var(--text); border: 2px solid var(--border); padding: 6px; font-size: 0.8rem; cursor: pointer; flex-grow: 1; }
+        .btn-delete-theme { display: none; background: #e74c3c; color: #fff; border: 2px solid var(--border); font-size: 0.6rem; padding: 6px 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .btn-delete-theme:hover { background: #c0392b; }
 
-        .jjs-action-container { padding: 12px 15px; background: #000; margin: 0 15px 15px 15px; border: var(--thickness) solid var(--border); box-shadow: 4px 4px 0px #000; display: flex; gap: 10px; }
+        .custom-panel { display: none; background: rgba(0,0,0,0.5); margin: 0 15px 10px 15px; padding: 15px; border: 1px solid var(--border); }
+        .custom-panel h4 { margin: 0 0 10px 0; font-size: 0.75rem; color: #fff; text-transform: uppercase; border-bottom: 2px solid #222; padding-bottom: 3px; }
+        .config-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 0.6rem; color: #aaa; }
+        .config-row input[type="color"] { border: none; width: 30px; height: 20px; background: transparent; cursor: pointer; }
+        .config-row input[type="text"], .config-row input[type="range"] { width: 65%; background: var(--panel); border: 1px solid var(--border); color: #fff; font-size: 0.6rem; padding: 4px; font-family: var(--font-code); }
 
-        .btn-jjs-action { flex: 1; padding: 12px; border: var(--thickness) solid var(--border); background: var(--panel); color: var(--text); font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.1s, box-shadow 0.1s; }
+        .jjs-action-container { padding: 0 15px 20px 15px; display: flex; gap: 10px; border-bottom: var(--thickness) solid var(--border); }
+
+        .btn-jjs-action { flex: 1; padding: 12px; border: var(--thickness) solid var(--border); background: rgba(0,0,0,0.2); color: var(--text); font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.15s, color 0.15s; }
         .btn-jjs-action i { font-size: 0.9rem; color: var(--accent); }
-        .btn-jjs-action:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0px var(--border); background: var(--accent); color: #000; }
+        .btn-jjs-action:hover { background: var(--accent); color: #000; }
         .btn-jjs-action:hover i { color: #000; }
 
-        .container-heading { padding: 0 15px; font-size: 0.65rem; color: var(--accent); opacity: 0.8; margin-bottom: 6px; text-transform: uppercase; font-weight: bold; }
-        .container-list { padding: 0 15px 15px 15px; display: block; flex-grow: 1; overflow-y: auto; }
+        .container-heading { padding: 15px 20px 5px 20px; font-size: 0.7rem; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+        .container-list { padding: 10px 15px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex-grow: 1; }
 
-        .item { padding: 18px; background: var(--node-card); margin-bottom: 12px; cursor: pointer; border: var(--thickness) solid var(--border); box-shadow: 4px 4px 0px #000; transition: transform 0.1s, box-shadow 0.1s, background 0.2s; }
-        .item:hover { background: #333; transform: translate(-2px, -2px); box-shadow: 6px 6px 0px #000; }
-        .item.active { background: var(--accent); color: #000; }
-        .item.active .type-tag, .item.active .move-name { color: inherit; }
-        .item .type-tag { font-size: 0.65rem; color: var(--accent); text-transform: uppercase; }
-        .item .move-name { display: block; font-size: 1.2rem; color: var(--text); }
+        .item { padding: 15px; background: var(--node-card); cursor: pointer; border: var(--thickness) solid var(--border); transition: transform 0.1s, background 0.2s; }
+        .item:hover { background: rgba(255,255,255,0.05); }
+        .item.active { background: var(--accent); color: #000 !important; border-color: var(--border); }
+        .item.active .type-tag, .item.active .move-name { color: #000 !important; }
+        
+        .item .type-tag { font-size: 0.65rem; color: var(--accent); text-transform: uppercase; display: block; margin-bottom: 2px;}
+        .item .move-name { display: block; font-size: 1.1rem; color: var(--text); }
 
-        /* THE ANTI-SQUISH WORKSPACE FIX */
-        .main { 
-            flex: 1; 
-            overflow-y: auto; 
-            overflow-x: hidden;
-            padding: 40px; 
-            height: 100%; 
-            display: block; /* Native block scrolling prevents flex squishing completely */
-        }
+        /* Main Workspace Canvas Container */
+        .main { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 40px; height: 100%; display: block; }
 
         .editor-header { display: flex; flex-direction: column; gap: 15px; border-left: var(--thickness) solid var(--accent); padding-left: 20px; margin-bottom: 40px; }
-        .btn-delete-container { background: #ff4d4d; color: #000; border: var(--thickness) solid var(--border); padding: 10px 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.75rem; text-transform: uppercase; box-shadow: 3px 3px 0px #000; transition: transform 0.1s, box-shadow 0.1s; }
-        .btn-delete-container:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0px #000; filter: brightness(1.1); }
         
-        .tooltip-field { background: #000; border: var(--thickness) solid var(--border); padding: 12px; box-shadow: 5px 5px 0px #000; }
-        .tooltip-field label { display: block; font-size: 0.65rem; color: var(--accent); text-transform: uppercase; margin-bottom: 5px; }
-        .tooltip-field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #333; }
+        .btn-delete-container {
+            background: #ff4d4d; color: #fff; border: var(--thickness) solid var(--border); padding: 10px 15px;
+            font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.75rem; 
+            text-transform: uppercase; box-shadow: 3px 3px 0px #000; transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .btn-delete-container:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0px #000; filter: brightness(1.1); }
 
+        .container-fields-row { display: flex; gap: 15px; }
+
+        .tooltip-field { background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 12px; flex: 1; box-shadow: 5px 5px 0px #000; }
+        .tooltip-field label { display: block; font-size: 0.65rem; color: var(--accent); text-transform: uppercase; margin-bottom: 5px; }
+        .tooltip-field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #333; font-family: var(--font-code); }
+
+        /* UI Data Nodes styling definitions */
         .node-card { background: var(--panel); border: var(--thickness) solid var(--border); margin-bottom: 20px; overflow: hidden; box-shadow: 6px 6px 0px rgba(0,0,0,1); transition: background 0.2s, border-color 0.2s; }
-        .node-head { background: #222; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: var(--thickness) solid var(--border); user-select: none; }
-        .node-head:hover { filter: brightness(1.2); }
-        .node-head strong { color: var(--accent); font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        .node-head { background: rgba(0,0,0,0.3); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: var(--thickness) solid var(--border); user-select: none; cursor: pointer; }
+        .node-head:hover { background: rgba(255,255,255,0.03); }
+
+        .node-title-group { display: flex; align-items: center; gap: 12px; }
+        .node-title-group strong { color: var(--accent); font-size: 1rem; text-transform: uppercase; }
+        .node-summary-tag { color: #8892b0; font-size: 0.8rem; font-family: var(--font-code); }
+
         .btn-delete-node { background: transparent; border: none; color: #ff4d4d; cursor: pointer; font-size: 1.1rem; padding: 5px; transition: color 0.1s; }
         .btn-delete-node:hover { color: #ff1a1a; }
 
-        .node-grid { padding: 25px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
-        .field { background: #000; border: calc(var(--thickness)/2) solid var(--border); padding: 12px; box-shadow: 4px 4px 0px #000; }
-        .field label { display: block; font-size: 0.65rem; color: #666; text-transform: uppercase; margin-bottom: 5px; }
-        .field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #222; }
-        .field input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+        .node-grid { padding: 25px; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; background: rgba(0,0,0,0.1); }
 
-        .empty-state { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 1.5rem; color: #555; text-transform: uppercase; text-align: center; line-height: 1.5; }
+        .field { background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 12px; }
+        .field label { display: block; font-size: 0.65rem; color: #8892b0; text-transform: uppercase; margin-bottom: 6px; }
+        .field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 0.95rem; border-bottom: 1px solid var(--border); font-family: var(--font-code); }
+        .field input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; border-bottom: none; }
 
-        .jjs-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.75); z-index: 999; display: none; align-items: center; justify-content: center; }
-        .jjs-modal-box { background: var(--panel); border: var(--thickness) solid var(--border); width: 480px; max-width: 90%; box-shadow: 10px 10px 0px rgba(0,0,0,1); }
-        .jjs-modal-header { background: #000; padding: 15px 20px; border-bottom: var(--thickness) solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .jjs-modal-title { color: var(--accent); text-transform: uppercase; font-size: 1rem; margin: 0; display: flex; align-items: center; gap: 8px; }
-        .jjs-modal-close { background: transparent; border: none; color: #ff4d4d; cursor: pointer; font-size: 1.1rem; }
-        .jjs-modal-body { padding: 20px; }
-        .jjs-modal-textarea { width: 100%; height: 150px; background: #000; color: var(--text); border: calc(var(--thickness)/2) solid var(--border); padding: 12px; font-size: 0.8rem; resize: none; font-family: monospace !important; }
-        .jjs-modal-footer { padding: 0 20px 20px 20px; display: flex; justify-content: flex-end; gap: 10px; }
-        .btn-modal-confirm { background: var(--accent); color: #000; border: calc(var(--thickness)/2) solid var(--border); padding: 10px 20px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; }
+        .empty-state { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 1.3rem; color: #4f566b; text-transform: uppercase; text-align: center; line-height: 1.8; }
 
-        /* Blender-style Context Menu */
-        .context-menu {
-            position: fixed; display: none; background: #000; border: var(--thickness) solid var(--border);
-            box-shadow: 6px 6px 0px #000; z-index: 9999; padding: 5px 0; min-width: 180px;
-        }
-        .context-menu .menu-item {
-            padding: 10px 15px; font-size: 0.75rem; color: var(--text); cursor: pointer; text-transform: uppercase;
-            display: flex; justify-content: space-between; align-items: center; font-weight: bold;
-        }
+        /* Context Menu Blueprint Layout (Blender Style Shift + A) */
+        .context-menu { position: fixed; display: none; background: #090a0f; border: var(--thickness) solid var(--border); z-index: 10000; padding: 5px 0; min-width: 220px; max-height: 450px; overflow-y: auto; box-shadow: 0px 10px 30px rgba(0,0,0,0.5); }
+        .context-menu .menu-label { padding: 6px 15px; font-size: 0.65rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; background: rgba(255,255,255,0.02); }
+        .context-menu .menu-item { padding: 10px 15px; font-size: 0.75rem; color: #e2e8f0; cursor: pointer; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
         .context-menu .menu-item:hover { background: var(--accent); color: #000; }
-        .context-menu .menu-separator { height: var(--thickness); background: var(--border); margin: 5px 0; }
-        .context-menu .menu-label { padding: 5px 15px; font-size: 0.6rem; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+        .context-menu .menu-separator { height: 1px; background: var(--border); margin: 5px 0; }
+
+        /* Modal Structure Definitions */
+        .jjs-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 9999; display: none; align-items: center; justify-content: center; }
+        .jjs-modal-box { background: var(--panel); border: var(--thickness) solid var(--border); width: 550px; max-width: 90%; }
+        .jjs-modal-header { background: rgba(0,0,0,0.3); padding: 20px; border-bottom: var(--thickness) solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .jjs-modal-title { color: var(--accent); text-transform: uppercase; font-size: 1.1rem; margin: 0; }
+        .jjs-modal-close { background: transparent; border: none; color: #ff4d4d; cursor: pointer; font-size: 1.2rem; }
+        .jjs-modal-close:hover { color: #ff1a1a; }
+        .jjs-modal-body { padding: 20px; }
+        .jjs-modal-textarea { width: 100%; height: 220px; background: #090a0f; color: #00ff66; border: 1px solid var(--border); padding: 15px; font-size: 0.85rem; resize: none; font-family: var(--font-code); }
+        .jjs-modal-footer { padding: 0 20px 20px 20px; display: flex; justify-content: flex-end; gap: 12px; }
+        .btn-modal-confirm { background: var(--accent); color: #000; border: 1px solid var(--border); padding: 10px 20px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .btn-modal-confirm:hover { filter: brightness(1.2); }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
     <div class="sidebar-header">
-        <h2 style="margin:0; color: var(--accent); text-transform: uppercase; font-size: 1.6rem;">JJS STUDIO</h2>
-        <span style="font-size:0.7rem; color:#555;">V2.8.8 STABLE</span>
-        <div id="engine-info" class="engine-status">CHECKING...</div>
-    </div>
-
-    <div class="layout-toggle-container">
-        <button class="btn-layout-toggle active" id="btn-layout-editor" onclick="switchActiveLayout('editor')">Studio</button>
-        <button class="btn-layout-toggle" id="btn-layout-tracks" onclick="switchActiveLayout('tracks')">Shenanigans</button>
+        <h2 style="margin:0; color: var(--accent); text-transform: uppercase; font-size: 1.5rem; letter-spacing: 1px;">JJS STUDIO</h2>
+        <div id="engine-status-box" class="engine-status">SYSTEM LOAD...</div>
     </div>
 
     <div class="theme-container">
         <div style="width:100%; display:flex; justify-content:space-between; align-items:center;">
-            <label>Select Workspace Theme</label>
+            <label>Workspace Theme Preference</label>
         </div>
         <div class="theme-control-row">
             <select class="theme-select" id="global-theme-picker" onchange="previewTheme(this.value)">
-                <option value="default" selected>Default Dark</option>
-                <option value="retro">Comic Retro</option>
-                <option value="matrix">Midnight Matrix</option>
-                <option value="nova">Moonlit Nova</option>
-                <option value="toon">Toon Slate</option>
-                <option value="shadow">Cyber Shadow</option>
-                <option value="crimson">Crimson</option>
+                <optgroup label="Standard Themes">
+                    <option value="default" selected>Default Core</option>
+                    <option value="retro">Comic Retro</option>
+                    <option value="matrix">Midnight Matrix</option>
+                    <option value="nova">Moonlit Nova</option>
+                    <option value="toon">Toon Slate</option>
+                    <option value="shadow">Cyber Shadow</option>
+                    <option value="crimson">Crimson</option>
+                </optgroup>
+                <optgroup label="Saved Custom Themes" id="custom-themes-group">
+                    <option value="custom">[Create New Theme...]</option>
+                </optgroup>
             </select>
+            <button class="btn-delete-theme" id="delete-theme-trigger" onclick="deleteActiveTheme()">Del</button>
         </div>
+    </div>
+
+    <div class="custom-panel" id="custom-editor-ui">
+        <h4>Theme Creator Engine</h4>
+        <div class="config-row" style="margin-bottom:12px;">
+            <label>Theme Name</label>
+            <input type="text" id="val-name" value="My Custom Setup" style="width:65%;">
+        </div>
+        <div class="config-row"><label>BG Color</label><input type="color" id="val-bg" value="#1a1a1a" oninput="applyLiveVar('--bg', this.value)"></div>
+        <div class="config-row"><label>Panel Color</label><input type="color" id="val-panel" value="#111111" oninput="applyLiveVar('--panel', this.value)"></div>
+        <div class="config-row"><label>Node Card</label><input type="color" id="val-node" value="#252525" oninput="applyLiveVar('--node-card', this.value)"></div>
+        <div class="config-row"><label>Accent</label><input type="color" id="val-accent" value="#ffcc33" oninput="applyLiveVar('--accent', this.value)"></div>
+        <div class="config-row"><label>Text Color</label><input type="color" id="val-text" value="#e0e0e0" oninput="applyLiveVar('--text', this.value)"></div>
+        <div class="config-row"><label>Border Color</label><input type="color" id="val-border" value="#000000" oninput="applyLiveVar('--border', this.value)"></div>
+        <div class="config-row"><label>Borders</label><input type="range" id="val-thick" min="0" max="12" value="4" oninput="applyLiveVar('--thickness', this.value + 'px')"></div>
+        <div class="config-row" style="flex-direction:column; align-items:flex-start; gap:4px; margin-bottom:12px;">
+            <label>Background Image URL</label>
+            <input type="text" id="val-bgimg" placeholder="Paste image address..." oninput="applyLiveBg(this.value)" style="width:100%;">
+        </div>
+        <button style="background:#2ecc71; color:#000; border:2px solid #000; font-size:0.7rem; padding:8px; width:100%; font-weight:bold; cursor:pointer; text-transform:uppercase;" onclick="saveCustomTheme()">Save &amp; Apply</button>
     </div>
 
     <div class="jjs-action-container">
-        <button class="btn-jjs-action" onclick="openJJSModal('import')" style="background: var(--accent); color: #000;">
-            <i class="fa-solid fa-file-import" style="color: #000;"></i> Import
-        </button>
-        <button class="btn-jjs-action" onclick="openJJSModal('export')" style="background: #00f2ff; color: #000;">
-            <i class="fa-solid fa-file-export" style="color: #000;"></i> Export
-        </button>
+        <button class="btn-jjs-action" onclick="openIOModal('import')"><i class="fa-solid fa-file-import"></i> Import</button>
+        <button class="btn-jjs-action" onclick="openIOModal('export')"><i class="fa-solid fa-file-export"></i> Export</button>
     </div>
 
-    <div class="container-heading" id="sidebar-list-heading">Moveset List</div>
-    <div class="container-list" id="sidebar-dynamic-list">
-        </div>
+    <div class="container-heading">Active Profiles</div>
+    <div class="container-list" id="sidebar-render-target"></div>
 </div>
 
-<div class="main" id="main-timeline">
-    </div>
+<div class="main" id="workspace-canvas-timeline"></div>
 
-<div id="shift-a-menu" class="context-menu">
-    <div class="menu-label">Create Container</div>
-    <div class="menu-item" onclick="createNewContainer('Melee')">Melee</div>
-    <div class="menu-item" onclick="createNewContainer('Skill')">Skill</div>
-    <div class="menu-item" onclick="createNewContainer('Special')">Special</div>
-    <div class="menu-item" onclick="createNewContainer('Awakening')">Awakening</div>
-    <div class="menu-item" onclick="createNewContainer('Chase')">Chase</div>
+<div id="shift-a-context-menu" class="context-menu">
+    <div class="menu-label">Create Container (Strict Filter)</div>
+    <div class="menu-item" onclick="instantiateContainer('Skill')">Skill <i class="fa-solid fa-folder-plus"></i></div>
+    <div class="menu-item" onclick="instantiateContainer('Melee')">Melee <i class="fa-solid fa-folder-plus"></i></div>
+    <div class="menu-item" onclick="instantiateContainer('Special')">Special <i class="fa-solid fa-folder-plus"></i></div>
+    <div class="menu-item" onclick="instantiateContainer('Awakening')">Awakening <i class="fa-solid fa-folder-plus"></i></div>
+    <div class="menu-item" onclick="instantiateContainer('Chase')">Chase <i class="fa-solid fa-folder-plus"></i></div>
     <div class="menu-separator"></div>
-    <div class="menu-label">Add Data Node</div>
-    <div class="menu-item" onclick="createNewNode('ANIM')">ANIM</div>
-    <div class="menu-item" onclick="createNewNode('WAIT')">WAIT</div>
-    <div class="menu-item" onclick="createNewNode('SFX')">SFX</div>
-    <div class="menu-item" onclick="createNewNode('VELO')">VELO</div>
-    <div class="menu-item" onclick="createNewNode('HITCNCL')">HITCNCL</div>
-    <div class="menu-item" onclick="createNewNode('VISUAL')">VISUAL</div>
+    <div class="menu-label">Add Sequence Data Node</div>
+    <div id="context-menu-nodes-target"></div>
 </div>
 
-<div class="jjs-modal-overlay" id="jjs-system-modal" onclick="closeJJSModal(event)">
+<div class="jjs-modal-overlay" id="jjs-io-modal" onclick="closeIOModal(event)">
     <div class="jjs-modal-box" onclick="event.stopPropagation()">
         <div class="jjs-modal-header">
-            <h3 class="jjs-modal-title" id="modal-title-text"><i class="fa-solid fa-terminal"></i> Terminal System</h3>
-            <button class="jjs-modal-close" onclick="closeJJSModal(null)"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="jjs-modal-title" id="io-modal-title-text">Terminal IO Stream</h3>
+            <button class="jjs-modal-close" onclick="closeIOModal(null)"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="jjs-modal-body">
-            <textarea class="jjs-modal-textarea" id="modal-io-box"></textarea>
+            <textarea class="jjs-modal-textarea" id="io-terminal-textarea"></textarea>
         </div>
         <div class="jjs-modal-footer">
-            <button class="btn-modal-confirm" id="modal-action-btn" onclick="executeModalAction()">Apply</button>
+            <button class="btn-modal-confirm" id="io-action-button" onclick="executeIOAction()">Process</button>
         </div>
     </div>
 </div>
 
 <script>
-    let zstd = null;
-    let activeModalMode = '';
-    let allContainers = []; 
-    let activeContainerIndex = 0;
-    let mouseX = 0, mouseY = 0;
-
-    const MASTER_DICTIONARY = [
-        { NAME: "Melee", K_NAME: "BUILD", DATA: JSON.stringify({ Line: [] }) },
-        { NAME: "Skill", K_NAME: "BUILD", DATA: JSON.stringify({ Line: [] }) },
-        { NAME: "Special", K_NAME: "BUILD", DATA: JSON.stringify({ Line: [] }) },
-        { NAME: "Awakening", K_NAME: "BUILD", DATA: JSON.stringify({ Line: [] }) },
-        { NAME: "Chase", K_NAME: "BUILD", DATA: JSON.stringify({ Line: [] }) }
-    ];
-
-    const MASTER_SCHEMA = {
-        "ANIM": { "SPEED": 1, "FadeTime": 0.1, "Looped": false, "Weight": 1, "ANIM_USE": "New_Anim" },
-        "WAIT": { "TIME": 0.1 },
-        "SFX": { "SoundId": 0, "Volume": 0.5, "Pitch": 1 },
-        "VELO": { "Velocity": "0,0,0", "Duration": 0.5 },
-        "VISUAL": { "VisualType": "Slash", "Limb": "HumanoidRootPart", "Color": "255,255,255", "Transparency": 0, "Scale": "1,1,1" },
-        "HITCNCL": { "Active": true, "Time": 0.5 }
+    const TRANSLATIONS = {
+        "ULTGIB": "ADD AWAKENING", "HPGIB": "ADD HEALTH", "EVGIB": "ADD EVASION",
+        "HITCNCL": "HIT CANCEL", "ATK": "ATTACK", "ANIM": "ANIMATION",
+        "VELO": "VELOCITY", "PROJ": "PROJECTILE", "SFX": "SOUND",
+        "WAIT": "WAIT", "SKILL": "SKILL", "SPECIAL": "SPECIAL",
+        "CONNECT": "CONNECT", "HITBOX": "HITBOX", "BRANCH": "BRANCH",
+        "VISUAL": "VISUAL", "GRAB": "GRAB", "COUNTER": "COUNTER",
+        "TAG": "TAG", "STATE": "STATE", "TELEPORT": "TELEPORT",
+        "LOOP": "LOOP", "SETCD": "SET COOLDOWN"
     };
 
-    async function init() {
+    const NODE_TEMPLATES = {
+        WAIT: ["TIME"],
+        SKILL: ["SPEED", "START", "ENABLE VARIANTS", "HOLD FOR", "MOVE", "CANCEL LAST"],
+        SPECIAL: ["SPEED", "SPEC", "ENABLE VARIANTS", "CANCEL LAST"],
+        ANIM: ["FADE IN", "PREVIEW", "FADE OUT", "LAST HIT", "SPEED", "ANIM_USE"],
+        SFX: ["END", "GLOBAL", "VOLUME", "PROJECTILE TAG", "ID", "START", "CANCEL", "SPEED"],
+        VELO: ["RELATIVE FROM BRANCH", "TRACK", "TIME", "TRUE RAGDOLL", "FORCE", "RAGDOLL", "LAST HIT", "FADE"],
+        CONNECT: ["SIGNAL", "TIME"],
+        HITBOX: ["SIZE", "SINGLE TARGET", "CAN KILL", "BLOCKABLE", "ATTACK TYPE", "PREVIEW", "STUN", "DEBREE", "POSITION", "BRANCH TARGET", "HIT RAGDOLL", "BRANCH FINISHER", "STUN ANIM", "BRANCH", "DAMAGE", "ROTATION", "CANCEL ENEMY", "PROJECTILE TAG", "360 BLOCK", "HIT USER", "CLEAR KNOCKBACK"],
+        BRANCH: ["LAST HIT", "BRANCH", "RANDOM"],
+        VISUAL: ["SIZE", "RELATIVE FROM BRANCH", "CAN COLLIDE", "OPACITY", "TEXTURE", "ALT COLOR", "COLOR", "EASING STYLE", "AMOUNT", "ALT ROTATION", "POSITION", "EASING DIRECTION", "CANCEL ON INTERRUPT", "VISUAL TAG", "ALT SIZE", "TIME", "RUN ON SERVER", "PROJECTILE TAG", "BODY PART", "ROTATION", "LAST HIT", "EFFECT", "ALT POSITION", "ALT OPACITY"],
+        GRAB: ["POSITION", "BODY PART", "ROTATION", "LAST HIT", "TIME", "BODY PART2"],
+        PROJECTILE: ["DAMAGE", "SPEED", "CAN KILL", "BLOCKABLE", "ATTACK TYPE", "CONTINUE", "CLEAR KNOCKBACK", "FILTER INTERVAL", "STUN", "CANCEL ENEMY", "DEBREE", "CACHE", "POSITION", "REFLECT COUNT", "BRANCH TARGET", "HIT RAGDOLL", "BRANCH", "BRANCH COLLIDED", "TIME", "HIT USER", "SIZE", "ROTATION", "PROJECTILE TAG", "360 BLOCK", "STUN ANIM", "AIM LAST HIT"],
+        COUNTER: ["BRANCH", "CANCEL ENEMY", "BRANCH TARGET", "STUN", "REMOVE ON HIT", "TIME", "ATTACK TYPE2"],
+        TAG: ["ADD/REMOVE", "TIME", "TAG", "CHECK", "LAST HIT", "BRANCH", "VALUE", "SET"],
+        STATE: ["DISABLE BURST", "CANCEL ON END", "LAST HIT", "STATE", "TIME", "VALUE"],
+        TELEPORT: ["POSITION", "PROJECTILE TAG", "LAST HIT", "RELATIVE FROM BRANCH", "ROTATION"],
+        ULTGIB: ["AMOUNT"], HPGIB: ["AMOUNT"], EVGIB: ["AMOUNT"],
+        HITCNCL: ["FLIP", "BRANCH", "TIME", "ENDLAG"],
+        LOOP: ["LOOP BACK", "HOLD", "LOOP AMOUNT"],
+        SETCD: ["KEY", "COOLDOWN"]
+    };
+
+    const DEFAULTS_LIB = {
+        TIME: 1.0, SPEED: 1.0, START: 0.0, "ENABLE VARIANTS": true, "HOLD FOR": 0.0,
+        MOVE: "Divergent Fist", SPEC: "Limitless", "FADE IN": 0.1, PREVIEW: [0, 3.59],
+        "FADE OUT": 0.0, "LAST HIT": -1.0, END: 500.0, GLOBAL: false, VOLUME: 0.5,
+        "PROJECTILE TAG": "nil", ID: 12222253, CANCEL: false, "TRUE RAGDOLL": false,
+        RAGDOLL: 0.0, FADE: false, SIGNAL: "Nothing", SIZE: "6.0, 6.0, 6.0",
+        "SINGLE TARGET": true, "CAN KILL": true, BLOCKABLE: true, "ATTACK TYPE": "Melee",
+        "ATTACK TYPE2": "Melee", STUN: 1.0, DEBREE: 0.0, "BRANCH TARGET": "nil",
+        "HIT RAGDOLL": false, BRANCH: "nil", DAMAGE: 1.0, "CANCEL ENEMY": true,
+        "360 BLOCK": false, "HIT USER": false, "CLEAR KNOCKBACK": false, RANDOM: "",
+        OPACITY: 0.0, TEXTURE: 0.0, "EASING STYLE": "Linear", "EASING DIRECTION": "In",
+        "BODY PART": "HumanoidRootPart", "BODY PART2": "HumanoidRootPart",
+        EFFECT: "Slash", STATE: "Stun", AMOUNT: 1.0, FLIP: false, ENDLAG: 1.0,
+        "LOOP BACK": 1.0, HOLD: false, "LOOP AMOUNT": 3.0, POSITION: "0.0, 0.0, 0.0", 
+        ROTATION: "0.0, 0.0, 0.0", "RELATIVE FROM BRANCH": false, "CAN COLLIDE": false,
+        COLOR: "255, 255, 255", "ALT COLOR": "255, 255, 255", "ALT SIZE": 1.0, "ALT POSITION": "0.0, 0.0, 0.0",
+        "ALT ROTATION": "0.0, 0.0, 0.0", "ALT OPACITY": 0.0, "BRANCH FINISHER": "nil", 
+        "STUN ANIM": false, "RUN ON SERVER": false, "VISUAL TAG": "nil", "FILTER INTERVAL": 1.0,
+        "CACHE": true, "REFLECT COUNT": 0.0, "BRANCH COLLIDED": "nil", "AIM LAST HIT": -1.0,
+        "REMOVE ON HIT": true, "ADD/REMOVE": true, "CHECK": false, "SET": true,
+        "DISABLE BURST": false, "CANCEL ON END": false, "VALUE": "nil", "CONTINUE": false,
+        "ANIM_USE": [1, 1.9], "CANCEL LAST": false, KEY: 1, COOLDOWN: 1.0
+    };
+
+    const TYPE_OVERRIDES = {
+        ULTGIB: { AMOUNT: 5.0 }, HPGIB: { AMOUNT: 5.0 }, EVGIB: { AMOUNT: 5.0 },
+        HITBOX: { PREVIEW: [0, 15] }
+    };
+
+    let currentMoves = [];
+    let activeIndex = -1;
+    let zstd = null;
+    let ioModalMode = '';
+    let mouseX = 0, mouseY = 0;
+    let dynamicCustomThemes = {};
+
+    async function initEngine() {
         const engine = window.ZstdWeb || window.zstd || window.Zstd;
-        if (engine?.init) { 
-            await engine.init(); 
-            zstd = engine; 
-            document.getElementById('engine-info').innerHTML = "ENGINE STATUS: <span style='color:#00ffcc; font-weight:bold;'>ZSTD (ACTIVE)</span>";
+        if (engine?.init) {
+            await engine.init();
+            zstd = engine;
+            document.getElementById('engine-status-box').innerHTML = "ENGINE STATUS: <span style='color:#00ffcc; font-weight:bold;'>ZSTD ACTIVE</span>";
         } else {
-            document.getElementById('engine-info').innerHTML = "ENGINE STATUS: <span style='color:#ffaa00; font-weight:bold;'>ZSTD (STANDBY)</span>";
-        }
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-        init();
-        const savedLayout = localStorage.getItem('jjs_studio_active_layout') || 'editor';
-        switchActiveLayout(savedLayout);
-    });
-
-    document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
-    
-    document.addEventListener('keydown', e => {
-        // Shift + A menu trigger
-        if (e.shiftKey && e.key.toLowerCase() === 'a') {
-            e.preventDefault();
-            const menu = document.getElementById('shift-a-menu');
-            menu.style.display = 'block';
-            menu.style.left = Math.min(mouseX, window.innerWidth - menu.offsetWidth - 10) + 'px';
-            menu.style.top = Math.min(mouseY, window.innerHeight - menu.offsetHeight - 10) + 'px';
+            document.getElementById('engine-status-box').innerHTML = "ENGINE STATUS: <span style='color:#ff9900; font-weight:bold;'>ZSTD STANDBY</span>";
         }
         
-        // Ctrl + Alt + Shift + T : Load Master Code
-        if (e.ctrlKey && e.altKey && e.shiftKey && e.key.toLowerCase() === 't') {
-            e.preventDefault();
-            loadMasterCode();
-        }
-    });
+        const savedData = localStorage.getItem('jjs_studio_custom_registry');
+        if (savedData) dynamicCustomThemes = JSON.parse(savedData);
+        rebuildDropdownList();
 
-    document.addEventListener('click', e => {
-        if (!e.target.closest('#shift-a-menu')) {
-            document.getElementById('shift-a-menu').style.display = 'none';
-        }
-    });
+        const cachedTheme = localStorage.getItem('jjs-theme-pref') || 'default';
+        const picker = document.getElementById('global-theme-picker');
+        if (picker) picker.value = cachedTheme;
+        previewTheme(cachedTheme);
 
-    function loadMasterCode() {
-        if (allContainers.length > 0) {
-            if (!confirm("Load Master Template? This will OVERWRITE your current workspace.")) return;
-        }
-        allContainers = JSON.parse(JSON.stringify(MASTER_DICTIONARY));
-        activeContainerIndex = 0;
-        renderSidebarContents();
-        renderWorkspaceContents();
-    }
-
-    function getInnerData(container) {
-        if (!container) return { Line: [] };
-        if (typeof container.DATA === 'string') {
-            try { return JSON.parse(container.DATA); } catch(e) { return { Line: [] }; }
-        } else if (typeof container.DATA === 'object') {
-            return container.DATA;
-        } else if (container.Line) {
-            return { Line: container.Line };
-        }
-        return { Line: [] };
-    }
-
-    function saveInnerData(container, innerData) {
-        if (container.DATA !== undefined && typeof container.DATA === 'string') {
-            container.DATA = JSON.stringify(innerData);
-        } else if (container.DATA !== undefined && typeof container.DATA === 'object') {
-            container.DATA = innerData;
-        } else {
-            container.Line = innerData.Line;
-        }
-    }
-
-    function createNewContainer(type) {
-        document.getElementById('shift-a-menu').style.display = 'none';
-        allContainers.push({ NAME: type, K_NAME: "BUILD", DATA: JSON.stringify({ Line: [] }) });
-        renderSidebarContents();
-        selectContainer(allContainers.length - 1);
-    }
-
-    function createNewNode(type) {
-        document.getElementById('shift-a-menu').style.display = 'none';
-        if (allContainers.length === 0) return alert("Please create or select a container first.");
-        
-        let container = allContainers[activeContainerIndex];
-        let innerData = getInnerData(container);
-        let line = innerData.Line || [];
-        
-        let newNode = { K_NAME: type };
-        Object.assign(newNode, MASTER_SCHEMA[type] || {});
-        line.push(newNode);
-        
-        saveInnerData(container, innerData);
-        selectContainer(activeContainerIndex);
-    }
-
-    function deleteContainer(index) {
-        if (confirm("Are you sure you want to completely delete this container?")) {
-            allContainers.splice(index, 1);
-            activeContainerIndex = Math.min(activeContainerIndex, allContainers.length - 1);
-            if (activeContainerIndex < 0) activeContainerIndex = 0;
-            renderSidebarContents();
-            renderWorkspaceContents();
-        }
-    }
-
-    function deleteNode(cIndex, nIndex) {
-        if (confirm("Delete this node?")) {
-            let container = allContainers[cIndex];
-            let innerData = getInnerData(container);
-            innerData.Line.splice(nIndex, 1);
-            saveInnerData(container, innerData);
-            selectContainer(cIndex);
-        }
-    }
-
-    function toggleNode(nodeId) {
-        const grid = document.getElementById(`node-grid-${nodeId}`);
-        grid.style.display = grid.style.display === 'none' ? 'grid' : 'none';
-    }
-
-    function getNodeSummary(node) {
-        if (node.K_NAME === 'ANIM') return `[${node.ANIM_USE || 'Unset'}]`;
-        if (node.K_NAME === 'WAIT') return `[${node.TIME || 0}s]`;
-        if (node.K_NAME === 'SFX') return `[ID: ${node.SoundId || 0}]`;
-        if (node.K_NAME === 'VELO') return `[${node.Velocity || '0,0,0'}]`;
-        if (node.K_NAME === 'VISUAL') return `[${node.VisualType || 'Asset'}]`;
-        if (['SKILL', 'SPECIAL', 'AWAKENING', 'BUILD'].includes(node.K_NAME)) return `[${node.NAME || 'Unnamed'}]`;
-        return '';
-    }
-
-    function switchActiveLayout(layoutMode) {
-        localStorage.setItem('jjs_studio_active_layout', layoutMode);
-        document.getElementById('btn-layout-editor').classList.toggle('active', layoutMode === 'editor');
-        document.getElementById('btn-layout-tracks').classList.toggle('active', layoutMode === 'tracks');
-        document.body.classList.toggle('root-shenanigans', layoutMode === 'tracks');
-        // Layouts now display identical structure, just aesthetic changes
-        renderSidebarContents();
-        renderWorkspaceContents();
-    }
-
-    function updateContainerName(index, val) {
-        allContainers[index].NAME = val;
-        renderSidebarContents();
-    }
-
-    function updateContainerKName(index, val) {
-        allContainers[index].K_NAME = val;
-        renderSidebarContents();
-    }
-
-    function renderSidebarContents() {
-        const list = document.getElementById('sidebar-dynamic-list');
-        list.innerHTML = '';
-
-        if (allContainers.length === 0) {
-            list.innerHTML = '<div style="text-align:center; padding-top: 30px; font-size: 0.8rem; color: #555;">No build loaded. Import or press Shift+A!</div>';
-            return;
-        }
-
-        allContainers.forEach((c, i) => {
-            const btn = document.createElement('div');
-            btn.className = 'item';
-            btn.id = `btn-${i}`;
-            if (i === activeContainerIndex) btn.classList.add('active');
-            btn.onclick = () => selectContainer(i);
-            
-            btn.innerHTML = `
-                <span class="type-tag">${c.K_NAME || 'BUILD'}</span>
-                <span class="move-name">${c.NAME || 'UNNAMED'}</span>
-            `;
-            list.appendChild(btn);
-        });
-    }
-
-    function renderWorkspaceContents() {
-        const workspace = document.getElementById('main-timeline');
-        workspace.innerHTML = '';
-
-        if (allContainers.length === 0) {
-            workspace.innerHTML = '<div class="empty-state">LOAD A BUILD OR PRESS SHIFT+A<br>CTRL+ALT+SHIFT+T TO LOAD MASTER DICTIONARY</div>';
-            return;
-        }
-        selectContainer(activeContainerIndex);
-    }
-
-    function loadCode(rawInput) {
-        if (!rawInput) return;
-        try {
-            if (rawInput.startsWith('[') || rawInput.startsWith('{')) {
-                allContainers = JSON.parse(rawInput);
-            } else {
-                if (!zstd) { alert("Zstd Engine not initialized yet! Please wait."); return; }
-                const bin = Uint8Array.from(atob(rawInput.trim()), c => c.charCodeAt(0));
-                allContainers = JSON.parse(new TextDecoder().decode(zstd.decompress(bin)));
-            }
-
-            if (!Array.isArray(allContainers)) allContainers = [allContainers];
-            activeContainerIndex = 0;
-            renderSidebarContents();
-            renderWorkspaceContents();
-        } catch (e) {
-            alert("Import Failed: Check your data.");
-        }
-    }
-
-    function selectContainer(index) {
-        if (allContainers.length === 0) return;
-        activeContainerIndex = index;
-
-        document.querySelectorAll('.item').forEach(b => b.classList.remove('active'));
-        const activeBtn = document.getElementById(`btn-${index}`);
-        if (activeBtn) activeBtn.classList.add('active');
-        
-        const container = allContainers[index];
-        const timeline = document.getElementById('main-timeline');
-        let moveData = getInnerData(container).Line || [];
-
-        let html = `
-            <div class="editor-header">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h1 style="margin:0; font-size:2.5rem; text-transform:uppercase;">${container.NAME || 'UNNAMED'}</h1>
-                    <button onclick="deleteContainer(${index})" class="btn-delete-container">
-                        <i class="fa-solid fa-trash"></i> DELETE CONTAINER
-                    </button>
-                </div>
-                <div style="display: flex; gap: 15px;">
-                    <div class="tooltip-field" style="flex:1;">
-                        <label>Container Name</label>
-                        <input value="${container.NAME || 'UNNAMED'}" oninput="updateContainerName(${index}, this.value)">
-                    </div>
-                    <div class="tooltip-field" style="flex:1;">
-                        <label>Internal Key (K_NAME)</label>
-                        <input value="${container.K_NAME || 'BUILD'}" oninput="updateContainerKName(${index}, this.value)">
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        moveData.forEach((node, i) => {
-            html += `
-                <div class="node-card" id="node-${i}">
-                    <div class="node-head" onclick="toggleNode(${i})" style="cursor: pointer;">
-                        <div style="display:flex; align-items:center; gap: 10px;">
-                            <strong>${node.K_NAME}</strong>
-                            <span style="color: #888; font-size: 0.8rem; font-family: monospace;">${getNodeSummary(node)}</span>
-                        </div>
-                        <div style="display:flex; align-items:center; gap: 15px;">
-                            <span style="color:var(--accent); font-size: 0.8rem; font-weight:bold;">#${i+1}</span>
-                            <button onclick="deleteNode(${index}, ${i}); event.stopPropagation();" class="btn-delete-node" title="Delete Node">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="node-grid" id="node-grid-${i}" style="display: none;">${renderProps(node.K_NAME, node, index, i)}</div>
-                </div>
-            `;
-        });
-        timeline.innerHTML = html;
-    }
-
-    function renderProps(type, node, cIndex, nIndex) {
-        let html = '';
-        const data = { ...node };
-        if (data.PREVIEW && Array.isArray(data.PREVIEW)) { data.START = data.PREVIEW[0]; data.END = data.PREVIEW[1]; }
-        const temp = MASTER_SCHEMA[type] || {};
-        const keys = new Set([...Object.keys(temp), ...Object.keys(data)]);
-        
-        Array.from(keys).sort().forEach(k => {
-            if (k === 'K_NAME' || k === 'PREVIEW' || k === 'AnimationId') return;
-            const val = data[k] !== undefined ? data[k] : temp[k];
-            const styleAttribute = data[k] !== undefined ? 'style="color: var(--accent); font-weight:bold;"' : 'style="opacity: 0.5;"';
-            
-            let inputHtml = '';
-            if (typeof val === 'boolean' || val === 'true' || val === 'false') {
-                const isChecked = val === true || val === 'true';
-                inputHtml = `<input type="checkbox" ${isChecked ? 'checked' : ''} onchange="updateNodeProperty(${cIndex}, ${nIndex}, '${k}', this.checked)">`;
-            } else if (!isNaN(val) && val !== '' && typeof val !== 'boolean') {
-                inputHtml = `<input type="number" step="0.01" value="${val}" oninput="updateNodeProperty(${cIndex}, ${nIndex}, '${k}', parseFloat(this.value))" ${styleAttribute}>`;
-            } else {
-                inputHtml = `<input type="text" value="${val}" oninput="updateNodeProperty(${cIndex}, ${nIndex}, '${k}', this.value)" ${styleAttribute}>`;
-            }
-
-            html += `<div class="field"><label>${k}</label>${inputHtml}</div>`;
-        });
-        return html;
-    }
-
-    function updateNodeProperty(cIndex, nIndex, key, value) {
-        let container = allContainers[cIndex];
-        let innerData = getInnerData(container);
-        let node = innerData.Line[nIndex];
-        
-        if (key === 'START' || key === 'END') {
-            let currentPreview = node.PREVIEW || [0, 0];
-            if (key === 'START') currentPreview[0] = value;
-            if (key === 'END') currentPreview[1] = value;
-            node.PREVIEW = currentPreview;
-            node[key] = value; 
-        } else {
-            node[key] = value;
-        }
-        
-        saveInnerData(container, innerData);
-        // Live updates header summaries behind the scenes
-        const headerTextNode = document.querySelector(`#node-${nIndex} .node-head span`);
-        if (headerTextNode) headerTextNode.innerText = getNodeSummary(node);
+        buildContextMenuNodes();
+        renderWorkspaceEmpty();
     }
 
     function previewTheme(styleName) {
         document.body.className = '';
-        if (styleName !== 'default') document.body.classList.add('theme-' + styleName);
+        document.body.removeAttribute('style');
+
+        document.getElementById('custom-editor-ui').style.display = (styleName === 'custom') ? 'block' : 'none';
+        document.getElementById('delete-theme-trigger').style.display = styleName.startsWith('saved_') ? 'block' : 'none';
+
+        if (styleName === 'custom') {
+            applyPanelValuesToLivePreview();
+        } else if (styleName.startsWith('saved_')) {
+            const cfg = dynamicCustomThemes[styleName];
+            if (cfg) applyConfigToLayout(cfg);
+        } else {
+            if (styleName !== 'default') {
+                document.body.classList.add('theme-' + styleName);
+            }
+        }
+        localStorage.setItem('jjs-theme-pref', styleName);
     }
 
-    function openJJSModal(mode) {
-        activeModalMode = mode;
-        const overlay = document.getElementById('jjs-system-modal');
-        const titleEl = document.getElementById('modal-title-text');
-        const ioBox = document.getElementById('modal-io-box');
-        const actionBtn = document.getElementById('modal-action-btn');
+    function applyLiveVar(property, value) {
+        if (document.getElementById('global-theme-picker').value === 'custom') {
+            document.body.style.setProperty(property, value);
+        }
+    }
 
-        ioBox.value = '';
+    function applyLiveBg(url) {
+        if (document.getElementById('global-theme-picker').value === 'custom') {
+            if (!url || url.trim() === '') {
+                document.body.style.setProperty('--bg-image', "linear-gradient(rgba(0,0,0,0.3) 2px, transparent 2px), linear-gradient(90deg, rgba(0,0,0,0.3) 2px, transparent 2px)");
+                document.body.style.removeProperty('background-size');
+            } else {
+                document.body.style.setProperty('--bg-image', `url('${url}')`);
+                document.body.style.setProperty('background-size', 'cover');
+            }
+        }
+    }
+
+    function applyPanelValuesToLivePreview() {
+        applyLiveVar('--bg',         document.getElementById('val-bg').value);
+        applyLiveVar('--panel',      document.getElementById('val-panel').value);
+        applyLiveVar('--node-card',  document.getElementById('val-node').value);
+        applyLiveVar('--accent',     document.getElementById('val-accent').value);
+        applyLiveVar('--text',       document.getElementById('val-text').value);
+        applyLiveVar('--border',     document.getElementById('val-border').value);
+        applyLiveVar('--thickness',  document.getElementById('val-thick').value + 'px');
+        applyLiveBg(document.getElementById('val-bgimg').value);
+    }
+
+    function applyConfigToLayout(config) {
+        document.body.style.setProperty('--bg',        config.bg);
+        document.body.style.setProperty('--panel',     config.panel);
+        document.body.style.setProperty('--node-card', config.node);
+        document.body.style.setProperty('--accent',    config.accent);
+        document.body.style.setProperty('--text',      config.text);
+        document.body.style.setProperty('--border',    config.border);
+        document.body.style.setProperty('--thickness', config.thickness);
+
+        if (!config.bgImg || config.bgImg.trim() === '') {
+            document.body.style.setProperty('--bg-image', "linear-gradient(rgba(0,0,0,0.3) 2px, transparent 2px), linear-gradient(90deg, rgba(0,0,0,0.3) 2px, transparent 2px)");
+        } else {
+            document.body.style.setProperty('--bg-image', `url('${config.bgImg}')`);
+            document.body.style.setProperty('background-size', 'cover');
+        }
+    }
+
+    function saveCustomTheme() {
+        const inputName = document.getElementById('val-name').value.trim() || 'My Custom Setup';
+        const uniqueKey = 'saved_' + Date.now();
+
+        dynamicCustomThemes[uniqueKey] = {
+            name:      inputName,
+            bg:        document.getElementById('val-bg').value,
+            panel:     document.getElementById('val-panel').value,
+            node:      document.getElementById('val-node').value,
+            accent:    document.getElementById('val-accent').value,
+            text:      document.getElementById('val-text').value,
+            border:    document.getElementById('val-border').value,
+            thickness: document.getElementById('val-thick').value + 'px',
+            bgImg:     document.getElementById('val-bgimg').value
+        };
+
+        localStorage.setItem('jjs_studio_custom_registry', JSON.stringify(dynamicCustomThemes));
+        rebuildDropdownList();
+        document.getElementById('global-theme-picker').value = uniqueKey;
+        previewTheme(uniqueKey);
+    }
+
+    function deleteActiveTheme() {
+        const picker = document.getElementById('global-theme-picker');
+        const activeKey = picker.value;
+        if (activeKey.startsWith('saved_')) {
+            if (confirm(`Are you sure you want to permanently delete "${dynamicCustomThemes[activeKey].name}"?`)) {
+                delete dynamicCustomThemes[activeKey];
+                localStorage.setItem('jjs_studio_custom_registry', JSON.stringify(dynamicCustomThemes));
+                rebuildDropdownList();
+                picker.value = 'default';
+                previewTheme('default');
+            }
+        }
+    }
+
+    function rebuildDropdownList() {
+        const targetGroup = document.getElementById('custom-themes-group');
+        if (!targetGroup) return;
+        targetGroup.innerHTML = '';
+
+        for (const [key, theme] of Object.entries(dynamicCustomThemes)) {
+            const opt = document.createElement('option');
+            opt.value = key;
+            opt.textContent = theme.name;
+            targetGroup.appendChild(opt);
+        }
+
+        const createOpt = document.createElement('option');
+        createOpt.value = 'custom';
+        createOpt.textContent = '[Create New Theme...]';
+        targetGroup.appendChild(createOpt);
+    }
+
+    function buildContextMenuNodes() {
+        const target = document.getElementById('context-menu-nodes-target');
+        target.innerHTML = '';
+        Object.keys(NODE_TEMPLATES).forEach(type => {
+            const label = TRANSLATIONS[type] || type;
+            const row = document.createElement('div');
+            row.className = 'menu-item';
+            row.innerHTML = `<span>${label}</span> <span style="font-size:0.6rem; opacity:0.5; font-family:var(--font-code);">${type}</span>`;
+            row.onclick = () => instantiateSequenceNode(type);
+            target.appendChild(row);
+        });
+    }
+
+    window.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.altKey && e.shiftKey && e.key.toLowerCase() === 't') {
+            e.preventDefault();
+            executeLoadMasterCode();
+        }
+    });
+
+    document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+    document.addEventListener('click', e => {
+        if (!e.target.closest('#shift-a-context-menu')) {
+            document.getElementById('shift-a-context-menu').style.display = 'none';
+        }
+    });
+
+    window.addEventListener('keydown', function(e) {
+        if (e.shiftKey && e.key.toLowerCase() === 'a') {
+            const targetTag = e.target.tagName.toLowerCase();
+            if (targetTag === 'input' || targetTag === 'textarea') return;
+            e.preventDefault();
+            const menu = document.getElementById('shift-a-context-menu');
+            menu.style.display = 'block';
+            menu.style.left = Math.min(mouseX, window.innerWidth - menu.offsetWidth - 10) + 'px';
+            menu.style.top = Math.min(mouseY, window.innerHeight - menu.offsetHeight - 10) + 'px';
+        }
+    });
+
+    function executeLoadMasterCode() {
+        if (currentMoves.length > 0) {
+            if (!confirm("Are you sure you want to load the Master Code template? This will completely replace your current workspace items.")) return;
+        }
+
+        const masterNodeLines = [];
+        Object.keys(NODE_TEMPLATES).forEach(nodeType => {
+            const uiNode = { "K_NAME": nodeType };
+            NODE_TEMPLATES[nodeType].forEach(fieldKey => {
+                let val = (TYPE_OVERRIDES[nodeType] && TYPE_OVERRIDES[nodeType][fieldKey] !== undefined)
+                    ? TYPE_OVERRIDES[nodeType][fieldKey]
+                    : DEFAULTS_LIB[fieldKey];
+                if (val !== undefined) {
+                    uiNode[fieldKey] = JSON.parse(JSON.stringify(val));
+                }
+            });
+            masterNodeLines.push(uiNode);
+        });
+
+        const standardContainers = ['Skill', 'Melee', 'Special', 'Awakening', 'Chase'];
+        currentMoves = standardContainers.map((type, idx) => {
+            return {
+                "ADD": false,
+                "NAME": type,
+                "K_NAME": type.toUpperCase(),
+                "TOOL TIP": idx === 0 ? "Contains every registered node type with system defaults." : `Master Code Structure for ${type} container sequence pipeline.`,
+                "COOLDOWN": idx === 0 ? 0 : 1.0,
+                "KEY": 1,
+                "DATA": JSON.stringify({ "Line": idx === 0 ? masterNodeLines : [], "Prop": [], "Req": [] })
+            };
+        });
+
+        activeIndex = 0;
+        renderSidebar();
+        loadMove(0);
+    }
+
+    function getContainerLineData(moveObj) {
+        if (!moveObj || !moveObj.DATA) return [];
+        try {
+            const dataObj = (typeof moveObj.DATA === 'string') ? JSON.parse(moveObj.DATA) : moveObj.DATA;
+            return dataObj.Line || [];
+        } catch(e) {
+            return [];
+        }
+    }
+
+    function saveContainerLineData(moveObj, lineArray) {
+        try {
+            let baseData = { "Line": lineArray, "Prop": [], "Req": [] };
+            if (moveObj.DATA) {
+                try {
+                    let currentData = (typeof moveObj.DATA === 'string') ? JSON.parse(moveObj.DATA) : moveObj.DATA;
+                    baseData.Prop = currentData.Prop || [];
+                    baseData.Req = currentData.Req || [];
+                } catch(err) {}
+            }
+            moveObj.DATA = JSON.stringify(baseData);
+        } catch(e) {
+            console.error("Critical error saving structure state parameters");
+        }
+    }
+
+    function instantiateContainer(type) {
+        document.getElementById('shift-a-context-menu').style.display = 'none';
+        const newContainer = {
+            "ADD": false,
+            "NAME": type,
+            "K_NAME": type.toUpperCase(),
+            "TOOL TIP": `Clean workspace profile container allocation for ${type}.`,
+            "COOLDOWN": 1.0,
+            "KEY": 1,
+            "DATA": JSON.stringify({ "Line": [], "Prop": [], "Req": [] })
+        };
+        currentMoves.push(newContainer);
+        activeIndex = currentMoves.length - 1;
+        renderSidebar();
+        loadMove(activeIndex);
+    }
+
+    function instantiateSequenceNode(nodeType) {
+        document.getElementById('shift-a-context-menu').style.display = 'none';
+        if (activeIndex === -1 || currentMoves.length === 0) return alert("Please select or instantiate an active profile container sequence first.");
+
+        const activeMove = currentMoves[activeIndex];
+        const currentLines = getContainerLineData(activeMove);
+        const freshNode = { "K_NAME": nodeType };
+        NODE_TEMPLATES[nodeType].forEach(field => {
+            let fallbackVal = (TYPE_OVERRIDES[nodeType] && TYPE_OVERRIDES[nodeType][field] !== undefined)
+                ? TYPE_OVERRIDES[nodeType][field]
+                : DEFAULTS_LIB[field];
+            if (fallbackVal !== undefined) {
+                freshNode[field] = JSON.parse(JSON.stringify(fallbackVal));
+            }
+        });
+
+        currentLines.push(freshNode);
+        saveContainerLineData(activeMove, currentLines);
+        loadMove(activeIndex);
+    }
+
+    function deleteActiveContainer(idx) {
+        if (!confirm("Are you completely sure you want to delete this container profile and all its configured data nodes?")) return;
+        currentMoves.splice(idx, 1);
+        if (currentMoves.length === 0) {
+            activeIndex = -1;
+            renderSidebar();
+            renderWorkspaceEmpty();
+        } else {
+            activeIndex = Math.max(0, idx - 1);
+            renderSidebar();
+            loadMove(activeIndex);
+        }
+    }
+
+    function removeSequenceNode(nodeIdx) {
+        if (!confirm("Delete selected structural data node entry?")) return;
+        const activeMove = currentMoves[activeIndex];
+        const currentLines = getContainerLineData(activeMove);
+        currentLines.splice(nodeIdx, 1);
+        saveContainerLineData(activeMove, currentLines);
+        loadMove(activeIndex);
+    }
+
+    function toggleNodeBody(nodeIdx) {
+        const targetGrid = document.getElementById(`node-grid-${nodeIdx}`);
+        if (targetGrid) {
+            targetGrid.style.display = (targetGrid.style.display === 'none') ? 'grid' : 'none';
+        }
+    }
+
+    function generateSummaryHeaderStr(node) {
+        if (node.K_NAME === 'WAIT') return `[${node.TIME ?? 0}s]`;
+        if (node.K_NAME === 'ANIM') return `[${node.ANIM_USE ?? 'Unset'}]`;
+        if (node.K_NAME === 'SFX') return `[ID: ${node.ID ?? 'Unset'}]`;
+        if (node.K_NAME === 'HITBOX') return `[Size: ${node.SIZE ?? 'Default'}]`;
+        if (node.K_NAME === 'VISUAL') return `[Type: ${node.EFFECT ?? 'Asset'}]`;
+        if (node.K_NAME === 'VELO') return `[Force: ${node.FORCE ?? 'Default'}]`;
+        if (node.K_NAME === 'PROJECTILE') return `[Damage: ${node.DAMAGE ?? 0}]`;
+        if (node.K_NAME === 'HITCNCL') return `[Endlag: ${node.ENDLAG ?? 1.0}]`;
+        return '';
+    }
+
+    function alterContainerCoreName(idx, val) {
+        currentMoves[idx].NAME = val;
+        const buttonTextNode = document.querySelector(`#btn-${idx} .move-name`);
+        if (buttonTextNode) buttonTextNode.innerText = val.toUpperCase();
+    }
+
+    function alterContainerCoreKName(idx, val) {
+        currentMoves[idx].K_NAME = val;
+        const buttonTagNode = document.querySelector(`#btn-${idx} .type-tag`);
+        if (buttonTagNode) buttonTagNode.innerText = val.toUpperCase();
+    }
+
+    function alterNodeValue(nodeIdx, propertyKey, value) {
+        const activeMove = currentMoves[activeIndex];
+        const currentLines = getContainerLineData(activeMove);
+        
+        currentLines[nodeIdx][propertyKey] = value;
+        saveContainerLineData(activeMove, currentLines);
+
+        const textSummarySpan = document.getElementById(`summary-span-${nodeIdx}`);
+        if (textSummarySpan) {
+            textSummarySpan.innerText = generateSummaryHeaderStr(currentLines[nodeIdx]);
+        }
+    }
+
+    function renderSidebar() {
+        const listContainer = document.getElementById('sidebar-render-target');
+        listContainer.innerHTML = '';
+
+        if (currentMoves.length === 0) {
+            listContainer.innerHTML = `<div style="text-align:center; padding-top:40px; font-size:0.75rem; opacity:0.4;">No containers loaded. Use Shift+A to generate.</div>`;
+            return;
+        }
+
+        currentMoves.forEach((move, i) => {
+            const btn = document.createElement('div');
+            btn.className = `item ${i === activeIndex ? 'active' : ''}`;
+            btn.id = `btn-${i}`;
+            btn.onclick = () => loadMove(i);
+            btn.innerHTML = `
+                <span class="type-tag">${move.K_NAME || 'CONTAINER'}</span>
+                <span class="move-name">${(move.NAME || 'UNNAMED').toUpperCase()}</span>
+            `;
+            listContainer.appendChild(btn);
+        });
+    }
+
+    function renderWorkspaceEmpty() {
+        document.getElementById('workspace-canvas-timeline').innerHTML = `
+            <div class="empty-state">
+                Press SHIFT + A to create sequences dynamically<br>
+                <span style="font-size:0.9rem; color:var(--accent); opacity:0.7;">Or tap Ctrl + Alt + Shift + T to load Master Code dictionary pipeline blueprints</span>
+            </div>
+        `;
+    }
+
+    function loadMove(idx) {
+        if (currentMoves.length === 0) { renderWorkspaceEmpty(); return; }
+        activeIndex = idx;
+
+        document.querySelectorAll('.container-list .item').forEach(el => el.classList.remove('active'));
+        const targetSideButton = document.getElementById(`btn-${idx}`);
+        if (targetSideButton) targetSideButton.classList.add('active');
+
+        const move = currentMoves[idx];
+        const canvas = document.getElementById('workspace-canvas-timeline');
+        const nodesList = getContainerLineData(move);
+
+        let html = `
+            <div class="editor-header">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h1 style="margin:0; font-size:2.2rem; text-transform:uppercase; letter-spacing:1px; color:var(--accent);">${move.NAME || 'UNNAMED'}</h1>
+                    <button class="btn-delete-container" onclick="deleteActiveContainer(${idx})"><i class="fa-solid fa-trash-can"></i> Delete Container</button>
+                </div>
+                <div class="container-fields-row">
+                    <div class="tooltip-field">
+                        <label>Display Identifier Name</label>
+                        <input type="text" value="${move.NAME || ''}" oninput="alterContainerCoreName(${idx}, this.value)">
+                    </div>
+                    <div class="tooltip-field">
+                        <label>Internal Pipeline Key (K_NAME)</label>
+                        <input type="text" value="${move.K_NAME || ''}" oninput="alterContainerCoreKName(${idx}, this.value)">
+                    </div>
+                </div>
+            </div>
+        `;
+
+        nodesList.forEach((node, nodeIdx) => {
+            const translationText = TRANSLATIONS[node.K_NAME] || node.K_NAME;
+            html += `
+                <div class="node-card" id="node-block-${nodeIdx}">
+                    <div class="node-head" onclick="toggleNodeBody(${nodeIdx})">
+                        <div class="node-title-group">
+                            <strong>${translationText}</strong>
+                            <span class="node-summary-tag" id="summary-span-${nodeIdx}">${generateSummaryHeaderStr(node)}</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:20px;">
+                            <span style="font-family:var(--font-code); font-weight:bold; color:var(--accent); font-size:0.85rem;">#${nodeIdx + 1}</span>
+                            <button class="btn-delete-node" onclick="removeSequenceNode(${nodeIdx}); event.stopPropagation();"><i class="fa-solid fa-square-minus"></i></button>
+                        </div>
+                    </div>
+                    <div class="node-grid" id="node-grid-${nodeIdx}" style="display:none;">
+                        ${buildPropertyFieldsMarkup(node, nodeIdx)}
+                    </div>
+                </div>
+            `;
+        });
+
+        canvas.innerHTML = html;
+    }
+
+    function buildPropertyFieldsMarkup(node, nodeIdx) {
+        let fieldsHtml = '';
+        const schemaFields = NODE_TEMPLATES[node.K_NAME] || Object.keys(node);
+
+        schemaFields.forEach(fieldKey => {
+            if (fieldKey === 'K_NAME') return;
+            const currentVal = node[fieldKey] !== undefined ? node[fieldKey] : DEFAULTS_LIB[fieldKey];
+            
+            let targetInputMarkup = '';
+            if (typeof currentVal === 'boolean' || currentVal === 'true' || currentVal === 'false') {
+                const checkedAttr = (currentVal === true || currentVal === 'true') ? 'checked' : '';
+                targetInputMarkup = `<input type="checkbox" ${checkedAttr} onchange="alterNodeValue(${nodeIdx}, '${fieldKey}', this.checked)">`;
+            } else if (Array.isArray(currentVal)) {
+                targetInputMarkup = `<input type="text" value="${currentVal.join(', ')}" oninput="alterNodeValue(${nodeIdx}, '${fieldKey}', this.value.split(',').map(n => parseFloat(n.trim()) || n.trim()))">`;
+            } else if (typeof currentVal === 'number' || (!isNaN(currentVal) && currentVal !== '')) {
+                targetInputMarkup = `<input type="number" step="0.01" value="${currentVal}" oninput="alterNodeValue(${nodeIdx}, '${fieldKey}', parseFloat(this.value) || 0)">`;
+            } else {
+                targetInputMarkup = `<input type="text" value="${currentVal ?? ''}" oninput="alterNodeValue(${nodeIdx}, '${fieldKey}', this.value)">`;
+            }
+
+            fieldsHtml += `
+                <div class="field">
+                    <label>${fieldKey}</label>
+                    ${targetInputMarkup}
+                </div>
+            `;
+        });
+
+        return fieldsHtml;
+    }
+
+    function openIOModal(mode) {
+        ioModalMode = mode;
+        const overlay = document.getElementById('jjs-io-modal');
+        const title = document.getElementById('io-modal-title-text');
+        const tx = document.getElementById('io-terminal-textarea');
+        const btn = document.getElementById('io-action-button');
+
+        tx.value = '';
         overlay.style.display = 'flex';
 
         if (mode === 'import') {
-            titleEl.innerHTML = '<i class="fa-solid fa-file-import"></i> Unified Import Center';
-            ioBox.placeholder = "Paste raw text/JSON or base64 Zstd compressed sequence stream here...";
-            ioBox.readOnly = false;
-            actionBtn.innerText = "Execute Import";
+            title.innerText = "Unified Binary Pipeline Import Center";
+            tx.placeholder = "Paste your base64 Zstandard data stream directly here...";
+            tx.readOnly = false;
+            btn.innerText = "Execute Import Pipeline";
         } else if (mode === 'export') {
-            titleEl.innerHTML = '<i class="fa-solid fa-file-export"></i> Unified Export Center';
-            ioBox.readOnly = true;
-            actionBtn.innerText = "Copy Stream";
+            title.innerText = "Unified Binary Pipeline Export Center";
+            tx.readOnly = true;
+            btn.innerText = "Copy Terminal Stream";
 
-            if (allContainers.length === 0) {
-                ioBox.value = "[]";
+            if (currentMoves.length === 0) {
+                tx.value = "[]";
                 return;
             }
 
             try {
                 if (!zstd) {
-                    ioBox.value = JSON.stringify(allContainers, null, 2);
+                    tx.value = JSON.stringify(currentMoves, null, 2);
                 } else {
-                    const bin = zstd.compress(new TextEncoder().encode(JSON.stringify(allContainers)), 3);
-                    let str = "";
-                    for (let i = 0; i < bin.length; i++) str += String.fromCharCode(bin[i]);
-                    ioBox.value = btoa(str);
+                    const encodedBinary = zstd.compress(new TextEncoder().encode(JSON.stringify(currentMoves)), 3);
+                    let base64BinaryStr = "";
+                    for (let i = 0; i < encodedBinary.length; i++) {
+                        base64BinaryStr += String.fromCharCode(encodedBinary[i]);
+                    }
+                    tx.value = btoa(base64BinaryStr);
                 }
-            } catch(e) { ioBox.value = JSON.stringify(allContainers, null, 2); }
+            } catch (err) {
+                tx.value = JSON.stringify(currentMoves, null, 2);
+            }
         }
     }
 
-    function closeJJSModal(e) {
-        if (!e || e.target === document.getElementById('jjs-system-modal')) {
-            document.getElementById('jjs-system-modal').style.display = 'none';
+    function closeIOModal(e) {
+        if (!e || e.target === document.getElementById('jjs-io-modal')) {
+            document.getElementById('jjs-io-modal').style.display = 'none';
         }
     }
 
-    function executeModalAction() {
-        const ioBox = document.getElementById('modal-io-box');
-        if (activeModalMode === 'export') {
-            ioBox.select();
+    function executeIOAction() {
+        const tx = document.getElementById('io-terminal-textarea');
+        if (ioModalMode === 'export') {
+            tx.select();
             document.execCommand('copy');
-            alert('Data copied to clipboard!');
-            closeJJSModal(null);
-        } else if (activeModalMode === 'import') {
-            loadCode(ioBox.value.trim());
-            closeJJSModal(null);
+            alert("Workspace binary sequence stream copied successfully to clipboard!");
+            closeIOModal(null);
+        } else if (ioModalMode === 'import') {
+            const rawVal = tx.value.trim();
+            if (!rawVal) return;
+            try {
+                if (rawVal.startsWith('[') || rawVal.startsWith('{')) {
+                    currentMoves = JSON.parse(rawVal);
+                } else {
+                    if (!zstd) { alert("ZStandard streaming wrapper engine still building. Please stand by."); return; }
+                    const rawBuffer = Uint8Array.from(atob(rawVal), c => c.charCodeAt(0));
+                    currentMoves = JSON.parse(new TextDecoder().decode(zstd.decompress(rawBuffer)));
+                }
+
+                if (!Array.isArray(currentMoves)) currentMoves = [currentMoves];
+                activeIndex = currentMoves.length > 0 ? 0 : -1;
+                renderSidebar();
+                loadMove(activeIndex);
+                closeIOModal(null);
+            } catch(e) {
+                alert("Import Exception Intercepted: Ensure payload contains strict binary structures.");
+            }
         }
     }
+
+    window.addEventListener('DOMContentLoaded', initEngine);
 </script>
 </body>
 </html>
