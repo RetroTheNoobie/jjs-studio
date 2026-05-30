@@ -175,7 +175,7 @@
         .field { background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 12px; }
         .field label { display: block; font-size: 0.65rem; color: #8892b0; text-transform: uppercase; margin-bottom: 6px; }
         .field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 0.95rem; border-bottom: 1px solid var(--border); font-family: var(--font-code); text-transform: none !important; }
-        .field input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; border-bottom: none; }
+        .field input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; border-bottom: none; text-transform: none !important; }
 
         .empty-state { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 1.3rem; color: #4f566b; text-transform: uppercase; text-align: center; line-height: 1.8; }
 
@@ -197,7 +197,7 @@
         .jjs-modal-input { width: 100%; background: #000; border: 1px solid var(--border); padding: 12px; color: #fff; font-size: 1rem; font-family: var(--font-code); text-transform: none !important; }
         
         .jjs-modal-footer { padding: 0 20px 20px 20px; display: flex; justify-content: flex-end; gap: 12px; }
-        .btn-modal-confirm { background: var(--accent); color: #000; border: 1px solid var(--border); padding: 10px 20px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .btn-modal-confirm { background: var(--accent); color: #000; border: 1px solid var(--border); padding: 10px 20px; font-weight: bold; cursor: pointer; text-transform: none; !important; }
         .btn-modal-confirm:hover { filter: brightness(1.2); }
     </style>
 </head>
@@ -273,7 +273,7 @@
             <button class="jjs-modal-close" onclick="closeBranchModal(null)"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="jjs-modal-body">
-            <label style="display:block; font-size:0.7rem; color:var(--accent); text-transform:uppercase; margin-bottom:8px;">Branch Name (Case Sensitive)</label>
+            <label style="display:block; font-size:0.7rem; color:var(--accent); text-transform:none; margin-bottom:8px;">Branch Name (Case Sensitive)</label>
             <input type="text" class="jjs-modal-input" id="branch-name-input" placeholder="e.g. AirVariant">
         </div>
         <div class="jjs-modal-footer">
