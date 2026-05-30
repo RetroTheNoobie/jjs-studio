@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JJS STUDIO - PREMIUM EDITION</title>
+    <title>JJS Studio - V1.0.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -22,7 +22,6 @@
             --font-code: 'JetBrains Mono', monospace;
         }
 
-        /* Standard Theme Support Classes */
         body.theme-retro   { --bg: #3c3f41; --panel: #2b2b2b; --node-card: #313335; --accent: #ff5722; --text: #f5f5f5; --border: #000000; }
         body.theme-matrix  { --bg: #030704; --panel: #0a0f0d; --node-card: #121a16; --accent: #00ff66; --text: #33ff77; --border: #00ff66; }
         body.theme-nova    { --bg: #0f051d; --panel: #18092b; --node-card: #240e42; --accent: #cc33ff; --text: #f3e8ff; --border: #4a1d8a; }
@@ -48,13 +47,6 @@
             transition: background 0.25s, color 0.25s;
         }
 
-        body.theme-custom-saved {
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
-
-        /* Sidebar UI Panel */
         .sidebar {
             width: 380px;
             min-width: 380px;
@@ -82,7 +74,6 @@
             border: 1px solid var(--border);
             width: fit-content;
             margin: 10px auto 0 auto;
-            text-transform: uppercase;
         }
 
         .theme-container {
@@ -98,15 +89,7 @@
         .theme-control-row { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 10px; }
         .theme-container label { font-size: 0.7rem; color: var(--accent); text-transform: uppercase; }
         .theme-select { background: var(--panel); color: var(--text); border: 2px solid var(--border); padding: 6px; font-size: 0.8rem; cursor: pointer; flex-grow: 1; }
-        .btn-delete-theme { display: none; background: #e74c3c; color: #fff; border: 2px solid var(--border); font-size: 0.6rem; padding: 6px 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        .btn-delete-theme:hover { background: #c0392b; }
-
-        .custom-panel { display: none; background: rgba(0,0,0,0.5); margin: 0 15px 10px 15px; padding: 15px; border: 1px solid var(--border); }
-        .custom-panel h4 { margin: 0 0 10px 0; font-size: 0.75rem; color: #fff; text-transform: uppercase; border-bottom: 2px solid #222; padding-bottom: 3px; }
-        .config-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 0.6rem; color: #aaa; }
-        .config-row input[type="color"] { border: none; width: 30px; height: 20px; background: transparent; cursor: pointer; }
-        .config-row input[type="text"], .config-row input[type="range"] { width: 65%; background: var(--panel); border: 1px solid var(--border); color: #fff; font-size: 0.6rem; padding: 4px; font-family: var(--font-code); }
-
+        
         .jjs-action-container { padding: 0 15px 20px 15px; display: flex; gap: 10px; border-bottom: var(--thickness) solid var(--border); }
 
         .btn-jjs-action { flex: 1; padding: 12px; border: var(--thickness) solid var(--border); background: rgba(0,0,0,0.2); color: var(--text); font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.15s, color 0.15s; }
@@ -125,27 +108,59 @@
         .item .type-tag { font-size: 0.65rem; color: var(--accent); text-transform: uppercase; display: block; margin-bottom: 2px;}
         .item .move-name { display: block; font-size: 1.1rem; color: var(--text); }
 
-        /* Main Workspace Canvas Container */
         .main { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 40px; height: 100%; display: block; }
 
-        .editor-header { display: flex; flex-direction: column; gap: 15px; border-left: var(--thickness) solid var(--accent); padding-left: 20px; margin-bottom: 40px; }
+        .editor-header { display: flex; flex-direction: column; gap: 15px; border-left: var(--thickness) solid var(--accent); padding-left: 20px; margin-bottom: 25px; }
         
         .btn-delete-container {
             background: #ff4d4d; color: #fff; border: var(--thickness) solid var(--border); padding: 10px 15px;
             font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.75rem; 
-            text-transform: uppercase; box-shadow: 3px 3px 0px #000; transition: transform 0.1s, box-shadow 0.1s;
+            text-transform: uppercase; transition: transform 0.1s, filter 0.1s;
         }
-        .btn-delete-container:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0px #000; filter: brightness(1.1); }
+        .btn-delete-container:hover { transform: translate(-2px, -2px); filter: brightness(1.1); }
 
         .container-fields-row { display: flex; gap: 15px; }
 
-        .tooltip-field { background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 12px; flex: 1; box-shadow: 5px 5px 0px #000; }
+        .tooltip-field { background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 12px; flex: 1; }
         .tooltip-field label { display: block; font-size: 0.65rem; color: var(--accent); text-transform: uppercase; margin-bottom: 5px; }
         .tooltip-field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #333; font-family: var(--font-code); }
 
-        /* UI Data Nodes styling definitions */
-        .node-card { background: var(--panel); border: var(--thickness) solid var(--border); margin-bottom: 20px; overflow: hidden; box-shadow: 6px 6px 0px rgba(0,0,0,1); transition: background 0.2s, border-color 0.2s; }
+        .branch-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; align-items: center; }
+        .branch-tab { 
+            font-family: var(--font-code); 
+            background: var(--panel); 
+            border: var(--thickness) solid var(--border); 
+            padding: 8px 16px; 
+            color: var(--text); 
+            font-size: 0.8rem; 
+            text-transform: none; 
+            font-weight: bold; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            transition: background 0.1s; 
+        }
+        .branch-tab:hover { background: rgba(255,255,255,0.1); }
+        .branch-tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
+        
+        .branch-tab .edit-icon { opacity: 0.6; font-size: 0.7rem; padding: 4px; transition: opacity 0.1s; }
+        .branch-tab .edit-icon:hover { opacity: 1; }
+        .branch-tab.active .edit-icon { color: #000; }
+        
+        .branch-tab .delete-icon { opacity: 0.6; font-size: 0.7rem; padding: 4px; transition: opacity 0.1s; color: #ff4d4d; }
+        .branch-tab .delete-icon:hover { opacity: 1; color: #ff1a1a; }
+        .branch-tab.active .delete-icon { color: #cc0000; }
+        
+        .branch-add-btn { background: transparent; border: 2px solid #00ff66; color: #00ff66; padding: 6px 12px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+        .branch-add-btn:hover { background: #00ff66; color: #000; }
 
+        .workspace-tabs { display: flex; gap: 5px; border-bottom: 2px solid var(--border); margin-bottom: 30px; }
+        .workspace-tab { flex: 1; background: transparent; border: none; padding: 12px; color: var(--text); opacity: 0.5; font-size: 0.85rem; text-transform: uppercase; font-weight: bold; cursor: pointer; transition: opacity 0.2s, background 0.2s; border-bottom: 3px solid transparent; }
+        .workspace-tab:hover { opacity: 0.8; background: rgba(255,255,255,0.05); }
+        .workspace-tab.active { opacity: 1; color: var(--accent); border-bottom: 3px solid var(--accent); background: rgba(0,0,0,0.2); }
+
+        .node-card { background: var(--panel); border: var(--thickness) solid var(--border); margin-bottom: 20px; overflow: hidden; box-shadow: 6px 6px 0px rgba(0,0,0,1); transition: background 0.2s, border-color 0.2s; }
         .node-head { background: rgba(0,0,0,0.3); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: var(--thickness) solid var(--border); user-select: none; cursor: pointer; }
         .node-head:hover { background: rgba(255,255,255,0.03); }
 
@@ -157,7 +172,6 @@
         .btn-delete-node:hover { color: #ff1a1a; }
 
         .node-grid { padding: 25px; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; background: rgba(0,0,0,0.1); }
-
         .field { background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 12px; }
         .field label { display: block; font-size: 0.65rem; color: #8892b0; text-transform: uppercase; margin-bottom: 6px; }
         .field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 0.95rem; border-bottom: 1px solid var(--border); font-family: var(--font-code); }
@@ -165,14 +179,12 @@
 
         .empty-state { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 1.3rem; color: #4f566b; text-transform: uppercase; text-align: center; line-height: 1.8; }
 
-        /* Context Menu Blueprint Layout (Blender Style Shift + A) */
         .context-menu { position: fixed; display: none; background: #090a0f; border: var(--thickness) solid var(--border); z-index: 10000; padding: 5px 0; min-width: 220px; max-height: 450px; overflow-y: auto; box-shadow: 0px 10px 30px rgba(0,0,0,0.5); }
         .context-menu .menu-label { padding: 6px 15px; font-size: 0.65rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; background: rgba(255,255,255,0.02); }
         .context-menu .menu-item { padding: 10px 15px; font-size: 0.75rem; color: #e2e8f0; cursor: pointer; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
         .context-menu .menu-item:hover { background: var(--accent); color: #000; }
         .context-menu .menu-separator { height: 1px; background: var(--border); margin: 5px 0; }
 
-        /* Modal Structure Definitions */
         .jjs-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 9999; display: none; align-items: center; justify-content: center; }
         .jjs-modal-box { background: var(--panel); border: var(--thickness) solid var(--border); width: 550px; max-width: 90%; }
         .jjs-modal-header { background: rgba(0,0,0,0.3); padding: 20px; border-bottom: var(--thickness) solid var(--border); display: flex; justify-content: space-between; align-items: center; }
@@ -180,7 +192,10 @@
         .jjs-modal-close { background: transparent; border: none; color: #ff4d4d; cursor: pointer; font-size: 1.2rem; }
         .jjs-modal-close:hover { color: #ff1a1a; }
         .jjs-modal-body { padding: 20px; }
+        
         .jjs-modal-textarea { width: 100%; height: 220px; background: #090a0f; color: #00ff66; border: 1px solid var(--border); padding: 15px; font-size: 0.85rem; resize: none; font-family: var(--font-code); }
+        .jjs-modal-input { width: 100%; background: #000; border: 1px solid var(--border); padding: 12px; color: #fff; font-size: 1rem; font-family: var(--font-code); }
+        
         .jjs-modal-footer { padding: 0 20px 20px 20px; display: flex; justify-content: flex-end; gap: 12px; }
         .btn-modal-confirm { background: var(--accent); color: #000; border: 1px solid var(--border); padding: 10px 20px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         .btn-modal-confirm:hover { filter: brightness(1.2); }
@@ -190,51 +205,27 @@
 
 <div class="sidebar">
     <div class="sidebar-header">
-        <h2 style="margin:0; color: var(--accent); text-transform: uppercase; font-size: 1.5rem; letter-spacing: 1px;">JJS STUDIO</h2>
-        <div id="engine-status-box" class="engine-status">SYSTEM LOAD...</div>
+        <h2 style="margin:0; color: var(--accent); text-transform: uppercase; font-size: 1.5rem; letter-spacing: 1px;">JJS Studio</h2>
+        <div id="engine-status-box" class="engine-status">Loading...</div>
     </div>
 
     <div class="theme-container">
         <div style="width:100%; display:flex; justify-content:space-between; align-items:center;">
-            <label>Workspace Theme Preference</label>
+            <label>Workspace Theme</label>
         </div>
         <div class="theme-control-row">
             <select class="theme-select" id="global-theme-picker" onchange="previewTheme(this.value)">
                 <optgroup label="Standard Themes">
-                    <option value="default" selected>Default Core</option>
-                    <option value="retro">Comic Retro</option>
-                    <option value="matrix">Midnight Matrix</option>
-                    <option value="nova">Moonlit Nova</option>
-                    <option value="toon">Toon Slate</option>
-                    <option value="shadow">Cyber Shadow</option>
+                    <option value="default" selected>Default Dark</option>
+                    <option value="retro">Retro</option>
+                    <option value="matrix">Matrix</option>
+                    <option value="nova">Nova</option>
+                    <option value="toon">Toon</option>
+                    <option value="shadow">Shadow</option>
                     <option value="crimson">Crimson</option>
                 </optgroup>
-                <optgroup label="Saved Custom Themes" id="custom-themes-group">
-                    <option value="custom">[Create New Theme...]</option>
-                </optgroup>
             </select>
-            <button class="btn-delete-theme" id="delete-theme-trigger" onclick="deleteActiveTheme()">Del</button>
         </div>
-    </div>
-
-    <div class="custom-panel" id="custom-editor-ui">
-        <h4>Theme Creator Engine</h4>
-        <div class="config-row" style="margin-bottom:12px;">
-            <label>Theme Name</label>
-            <input type="text" id="val-name" value="My Custom Setup" style="width:65%;">
-        </div>
-        <div class="config-row"><label>BG Color</label><input type="color" id="val-bg" value="#1a1a1a" oninput="applyLiveVar('--bg', this.value)"></div>
-        <div class="config-row"><label>Panel Color</label><input type="color" id="val-panel" value="#111111" oninput="applyLiveVar('--panel', this.value)"></div>
-        <div class="config-row"><label>Node Card</label><input type="color" id="val-node" value="#252525" oninput="applyLiveVar('--node-card', this.value)"></div>
-        <div class="config-row"><label>Accent</label><input type="color" id="val-accent" value="#ffcc33" oninput="applyLiveVar('--accent', this.value)"></div>
-        <div class="config-row"><label>Text Color</label><input type="color" id="val-text" value="#e0e0e0" oninput="applyLiveVar('--text', this.value)"></div>
-        <div class="config-row"><label>Border Color</label><input type="color" id="val-border" value="#000000" oninput="applyLiveVar('--border', this.value)"></div>
-        <div class="config-row"><label>Borders</label><input type="range" id="val-thick" min="0" max="12" value="4" oninput="applyLiveVar('--thickness', this.value + 'px')"></div>
-        <div class="config-row" style="flex-direction:column; align-items:flex-start; gap:4px; margin-bottom:12px;">
-            <label>Background Image URL</label>
-            <input type="text" id="val-bgimg" placeholder="Paste image address..." oninput="applyLiveBg(this.value)" style="width:100%;">
-        </div>
-        <button style="background:#2ecc71; color:#000; border:2px solid #000; font-size:0.7rem; padding:8px; width:100%; font-weight:bold; cursor:pointer; text-transform:uppercase;" onclick="saveCustomTheme()">Save &amp; Apply</button>
     </div>
 
     <div class="jjs-action-container">
@@ -242,35 +233,51 @@
         <button class="btn-jjs-action" onclick="openIOModal('export')"><i class="fa-solid fa-file-export"></i> Export</button>
     </div>
 
-    <div class="container-heading">Active Profiles</div>
+    <div class="container-heading">Containers</div>
     <div class="container-list" id="sidebar-render-target"></div>
 </div>
 
 <div class="main" id="workspace-canvas-timeline"></div>
 
 <div id="shift-a-context-menu" class="context-menu">
-    <div class="menu-label">Create Container (Strict Filter)</div>
+    <div class="menu-label">Create Container</div>
     <div class="menu-item" onclick="instantiateContainer('Skill')">Skill <i class="fa-solid fa-folder-plus"></i></div>
     <div class="menu-item" onclick="instantiateContainer('Melee')">Melee <i class="fa-solid fa-folder-plus"></i></div>
     <div class="menu-item" onclick="instantiateContainer('Special')">Special <i class="fa-solid fa-folder-plus"></i></div>
     <div class="menu-item" onclick="instantiateContainer('Awakening')">Awakening <i class="fa-solid fa-folder-plus"></i></div>
     <div class="menu-item" onclick="instantiateContainer('Chase')">Chase <i class="fa-solid fa-folder-plus"></i></div>
     <div class="menu-separator"></div>
-    <div class="menu-label">Add Sequence Data Node</div>
+    <div class="menu-label">Add Node</div>
     <div id="context-menu-nodes-target"></div>
 </div>
 
 <div class="jjs-modal-overlay" id="jjs-io-modal" onclick="closeIOModal(event)">
     <div class="jjs-modal-box" onclick="event.stopPropagation()">
         <div class="jjs-modal-header">
-            <h3 class="jjs-modal-title" id="io-modal-title-text">Terminal IO Stream</h3>
+            <h3 class="jjs-modal-title" id="io-modal-title-text"><i class="fa-solid fa-terminal"></i> Data Center</h3>
             <button class="jjs-modal-close" onclick="closeIOModal(null)"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div class="jjs-modal-body">
+        <div class="jjs-modal-body" id="io-modal-body-container">
             <textarea class="jjs-modal-textarea" id="io-terminal-textarea"></textarea>
         </div>
         <div class="jjs-modal-footer">
             <button class="btn-modal-confirm" id="io-action-button" onclick="executeIOAction()">Process</button>
+        </div>
+    </div>
+</div>
+
+<div class="jjs-modal-overlay" id="jjs-branch-modal" onclick="closeBranchModal(event)">
+    <div class="jjs-modal-box" style="width: 400px;" onclick="event.stopPropagation()">
+        <div class="jjs-modal-header">
+            <h3 class="jjs-modal-title" id="branch-modal-title-text"><i class="fa-solid fa-code-branch"></i> Branch Config</h3>
+            <button class="jjs-modal-close" onclick="closeBranchModal(null)"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="jjs-modal-body">
+            <label style="display:block; font-size:0.7rem; color:var(--accent); text-transform:uppercase; margin-bottom:8px;">Branch Name (Case Sensitive)</label>
+            <input type="text" class="jjs-modal-input" id="branch-name-input" placeholder="e.g. AirVariant">
+        </div>
+        <div class="jjs-modal-footer">
+            <button class="btn-modal-confirm" onclick="executeBranchAction()">Confirm</button>
         </div>
     </div>
 </div>
@@ -344,22 +351,25 @@
     let zstd = null;
     let ioModalMode = '';
     let mouseX = 0, mouseY = 0;
-    let dynamicCustomThemes = {};
+    
+    // Core Layout States
+    let activeBranch = 'Default';
+    let activeTab = 'Timeline';
+
+    // Branch Modal State
+    let branchModalMode = '';
+    let editingBranchName = '';
 
     async function initEngine() {
         const engine = window.ZstdWeb || window.zstd || window.Zstd;
         if (engine?.init) {
             await engine.init();
             zstd = engine;
-            document.getElementById('engine-status-box').innerHTML = "ENGINE STATUS: <span style='color:#00ffcc; font-weight:bold;'>ZSTD ACTIVE</span>";
+            document.getElementById('engine-status-box').innerHTML = "ZSTD Engine: <span style='color:#00ffcc; font-weight:bold;'>Active</span>";
         } else {
-            document.getElementById('engine-status-box').innerHTML = "ENGINE STATUS: <span style='color:#ff9900; font-weight:bold;'>ZSTD STANDBY</span>";
+            document.getElementById('engine-status-box').innerHTML = "ZSTD Engine: <span style='color:#ff9900; font-weight:bold;'>Standby</span>";
         }
         
-        const savedData = localStorage.getItem('jjs_studio_custom_registry');
-        if (savedData) dynamicCustomThemes = JSON.parse(savedData);
-        rebuildDropdownList();
-
         const cachedTheme = localStorage.getItem('jjs-theme-pref') || 'default';
         const picker = document.getElementById('global-theme-picker');
         if (picker) picker.value = cachedTheme;
@@ -371,122 +381,10 @@
 
     function previewTheme(styleName) {
         document.body.className = '';
-        document.body.removeAttribute('style');
-
-        document.getElementById('custom-editor-ui').style.display = (styleName === 'custom') ? 'block' : 'none';
-        document.getElementById('delete-theme-trigger').style.display = styleName.startsWith('saved_') ? 'block' : 'none';
-
-        if (styleName === 'custom') {
-            applyPanelValuesToLivePreview();
-        } else if (styleName.startsWith('saved_')) {
-            const cfg = dynamicCustomThemes[styleName];
-            if (cfg) applyConfigToLayout(cfg);
-        } else {
-            if (styleName !== 'default') {
-                document.body.classList.add('theme-' + styleName);
-            }
+        if (styleName !== 'default') {
+            document.body.classList.add('theme-' + styleName);
         }
         localStorage.setItem('jjs-theme-pref', styleName);
-    }
-
-    function applyLiveVar(property, value) {
-        if (document.getElementById('global-theme-picker').value === 'custom') {
-            document.body.style.setProperty(property, value);
-        }
-    }
-
-    function applyLiveBg(url) {
-        if (document.getElementById('global-theme-picker').value === 'custom') {
-            if (!url || url.trim() === '') {
-                document.body.style.setProperty('--bg-image', "linear-gradient(rgba(0,0,0,0.3) 2px, transparent 2px), linear-gradient(90deg, rgba(0,0,0,0.3) 2px, transparent 2px)");
-                document.body.style.removeProperty('background-size');
-            } else {
-                document.body.style.setProperty('--bg-image', `url('${url}')`);
-                document.body.style.setProperty('background-size', 'cover');
-            }
-        }
-    }
-
-    function applyPanelValuesToLivePreview() {
-        applyLiveVar('--bg',         document.getElementById('val-bg').value);
-        applyLiveVar('--panel',      document.getElementById('val-panel').value);
-        applyLiveVar('--node-card',  document.getElementById('val-node').value);
-        applyLiveVar('--accent',     document.getElementById('val-accent').value);
-        applyLiveVar('--text',       document.getElementById('val-text').value);
-        applyLiveVar('--border',     document.getElementById('val-border').value);
-        applyLiveVar('--thickness',  document.getElementById('val-thick').value + 'px');
-        applyLiveBg(document.getElementById('val-bgimg').value);
-    }
-
-    function applyConfigToLayout(config) {
-        document.body.style.setProperty('--bg',        config.bg);
-        document.body.style.setProperty('--panel',     config.panel);
-        document.body.style.setProperty('--node-card', config.node);
-        document.body.style.setProperty('--accent',    config.accent);
-        document.body.style.setProperty('--text',      config.text);
-        document.body.style.setProperty('--border',    config.border);
-        document.body.style.setProperty('--thickness', config.thickness);
-
-        if (!config.bgImg || config.bgImg.trim() === '') {
-            document.body.style.setProperty('--bg-image', "linear-gradient(rgba(0,0,0,0.3) 2px, transparent 2px), linear-gradient(90deg, rgba(0,0,0,0.3) 2px, transparent 2px)");
-        } else {
-            document.body.style.setProperty('--bg-image', `url('${config.bgImg}')`);
-            document.body.style.setProperty('background-size', 'cover');
-        }
-    }
-
-    function saveCustomTheme() {
-        const inputName = document.getElementById('val-name').value.trim() || 'My Custom Setup';
-        const uniqueKey = 'saved_' + Date.now();
-
-        dynamicCustomThemes[uniqueKey] = {
-            name:      inputName,
-            bg:        document.getElementById('val-bg').value,
-            panel:     document.getElementById('val-panel').value,
-            node:      document.getElementById('val-node').value,
-            accent:    document.getElementById('val-accent').value,
-            text:      document.getElementById('val-text').value,
-            border:    document.getElementById('val-border').value,
-            thickness: document.getElementById('val-thick').value + 'px',
-            bgImg:     document.getElementById('val-bgimg').value
-        };
-
-        localStorage.setItem('jjs_studio_custom_registry', JSON.stringify(dynamicCustomThemes));
-        rebuildDropdownList();
-        document.getElementById('global-theme-picker').value = uniqueKey;
-        previewTheme(uniqueKey);
-    }
-
-    function deleteActiveTheme() {
-        const picker = document.getElementById('global-theme-picker');
-        const activeKey = picker.value;
-        if (activeKey.startsWith('saved_')) {
-            if (confirm(`Are you sure you want to permanently delete "${dynamicCustomThemes[activeKey].name}"?`)) {
-                delete dynamicCustomThemes[activeKey];
-                localStorage.setItem('jjs_studio_custom_registry', JSON.stringify(dynamicCustomThemes));
-                rebuildDropdownList();
-                picker.value = 'default';
-                previewTheme('default');
-            }
-        }
-    }
-
-    function rebuildDropdownList() {
-        const targetGroup = document.getElementById('custom-themes-group');
-        if (!targetGroup) return;
-        targetGroup.innerHTML = '';
-
-        for (const [key, theme] of Object.entries(dynamicCustomThemes)) {
-            const opt = document.createElement('option');
-            opt.value = key;
-            opt.textContent = theme.name;
-            targetGroup.appendChild(opt);
-        }
-
-        const createOpt = document.createElement('option');
-        createOpt.value = 'custom';
-        createOpt.textContent = '[Create New Theme...]';
-        targetGroup.appendChild(createOpt);
     }
 
     function buildContextMenuNodes() {
@@ -530,7 +428,7 @@
 
     function executeLoadMasterCode() {
         if (currentMoves.length > 0) {
-            if (!confirm("Are you sure you want to load the Master Code template? This will completely replace your current workspace items.")) return;
+            if (!confirm("Are you sure you want to load the master template? This will replace everything you're currently working on.")) return;
         }
 
         const masterNodeLines = [];
@@ -553,39 +451,37 @@
                 "ADD": false,
                 "NAME": type,
                 "K_NAME": type.toUpperCase(),
-                "TOOL TIP": idx === 0 ? "Contains every registered node type with system defaults." : `Master Code Structure for ${type} container sequence pipeline.`,
+                "TOOL TIP": "",
                 "COOLDOWN": idx === 0 ? 0 : 1.0,
                 "KEY": 1,
-                "DATA": JSON.stringify({ "Line": idx === 0 ? masterNodeLines : [], "Prop": [], "Req": [] })
+                "DATA": JSON.stringify({ "Line": idx === 0 ? masterNodeLines : [], "Branch": {}, "Prop": [], "Req": [] })
             };
         });
 
         activeIndex = 0;
+        activeBranch = 'Default';
+        activeTab = 'Timeline';
         renderSidebar();
         loadMove(0);
     }
 
-    function getContainerLineData(moveObj) {
-        if (!moveObj || !moveObj.DATA) return [];
+    function getInnerData(moveObj) {
+        if (!moveObj || !moveObj.DATA) return { Line: [], Branch: {}, Prop: [], Req: [] };
         try {
-            const dataObj = (typeof moveObj.DATA === 'string') ? JSON.parse(moveObj.DATA) : moveObj.DATA;
-            return dataObj.Line || [];
+            let parsed = (typeof moveObj.DATA === 'string') ? JSON.parse(moveObj.DATA) : moveObj.DATA;
+            if (!parsed.Branch) parsed.Branch = {};
+            if (!parsed.Line) parsed.Line = [];
+            if (!parsed.Prop) parsed.Prop = [];
+            if (!parsed.Req) parsed.Req = [];
+            return parsed;
         } catch(e) {
-            return [];
+            return { Line: [], Branch: {}, Prop: [], Req: [] };
         }
     }
 
-    function saveContainerLineData(moveObj, lineArray) {
+    function saveInnerData(moveObj, innerData) {
         try {
-            let baseData = { "Line": lineArray, "Prop": [], "Req": [] };
-            if (moveObj.DATA) {
-                try {
-                    let currentData = (typeof moveObj.DATA === 'string') ? JSON.parse(moveObj.DATA) : moveObj.DATA;
-                    baseData.Prop = currentData.Prop || [];
-                    baseData.Req = currentData.Req || [];
-                } catch(err) {}
-            }
-            moveObj.DATA = JSON.stringify(baseData);
+            moveObj.DATA = JSON.stringify(innerData);
         } catch(e) {
             console.error("Critical error saving structure state parameters");
         }
@@ -597,23 +493,27 @@
             "ADD": false,
             "NAME": type,
             "K_NAME": type.toUpperCase(),
-            "TOOL TIP": `Clean workspace profile container allocation for ${type}.`,
+            "TOOL TIP": "",
             "COOLDOWN": 1.0,
             "KEY": 1,
-            "DATA": JSON.stringify({ "Line": [], "Prop": [], "Req": [] })
+            "DATA": JSON.stringify({ "Line": [], "Branch": {}, "Prop": [], "Req": [] })
         };
         currentMoves.push(newContainer);
         activeIndex = currentMoves.length - 1;
+        activeBranch = 'Default';
+        activeTab = 'Timeline';
         renderSidebar();
         loadMove(activeIndex);
     }
 
     function instantiateSequenceNode(nodeType) {
         document.getElementById('shift-a-context-menu').style.display = 'none';
-        if (activeIndex === -1 || currentMoves.length === 0) return alert("Please select or instantiate an active profile container sequence first.");
+        if (activeIndex === -1 || currentMoves.length === 0) return alert("Please select or create a container first.");
 
         const activeMove = currentMoves[activeIndex];
-        const currentLines = getContainerLineData(activeMove);
+        const innerData = getInnerData(activeMove);
+        let targetList = (activeBranch === 'Default') ? innerData.Line : innerData.Branch[activeBranch].Line;
+
         const freshNode = { "K_NAME": nodeType };
         NODE_TEMPLATES[nodeType].forEach(field => {
             let fallbackVal = (TYPE_OVERRIDES[nodeType] && TYPE_OVERRIDES[nodeType][field] !== undefined)
@@ -624,13 +524,13 @@
             }
         });
 
-        currentLines.push(freshNode);
-        saveContainerLineData(activeMove, currentLines);
+        targetList.push(freshNode);
+        saveInnerData(activeMove, innerData);
         loadMove(activeIndex);
     }
 
     function deleteActiveContainer(idx) {
-        if (!confirm("Are you completely sure you want to delete this container profile and all its configured data nodes?")) return;
+        if (!confirm("Are you sure you want to delete this container and everything inside it?")) return;
         currentMoves.splice(idx, 1);
         if (currentMoves.length === 0) {
             activeIndex = -1;
@@ -638,17 +538,20 @@
             renderWorkspaceEmpty();
         } else {
             activeIndex = Math.max(0, idx - 1);
+            activeBranch = 'Default';
             renderSidebar();
             loadMove(activeIndex);
         }
     }
 
     function removeSequenceNode(nodeIdx) {
-        if (!confirm("Delete selected structural data node entry?")) return;
+        if (!confirm("Delete this node?")) return;
         const activeMove = currentMoves[activeIndex];
-        const currentLines = getContainerLineData(activeMove);
-        currentLines.splice(nodeIdx, 1);
-        saveContainerLineData(activeMove, currentLines);
+        const innerData = getInnerData(activeMove);
+        let targetList = (activeBranch === 'Default') ? innerData.Line : innerData.Branch[activeBranch].Line;
+        
+        targetList.splice(nodeIdx, 1);
+        saveInnerData(activeMove, innerData);
         loadMove(activeIndex);
     }
 
@@ -668,6 +571,7 @@
         if (node.K_NAME === 'VELO') return `[Force: ${node.FORCE ?? 'Default'}]`;
         if (node.K_NAME === 'PROJECTILE') return `[Damage: ${node.DAMAGE ?? 0}]`;
         if (node.K_NAME === 'HITCNCL') return `[Endlag: ${node.ENDLAG ?? 1.0}]`;
+        if (node.K_NAME === 'TAG') return `[${node.TAG ?? 'Unset'}]`;
         return '';
     }
 
@@ -677,23 +581,99 @@
         if (buttonTextNode) buttonTextNode.innerText = val.toUpperCase();
     }
 
-    function alterContainerCoreKName(idx, val) {
-        currentMoves[idx].K_NAME = val;
-        const buttonTagNode = document.querySelector(`#btn-${idx} .type-tag`);
-        if (buttonTagNode) buttonTagNode.innerText = val.toUpperCase();
-    }
-
     function alterNodeValue(nodeIdx, propertyKey, value) {
         const activeMove = currentMoves[activeIndex];
-        const currentLines = getContainerLineData(activeMove);
+        const innerData = getInnerData(activeMove);
+        let targetList = (activeBranch === 'Default') ? innerData.Line : innerData.Branch[activeBranch].Line;
         
-        currentLines[nodeIdx][propertyKey] = value;
-        saveContainerLineData(activeMove, currentLines);
+        targetList[nodeIdx][propertyKey] = value;
+        saveInnerData(activeMove, innerData);
 
         const textSummarySpan = document.getElementById(`summary-span-${nodeIdx}`);
         if (textSummarySpan) {
-            textSummarySpan.innerText = generateSummaryHeaderStr(currentLines[nodeIdx]);
+            textSummarySpan.innerText = generateSummaryHeaderStr(targetList[nodeIdx]);
         }
+    }
+
+    function switchBranch(branchName) {
+        activeBranch = branchName;
+        loadMove(activeIndex);
+    }
+
+    function deleteBranch(branchName) {
+        if (!confirm(`Are you sure you want to delete the branch "${branchName}" and all its nodes?`)) return;
+
+        const activeMove = currentMoves[activeIndex];
+        const innerData = getInnerData(activeMove);
+
+        delete innerData.Branch[branchName];
+        
+        if (activeBranch === branchName) {
+            activeBranch = 'Default';
+        }
+
+        saveInnerData(activeMove, innerData);
+        loadMove(activeIndex);
+    }
+
+    function switchTab(tabName) {
+        activeTab = tabName;
+        loadMove(activeIndex);
+    }
+
+    function openBranchModal(mode, oldName = '') {
+        branchModalMode = mode;
+        editingBranchName = oldName;
+        const overlay = document.getElementById('jjs-branch-modal');
+        const input = document.getElementById('branch-name-input');
+        const title = document.getElementById('branch-modal-title-text');
+        
+        input.value = (mode === 'edit') ? oldName : '';
+        title.innerHTML = (mode === 'edit') ? `<i class="fa-solid fa-pen"></i> Rename Branch` : `<i class="fa-solid fa-code-branch"></i> New Branch`;
+        
+        overlay.style.display = 'flex';
+        input.focus();
+    }
+
+    function closeBranchModal(e) {
+        if (!e || e.target === document.getElementById('jjs-branch-modal')) {
+            document.getElementById('jjs-branch-modal').style.display = 'none';
+        }
+    }
+
+    function executeBranchAction() {
+        const newName = document.getElementById('branch-name-input').value.trim();
+        if (!newName || newName === 'Default') {
+            alert("Invalid branch name. It can't be empty or named 'Default'.");
+            return;
+        }
+
+        const activeMove = currentMoves[activeIndex];
+        const innerData = getInnerData(activeMove);
+
+        if (branchModalMode === 'create') {
+            if (innerData.Branch[newName]) {
+                activeBranch = newName;
+            } else {
+                innerData.Branch[newName] = { Req: [], Line: [] };
+                activeBranch = newName;
+                saveInnerData(activeMove, innerData);
+            }
+        } else if (branchModalMode === 'edit') {
+            if (innerData.Branch[newName] && newName !== editingBranchName) {
+                alert("A branch with this name already exists.");
+                return;
+            }
+            innerData.Branch[newName] = innerData.Branch[editingBranchName];
+            delete innerData.Branch[editingBranchName];
+            if (activeBranch === editingBranchName) {
+                activeBranch = newName;
+            }
+            saveInnerData(activeMove, innerData);
+        }
+        
+        closeBranchModal(null);
+        loadMove(activeIndex);
     }
 
     function renderSidebar() {
@@ -701,7 +681,7 @@
         listContainer.innerHTML = '';
 
         if (currentMoves.length === 0) {
-            listContainer.innerHTML = `<div style="text-align:center; padding-top:40px; font-size:0.75rem; opacity:0.4;">No containers loaded. Use Shift+A to generate.</div>`;
+            listContainer.innerHTML = `<div style="text-align:center; padding-top:40px; font-size:0.75rem; opacity:0.4;">No containers yet. Press Shift + A to add one.</div>`;
             return;
         }
 
@@ -709,7 +689,11 @@
             const btn = document.createElement('div');
             btn.className = `item ${i === activeIndex ? 'active' : ''}`;
             btn.id = `btn-${i}`;
-            btn.onclick = () => loadMove(i);
+            btn.onclick = () => {
+                activeBranch = 'Default';
+                activeTab = 'Timeline';
+                loadMove(i);
+            };
             btn.innerHTML = `
                 <span class="type-tag">${move.K_NAME || 'CONTAINER'}</span>
                 <span class="move-name">${(move.NAME || 'UNNAMED').toUpperCase()}</span>
@@ -721,8 +705,7 @@
     function renderWorkspaceEmpty() {
         document.getElementById('workspace-canvas-timeline').innerHTML = `
             <div class="empty-state">
-                Press SHIFT + A to create sequences dynamically<br>
-                <span style="font-size:0.9rem; color:var(--accent); opacity:0.7;">Or tap Ctrl + Alt + Shift + T to load Master Code dictionary pipeline blueprints</span>
+                Press Shift + A to add nodes or containers.
             </div>
         `;
     }
@@ -736,8 +719,9 @@
         if (targetSideButton) targetSideButton.classList.add('active');
 
         const move = currentMoves[idx];
+        const innerData = getInnerData(move);
+        const branchNames = Object.keys(innerData.Branch).sort();
         const canvas = document.getElementById('workspace-canvas-timeline');
-        const nodesList = getContainerLineData(move);
 
         let html = `
             <div class="editor-header">
@@ -747,37 +731,63 @@
                 </div>
                 <div class="container-fields-row">
                     <div class="tooltip-field">
-                        <label>Display Identifier Name</label>
+                        <label>Name</label>
                         <input type="text" value="${move.NAME || ''}" oninput="alterContainerCoreName(${idx}, this.value)">
-                    </div>
-                    <div class="tooltip-field">
-                        <label>Internal Pipeline Key (K_NAME)</label>
-                        <input type="text" value="${move.K_NAME || ''}" oninput="alterContainerCoreKName(${idx}, this.value)">
                     </div>
                 </div>
             </div>
         `;
 
-        nodesList.forEach((node, nodeIdx) => {
-            const translationText = TRANSLATIONS[node.K_NAME] || node.K_NAME;
-            html += `
-                <div class="node-card" id="node-block-${nodeIdx}">
-                    <div class="node-head" onclick="toggleNodeBody(${nodeIdx})">
-                        <div class="node-title-group">
-                            <strong>${translationText}</strong>
-                            <span class="node-summary-tag" id="summary-span-${nodeIdx}">${generateSummaryHeaderStr(node)}</span>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:20px;">
-                            <span style="font-family:var(--font-code); font-weight:bold; color:var(--accent); font-size:0.85rem;">#${nodeIdx + 1}</span>
-                            <button class="btn-delete-node" onclick="removeSequenceNode(${nodeIdx}); event.stopPropagation();"><i class="fa-solid fa-square-minus"></i></button>
-                        </div>
-                    </div>
-                    <div class="node-grid" id="node-grid-${nodeIdx}" style="display:none;">
-                        ${buildPropertyFieldsMarkup(node, nodeIdx)}
-                    </div>
-                </div>
-            `;
+        html += `<div class="branch-bar">`;
+        html += `<button class="branch-tab ${activeBranch === 'Default' ? 'active' : ''}" onclick="switchBranch('Default')">Default</button>`;
+        branchNames.forEach(b => {
+            html += `<button class="branch-tab ${activeBranch === b ? 'active' : ''}" onclick="switchBranch('${b}')">
+                        ${b} 
+                        <span style="display:flex; gap:2px; margin-left:6px;">
+                            <i class="fa-solid fa-pen edit-icon" title="Rename Branch" onclick="openBranchModal('edit', '${b}'); event.stopPropagation();"></i>
+                            <i class="fa-solid fa-trash delete-icon" title="Delete Branch" onclick="deleteBranch('${b}'); event.stopPropagation();"></i>
+                        </span>
+                     </button>`;
         });
+        html += `<button class="branch-add-btn" onclick="openBranchModal('create')"><i class="fa-solid fa-plus"></i></button>`;
+        html += `</div>`;
+
+        html += `<div class="workspace-tabs">
+            <button class="workspace-tab ${activeTab === 'Timeline' ? 'active' : ''}" onclick="switchTab('Timeline')">Timeline</button>
+            <button class="workspace-tab ${activeTab === 'Conditions' ? 'active' : ''}" onclick="switchTab('Conditions')">Conditions</button>
+            <button class="workspace-tab ${activeTab === 'Properties' ? 'active' : ''}" onclick="switchTab('Properties')">Properties</button>
+        </div>`;
+
+        if (activeTab === 'Timeline') {
+            const currentNodesList = (activeBranch === 'Default') ? innerData.Line : innerData.Branch[activeBranch].Line;
+            
+            if (currentNodesList.length === 0) {
+                html += `<div style="text-align:center; opacity:0.4; font-size:0.8rem; margin-top:20px; text-transform:uppercase;">No nodes in this branch yet. Press Shift + A to add one.</div>`;
+            } else {
+                currentNodesList.forEach((node, nodeIdx) => {
+                    const translationText = TRANSLATIONS[node.K_NAME] || node.K_NAME;
+                    html += `
+                        <div class="node-card" id="node-block-${nodeIdx}">
+                            <div class="node-head" onclick="toggleNodeBody(${nodeIdx})">
+                                <div class="node-title-group">
+                                    <strong>${translationText}</strong>
+                                    <span class="node-summary-tag" id="summary-span-${nodeIdx}">${generateSummaryHeaderStr(node)}</span>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:20px;">
+                                    <span style="font-family:var(--font-code); font-weight:bold; color:var(--accent); font-size:0.85rem;">#${nodeIdx + 1}</span>
+                                    <button class="btn-delete-node" onclick="removeSequenceNode(${nodeIdx}); event.stopPropagation();"><i class="fa-solid fa-square-minus"></i></button>
+                                </div>
+                            </div>
+                            <div class="node-grid" id="node-grid-${nodeIdx}" style="display:none;">
+                                ${buildPropertyFieldsMarkup(node, nodeIdx)}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        } else {
+            html += `<div class="empty-state" style="margin-top:20px;">[ ${activeTab} tab is under construction ]</div>`;
+        }
 
         canvas.innerHTML = html;
     }
@@ -824,14 +834,14 @@
         overlay.style.display = 'flex';
 
         if (mode === 'import') {
-            title.innerText = "Unified Binary Pipeline Import Center";
-            tx.placeholder = "Paste your base64 Zstandard data stream directly here...";
+            title.innerHTML = "<i class='fa-solid fa-file-import'></i> Import Data";
+            tx.placeholder = "Paste your moveset data here...";
             tx.readOnly = false;
-            btn.innerText = "Execute Import Pipeline";
+            btn.innerText = "Import";
         } else if (mode === 'export') {
-            title.innerText = "Unified Binary Pipeline Export Center";
+            title.innerHTML = "<i class='fa-solid fa-file-export'></i> Export Data";
             tx.readOnly = true;
-            btn.innerText = "Copy Terminal Stream";
+            btn.innerText = "Copy to Clipboard";
 
             if (currentMoves.length === 0) {
                 tx.value = "[]";
@@ -866,7 +876,7 @@
         if (ioModalMode === 'export') {
             tx.select();
             document.execCommand('copy');
-            alert("Workspace binary sequence stream copied successfully to clipboard!");
+            alert("Data copied to clipboard!");
             closeIOModal(null);
         } else if (ioModalMode === 'import') {
             const rawVal = tx.value.trim();
@@ -875,18 +885,20 @@
                 if (rawVal.startsWith('[') || rawVal.startsWith('{')) {
                     currentMoves = JSON.parse(rawVal);
                 } else {
-                    if (!zstd) { alert("ZStandard streaming wrapper engine still building. Please stand by."); return; }
+                    if (!zstd) { alert("ZSTD Engine is still loading. Please wait a moment."); return; }
                     const rawBuffer = Uint8Array.from(atob(rawVal), c => c.charCodeAt(0));
                     currentMoves = JSON.parse(new TextDecoder().decode(zstd.decompress(rawBuffer)));
                 }
 
                 if (!Array.isArray(currentMoves)) currentMoves = [currentMoves];
                 activeIndex = currentMoves.length > 0 ? 0 : -1;
+                activeBranch = 'Default';
+                activeTab = 'Timeline';
                 renderSidebar();
                 loadMove(activeIndex);
                 closeIOModal(null);
             } catch(e) {
-                alert("Import Exception Intercepted: Ensure payload contains strict binary structures.");
+                alert("Import failed. Please make sure the code is correct.");
             }
         }
     }
