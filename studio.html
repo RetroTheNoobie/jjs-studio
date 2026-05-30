@@ -338,6 +338,26 @@
         DOMAIN: ["FLIP"], HOLD: ["FLIP"]
     };
 
+    const PROPERTY_ORDER = [
+        "DMG", "KNOCK", "INV", "REP", "REP2", "AWK", "KEEP", 
+        "AWK2", "USE", "USEONDEATH", "NOSTUN", "NOCANCEL", "VAR"
+    ];
+
+    const PROPERTY_LABELS = {
+        DMG: "Dmg multi", KNOCK: "kb multi", INV: "invincible", 
+        REP: "rep skill if occupied", REP2: "prevent override", 
+        AWK: "hide in awk", KEEP: "keep when move switch", 
+        AWK2: "hide in base", USE: "use when obt", 
+        USEONDEATH: "use on death", NOSTUN: "no stun", 
+        NOCANCEL: "no cancel", VAR: "variant tag"
+    };
+
+    const PROPERTY_DEFAULTS = {
+        DMG: 1.0, KNOCK: 1.0, INV: false, REP: false, REP2: false, 
+        AWK: false, KEEP: false, AWK2: false, USE: false, 
+        USEONDEATH: false, NOSTUN: false, NOCANCEL: false, VAR: ""
+    };
+
     const DEFAULTS_LIB = {
         TIME: 1.0, SPEED: 1.0, START: 0.0, "ENABLE VARIANTS": true, "HOLD FOR": 0.0,
         MOVE: "Divergent Fist", SPEC: "Limitless", "FADE IN": 0.1, PREVIEW: [0, 3.59],
@@ -444,6 +464,11 @@
             const targetTag = e.target.tagName.toLowerCase();
             if (targetTag === 'input' || targetTag === 'textarea') return;
             e.preventDefault();
+            
+            if (activeTab === 'Properties') {
+                return; // Properties are fixed, no adding allowed
+            }
+
             const menu = document.getElementById('shift-a-context-menu');
             menu.style.display = 'block';
             menu.style.left = Math.min(mouseX, window.innerWidth - menu.offsetWidth - 10) + 'px';
@@ -492,7 +517,7 @@
                 "DATA": JSON.stringify({ 
                     "Line": idx === 0 ? masterNodeLines : [], 
                     "Branch": {}, 
-                    "Prop": [], 
+                    "Prop": {}, 
                     "Req": idx === 0 ? masterReqLines : [] 
                 })
             };
@@ -506,16 +531,23 @@
     }
 
     function getInnerData(moveObj) {
-        if (!moveObj || !moveObj.DATA) return { Line: [], Branch: {}, Prop: [], Req: [] };
+        if (!moveObj || !moveObj.DATA) return { Line: [], Branch: {}, Prop: {}, Req: [] };
         try {
             let parsed = (typeof moveObj.DATA === 'string') ? JSON.parse(moveObj.DATA) : moveObj.DATA;
             if (!parsed.Branch) parsed.Branch = {};
             if (!parsed.Line) parsed.Line = [];
-            if (!parsed.Prop) parsed.Prop = [];
+            if (!parsed.Prop || Array.isArray(parsed.Prop)) parsed.Prop = {}; 
             if (!parsed.Req) parsed.Req = [];
+            
+            // Ensure each custom branch also has initialized Line and Req arrays
+            for (let b in parsed.Branch) {
+                if (!parsed.Branch[b].Line) parsed.Branch[b].Line = [];
+                if (!parsed.Branch[b].Req) parsed.Branch[b].Req = [];
+            }
+            
             return parsed;
         } catch(e) {
-            return { Line: [], Branch: {}, Prop: [], Req: [] };
+            return { Line: [], Branch: {}, Prop: {}, Req: [] };
         }
     }
 
@@ -536,7 +568,7 @@
             "TOOL TIP": "",
             "COOLDOWN": 1.0,
             "KEY": 1,
-            "DATA": JSON.stringify({ "Line": [], "Branch": {}, "Prop": [], "Req": [] })
+            "DATA": JSON.stringify({ "Line": [], "Branch": {}, "Prop": {}, "Req": [] })
         };
         currentMoves.push(newContainer);
         activeIndex = currentMoves.length - 1;
@@ -552,7 +584,9 @@
 
         const activeMove = currentMoves[activeIndex];
         const innerData = getInnerData(activeMove);
-        let targetList = (activeTab === 'Conditions') ? innerData.Req : ((activeBranch === 'Default') ? innerData.Line : innerData.Branch[activeBranch].Line);
+        let targetList = (activeTab === 'Conditions') ? 
+            (activeBranch === 'Default' ? innerData.Req : innerData.Branch[activeBranch].Req) : 
+            (activeBranch === 'Default' ? innerData.Line : innerData.Branch[activeBranch].Line);
 
         const freshNode = { "K_NAME": nodeType };
         let templates = (activeTab === 'Conditions') ? CONDITION_TEMPLATES : NODE_TEMPLATES;
@@ -590,7 +624,9 @@
         if (!confirm("Delete this item?")) return;
         const activeMove = currentMoves[activeIndex];
         const innerData = getInnerData(activeMove);
-        let targetList = (activeTab === 'Conditions') ? innerData.Req : ((activeBranch === 'Default') ? innerData.Line : innerData.Branch[activeBranch].Line);
+        let targetList = (activeTab === 'Conditions') ? 
+            (activeBranch === 'Default' ? innerData.Req : innerData.Branch[activeBranch].Req) : 
+            (activeBranch === 'Default' ? innerData.Line : innerData.Branch[activeBranch].Line);
         
         targetList.splice(nodeIdx, 1);
         saveInnerData(activeMove, innerData);
@@ -619,7 +655,6 @@
         if (node.K_NAME === 'HP') return `[Health: ${node.AMOUNT ?? 10}]`;
         if (node.K_NAME === 'DUR') return `[Durability: ${node.DURABILITY ?? 1}]`;
 
-        // Updated FLIP logic here:
         if (node.FLIP !== undefined) return node.FLIP ? '[True]' : '[False]';
 
         return '';
@@ -634,7 +669,9 @@
     function alterNodeValue(nodeIdx, propertyKey, value) {
         const activeMove = currentMoves[activeIndex];
         const innerData = getInnerData(activeMove);
-        let targetList = (activeTab === 'Conditions') ? innerData.Req : ((activeBranch === 'Default') ? innerData.Line : innerData.Branch[activeBranch].Line);
+        let targetList = (activeTab === 'Conditions') ? 
+            (activeBranch === 'Default' ? innerData.Req : innerData.Branch[activeBranch].Req) : 
+            (activeBranch === 'Default' ? innerData.Line : innerData.Branch[activeBranch].Line);
         
         targetList[nodeIdx][propertyKey] = value;
         saveInnerData(activeMove, innerData);
@@ -643,6 +680,14 @@
         if (textSummarySpan) {
             textSummarySpan.innerText = generateSummaryHeaderStr(targetList[nodeIdx]);
         }
+    }
+    
+    function alterPropValue(propertyKey, value) {
+        const activeMove = currentMoves[activeIndex];
+        const innerData = getInnerData(activeMove);
+        
+        innerData.Prop[propertyKey] = value;
+        saveInnerData(activeMove, innerData);
     }
 
     function switchBranch(branchName) {
@@ -778,19 +823,19 @@
         let html = `
             <div class="editor-header">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h1 style="margin:0; font-size:2.2rem; text-transform:none; letter-spacing:1px; color:var(--accent);">${move.NAME || 'UNNAMED'}</h1>
+                    <h1 style="margin:0; font-size:2.2rem; text-transform:none; letter-spacing:1px; color:var(--accent);">${move.K_NAME || 'UNNAMED'}</h1>
                     <button class="btn-delete-container" onclick="deleteActiveContainer(${idx})"><i class="fa-solid fa-trash-can"></i> Delete Container</button>
                 </div>
                 <div class="container-fields-row">
                     <div class="tooltip-field">
                         <label>Name</label>
-                        <input type="text" value="${move.K_NAME || ''}" oninput="alterContainerCoreName(${idx}, this.value)">
+                        <input type="text" value="${move.NAME || ''}" oninput="alterContainerCoreName(${idx}, this.value)">
                     </div>
                 </div>
             </div>
         `;
 
-        if (activeTab === 'Timeline') {
+        if (activeTab === 'Timeline' || activeTab === 'Conditions') {
             html += `<div class="branch-bar">`;
             html += `<button class="branch-tab ${activeBranch === 'Default' ? 'active' : ''}" onclick="switchBranch('Default')">Default</button>`;
             branchNames.forEach(b => {
@@ -840,10 +885,10 @@
                 });
             }
         } else if (activeTab === 'Conditions') {
-            const currentReqList = innerData.Req || [];
+            const currentReqList = (activeBranch === 'Default') ? innerData.Req : innerData.Branch[activeBranch].Req;
             
             if (currentReqList.length === 0) {
-                html += `<div style="text-align:center; opacity:0.4; font-size:0.8rem; margin-top:20px; text-transform:none;">No conditions applied to this container. Press Shift + A to add one.</div>`;
+                html += `<div style="text-align:center; opacity:0.4; font-size:0.8rem; margin-top:20px; text-transform:none;">No conditions applied to this branch. Press Shift + A to add one.</div>`;
             } else {
                 currentReqList.forEach((node, nodeIdx) => {
                     const translationText = TRANSLATIONS[node.K_NAME] || node.K_NAME;
@@ -866,8 +911,39 @@
                     `;
                 });
             }
-        } else {
-            html += `<div class="empty-state" style="margin-top:20px;">[ ${activeTab} tab is under construction ]</div>`;
+        } else if (activeTab === 'Properties') {
+            html += `
+                <div class="node-card">
+                    <div class="node-head" style="cursor:default;">
+                        <div class="node-title-group">
+                            <strong>Global Container Settings</strong>
+                            <span class="node-summary-tag">These properties apply to the entire container, regardless of branch.</span>
+                        </div>
+                    </div>
+                    <div class="node-grid" style="display:grid;">
+            `;
+            
+            PROPERTY_ORDER.forEach(key => {
+                let val = innerData.Prop[key] !== undefined ? innerData.Prop[key] : PROPERTY_DEFAULTS[key];
+                let inputHtml = '';
+                
+                if (typeof PROPERTY_DEFAULTS[key] === 'boolean') {
+                    inputHtml = `<input type="checkbox" ${val === true || val === 'true' ? 'checked' : ''} onchange="alterPropValue('${key}', this.checked)">`;
+                } else if (typeof PROPERTY_DEFAULTS[key] === 'number') {
+                    inputHtml = `<input type="number" step="0.1" value="${val}" oninput="alterPropValue('${key}', parseFloat(this.value) || 0)">`;
+                } else {
+                    inputHtml = `<input type="text" value="${val}" oninput="alterPropValue('${key}', this.value)">`;
+                }
+                
+                html += `
+                    <div class="field">
+                        <label>${PROPERTY_LABELS[key]}</label>
+                        ${inputHtml}
+                    </div>
+                `;
+            });
+
+            html += `</div></div>`;
         }
 
         canvas.innerHTML = html;
