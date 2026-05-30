@@ -628,7 +628,7 @@
     function alterContainerCoreName(idx, val) {
         currentMoves[idx].NAME = val;
         const buttonTextNode = document.querySelector(`#btn-${idx} .move-name`);
-        if (buttonTextNode) buttonTextNode.innerText = val.toUpperCase();
+        if (buttonTextNode) buttonTextNode.innerText = val;
     }
 
     function alterNodeValue(nodeIdx, propertyKey, value) {
