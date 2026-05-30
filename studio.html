@@ -247,7 +247,7 @@
     <div class="menu-item" onclick="instantiateContainer('Awakening')">Awakening <i class="fa-solid fa-folder-plus"></i></div>
     <div class="menu-item" onclick="instantiateContainer('Chase')">Chase <i class="fa-solid fa-folder-plus"></i></div>
     <div class="menu-separator"></div>
-    <div class="menu-label">Add Node</div>
+    <div class="menu-label" id="context-menu-nodes-label">Add Node</div>
     <div id="context-menu-nodes-target"></div>
 </div>
 
@@ -291,7 +291,11 @@
         "CONNECT": "CONNECT", "HITBOX": "HITBOX", "BRANCH": "BRANCH",
         "VISUAL": "VISUAL", "GRAB": "GRAB", "COUNTER": "COUNTER",
         "TAG": "TAG", "STATE": "STATE", "TELEPORT": "TELEPORT",
-        "LOOP": "LOOP", "SETCD": "SET COOLDOWN"
+        "LOOP": "LOOP", "SETCD": "SET COOLDOWN",
+        
+        "AIR": "In air", "JUMP": "Is jumping", "AIM": "Has Target", "ULT": "Is awakened",
+        "BAR": "Has awk bar", "DUR": "Durability", "HP": "Has Health",
+        "DOMAIN": "Is In Domain", "HOLD": "Is holding"
     };
 
     const NODE_TEMPLATES = {
@@ -317,6 +321,12 @@
         SETCD: ["KEY", "COOLDOWN"]
     };
 
+    const CONDITION_TEMPLATES = {
+        AIR: ["FLIP"], JUMP: ["FLIP"], AIM: ["FLIP"], ULT: ["FLIP"],
+        BAR: ["FLIP", "AMOUNT"], DUR: ["DURABILITY"], HP: ["FLIP", "AMOUNT"],
+        DOMAIN: ["FLIP"], HOLD: ["FLIP"]
+    };
+
     const DEFAULTS_LIB = {
         TIME: 1.0, SPEED: 1.0, START: 0.0, "ENABLE VARIANTS": true, "HOLD FOR": 0.0,
         MOVE: "Divergent Fist", SPEC: "Limitless", "FADE IN": 0.1, PREVIEW: [0, 3.59],
@@ -338,12 +348,13 @@
         "CACHE": true, "REFLECT COUNT": 0.0, "BRANCH COLLIDED": "nil", "AIM LAST HIT": -1.0,
         "REMOVE ON HIT": true, "ADD/REMOVE": true, "CHECK": false, "SET": true,
         "DISABLE BURST": false, "CANCEL ON END": false, "VALUE": "nil", "CONTINUE": false,
-        "ANIM_USE": [1, 1.9], "CANCEL LAST": false, KEY: 1, COOLDOWN: 1.0
+        "ANIM_USE": [1, 1.9], "CANCEL LAST": false, KEY: 1, COOLDOWN: 1.0, DURABILITY: 1.0
     };
 
     const TYPE_OVERRIDES = {
         ULTGIB: { AMOUNT: 5.0 }, HPGIB: { AMOUNT: 5.0 }, EVGIB: { AMOUNT: 5.0 },
-        HITBOX: { PREVIEW: [0, 15] }
+        HITBOX: { PREVIEW: [0, 15] },
+        BAR: { AMOUNT: 5.0 }, HP: { AMOUNT: 10.0 }
     };
 
     let currentMoves = [];
@@ -352,11 +363,9 @@
     let ioModalMode = '';
     let mouseX = 0, mouseY = 0;
     
-    // Core Layout States
     let activeBranch = 'Default';
     let activeTab = 'Timeline';
 
-    // Branch Modal State
     let branchModalMode = '';
     let editingBranchName = '';
 
@@ -389,13 +398,18 @@
 
     function buildContextMenuNodes() {
         const target = document.getElementById('context-menu-nodes-target');
+        const label = document.getElementById('context-menu-nodes-label');
         target.innerHTML = '';
-        Object.keys(NODE_TEMPLATES).forEach(type => {
-            const label = TRANSLATIONS[type] || type;
+        
+        let templates = (activeTab === 'Conditions') ? CONDITION_TEMPLATES : NODE_TEMPLATES;
+        label.innerText = (activeTab === 'Conditions') ? 'Add Condition' : 'Add Node';
+
+        Object.keys(templates).forEach(type => {
+            const disp = TRANSLATIONS[type] || type;
             const row = document.createElement('div');
             row.className = 'menu-item';
-            row.innerHTML = `<span>${label}</span> <span style="font-size:0.6rem; opacity:0.5; font-family:var(--font-code);">${type}</span>`;
-            row.onclick = () => instantiateSequenceNode(type);
+            row.innerHTML = `<span>${disp}</span> <span style="font-size:0.6rem; opacity:0.5; font-family:var(--font-code);">${type}</span>`;
+            row.onclick = () => instantiateNode(type);
             target.appendChild(row);
         });
     }
@@ -438,11 +452,21 @@
                 let val = (TYPE_OVERRIDES[nodeType] && TYPE_OVERRIDES[nodeType][fieldKey] !== undefined)
                     ? TYPE_OVERRIDES[nodeType][fieldKey]
                     : DEFAULTS_LIB[fieldKey];
-                if (val !== undefined) {
-                    uiNode[fieldKey] = JSON.parse(JSON.stringify(val));
-                }
+                if (val !== undefined) uiNode[fieldKey] = JSON.parse(JSON.stringify(val));
             });
             masterNodeLines.push(uiNode);
+        });
+
+        const masterReqLines = [];
+        Object.keys(CONDITION_TEMPLATES).forEach(nodeType => {
+            const uiNode = { "K_NAME": nodeType };
+            CONDITION_TEMPLATES[nodeType].forEach(fieldKey => {
+                let val = (TYPE_OVERRIDES[nodeType] && TYPE_OVERRIDES[nodeType][fieldKey] !== undefined)
+                    ? TYPE_OVERRIDES[nodeType][fieldKey]
+                    : DEFAULTS_LIB[fieldKey];
+                if (val !== undefined) uiNode[fieldKey] = JSON.parse(JSON.stringify(val));
+            });
+            masterReqLines.push(uiNode);
         });
 
         const standardContainers = ['Skill', 'Melee', 'Special', 'Awakening', 'Chase'];
@@ -454,7 +478,12 @@
                 "TOOL TIP": "",
                 "COOLDOWN": idx === 0 ? 0 : 1.0,
                 "KEY": 1,
-                "DATA": JSON.stringify({ "Line": idx === 0 ? masterNodeLines : [], "Branch": {}, "Prop": [], "Req": [] })
+                "DATA": JSON.stringify({ 
+                    "Line": idx === 0 ? masterNodeLines : [], 
+                    "Branch": {}, 
+                    "Prop": [], 
+                    "Req": idx === 0 ? masterReqLines : [] 
+                })
             };
         });
 
@@ -483,7 +512,7 @@
         try {
             moveObj.DATA = JSON.stringify(innerData);
         } catch(e) {
-            console.error("Critical error saving structure state parameters");
+            console.error("Error saving data");
         }
     }
 
@@ -506,16 +535,18 @@
         loadMove(activeIndex);
     }
 
-    function instantiateSequenceNode(nodeType) {
+    function instantiateNode(nodeType) {
         document.getElementById('shift-a-context-menu').style.display = 'none';
         if (activeIndex === -1 || currentMoves.length === 0) return alert("Please select or create a container first.");
 
         const activeMove = currentMoves[activeIndex];
         const innerData = getInnerData(activeMove);
-        let targetList = (activeBranch === 'Default') ? innerData.Line : innerData.Branch[activeBranch].Line;
+        let targetList = (activeTab === 'Conditions') ? innerData.Req : ((activeBranch === 'Default') ? innerData.Line : innerData.Branch[activeBranch].Line);
 
         const freshNode = { "K_NAME": nodeType };
-        NODE_TEMPLATES[nodeType].forEach(field => {
+        let templates = (activeTab === 'Conditions') ? CONDITION_TEMPLATES : NODE_TEMPLATES;
+
+        templates[nodeType].forEach(field => {
             let fallbackVal = (TYPE_OVERRIDES[nodeType] && TYPE_OVERRIDES[nodeType][field] !== undefined)
                 ? TYPE_OVERRIDES[nodeType][field]
                 : DEFAULTS_LIB[field];
@@ -544,11 +575,11 @@
         }
     }
 
-    function removeSequenceNode(nodeIdx) {
-        if (!confirm("Delete this node?")) return;
+    function removeNode(nodeIdx) {
+        if (!confirm("Delete this item?")) return;
         const activeMove = currentMoves[activeIndex];
         const innerData = getInnerData(activeMove);
-        let targetList = (activeBranch === 'Default') ? innerData.Line : innerData.Branch[activeBranch].Line;
+        let targetList = (activeTab === 'Conditions') ? innerData.Req : ((activeBranch === 'Default') ? innerData.Line : innerData.Branch[activeBranch].Line);
         
         targetList.splice(nodeIdx, 1);
         saveInnerData(activeMove, innerData);
@@ -572,6 +603,14 @@
         if (node.K_NAME === 'PROJECTILE') return `[Damage: ${node.DAMAGE ?? 0}]`;
         if (node.K_NAME === 'HITCNCL') return `[Endlag: ${node.ENDLAG ?? 1.0}]`;
         if (node.K_NAME === 'TAG') return `[${node.TAG ?? 'Unset'}]`;
+
+        if (node.K_NAME === 'BAR') return `[Meter: ${node.AMOUNT ?? 5}]`;
+        if (node.K_NAME === 'HP') return `[Health: ${node.AMOUNT ?? 10}]`;
+        if (node.K_NAME === 'DUR') return `[Durability: ${node.DURABILITY ?? 1}]`;
+
+        // Updated FLIP logic here:
+        if (node.FLIP !== undefined) return node.FLIP ? '[True]' : '[False]';
+
         return '';
     }
 
@@ -584,7 +623,7 @@
     function alterNodeValue(nodeIdx, propertyKey, value) {
         const activeMove = currentMoves[activeIndex];
         const innerData = getInnerData(activeMove);
-        let targetList = (activeBranch === 'Default') ? innerData.Line : innerData.Branch[activeBranch].Line;
+        let targetList = (activeTab === 'Conditions') ? innerData.Req : ((activeBranch === 'Default') ? innerData.Line : innerData.Branch[activeBranch].Line);
         
         targetList[nodeIdx][propertyKey] = value;
         saveInnerData(activeMove, innerData);
@@ -618,6 +657,7 @@
 
     function switchTab(tabName) {
         activeTab = tabName;
+        buildContextMenuNodes(); 
         loadMove(activeIndex);
     }
 
@@ -681,7 +721,7 @@
         listContainer.innerHTML = '';
 
         if (currentMoves.length === 0) {
-            listContainer.innerHTML = `<div style="text-align:center; padding-top:40px; font-size:0.75rem; opacity:0.4;">No containers yet. Press Shift + A to add one.</div>`;
+            listContainer.innerHTML = `<div style="text-align:center; padding-top:40px; font-size:0.75rem; opacity:0.4;">No containers loaded.</div>`;
             return;
         }
 
@@ -692,6 +732,7 @@
             btn.onclick = () => {
                 activeBranch = 'Default';
                 activeTab = 'Timeline';
+                buildContextMenuNodes(); 
                 loadMove(i);
             };
             btn.innerHTML = `
@@ -738,19 +779,21 @@
             </div>
         `;
 
-        html += `<div class="branch-bar">`;
-        html += `<button class="branch-tab ${activeBranch === 'Default' ? 'active' : ''}" onclick="switchBranch('Default')">Default</button>`;
-        branchNames.forEach(b => {
-            html += `<button class="branch-tab ${activeBranch === b ? 'active' : ''}" onclick="switchBranch('${b}')">
-                        ${b} 
-                        <span style="display:flex; gap:2px; margin-left:6px;">
-                            <i class="fa-solid fa-pen edit-icon" title="Rename Branch" onclick="openBranchModal('edit', '${b}'); event.stopPropagation();"></i>
-                            <i class="fa-solid fa-trash delete-icon" title="Delete Branch" onclick="deleteBranch('${b}'); event.stopPropagation();"></i>
-                        </span>
-                     </button>`;
-        });
-        html += `<button class="branch-add-btn" onclick="openBranchModal('create')"><i class="fa-solid fa-plus"></i></button>`;
-        html += `</div>`;
+        if (activeTab === 'Timeline') {
+            html += `<div class="branch-bar">`;
+            html += `<button class="branch-tab ${activeBranch === 'Default' ? 'active' : ''}" onclick="switchBranch('Default')">Default</button>`;
+            branchNames.forEach(b => {
+                html += `<button class="branch-tab ${activeBranch === b ? 'active' : ''}" onclick="switchBranch('${b}')">
+                            ${b} 
+                            <span style="display:flex; gap:2px; margin-left:6px;">
+                                <i class="fa-solid fa-pen edit-icon" title="Rename Branch" onclick="openBranchModal('edit', '${b}'); event.stopPropagation();"></i>
+                                <i class="fa-solid fa-trash delete-icon" title="Delete Branch" onclick="deleteBranch('${b}'); event.stopPropagation();"></i>
+                            </span>
+                         </button>`;
+            });
+            html += `<button class="branch-add-btn" onclick="openBranchModal('create')"><i class="fa-solid fa-plus"></i></button>`;
+            html += `</div>`;
+        }
 
         html += `<div class="workspace-tabs">
             <button class="workspace-tab ${activeTab === 'Timeline' ? 'active' : ''}" onclick="switchTab('Timeline')">Timeline</button>
@@ -775,11 +818,38 @@
                                 </div>
                                 <div style="display:flex; align-items:center; gap:20px;">
                                     <span style="font-family:var(--font-code); font-weight:bold; color:var(--accent); font-size:0.85rem;">#${nodeIdx + 1}</span>
-                                    <button class="btn-delete-node" onclick="removeSequenceNode(${nodeIdx}); event.stopPropagation();"><i class="fa-solid fa-square-minus"></i></button>
+                                    <button class="btn-delete-node" onclick="removeNode(${nodeIdx}); event.stopPropagation();"><i class="fa-solid fa-square-minus"></i></button>
                                 </div>
                             </div>
                             <div class="node-grid" id="node-grid-${nodeIdx}" style="display:none;">
-                                ${buildPropertyFieldsMarkup(node, nodeIdx)}
+                                ${buildPropertyFieldsMarkup(node, nodeIdx, 'Timeline')}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        } else if (activeTab === 'Conditions') {
+            const currentReqList = innerData.Req || [];
+            
+            if (currentReqList.length === 0) {
+                html += `<div style="text-align:center; opacity:0.4; font-size:0.8rem; margin-top:20px; text-transform:uppercase;">No conditions applied to this container. Press Shift + A to add one.</div>`;
+            } else {
+                currentReqList.forEach((node, nodeIdx) => {
+                    const translationText = TRANSLATIONS[node.K_NAME] || node.K_NAME;
+                    html += `
+                        <div class="node-card" id="node-block-${nodeIdx}">
+                            <div class="node-head" onclick="toggleNodeBody(${nodeIdx})">
+                                <div class="node-title-group">
+                                    <strong>${translationText}</strong>
+                                    <span class="node-summary-tag" id="summary-span-${nodeIdx}">${generateSummaryHeaderStr(node)}</span>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:20px;">
+                                    <span style="font-family:var(--font-code); font-weight:bold; color:var(--accent); font-size:0.85rem;">#${nodeIdx + 1}</span>
+                                    <button class="btn-delete-node" onclick="removeNode(${nodeIdx}); event.stopPropagation();"><i class="fa-solid fa-square-minus"></i></button>
+                                </div>
+                            </div>
+                            <div class="node-grid" id="node-grid-${nodeIdx}" style="display:none;">
+                                ${buildPropertyFieldsMarkup(node, nodeIdx, 'Conditions')}
                             </div>
                         </div>
                     `;
@@ -792,9 +862,9 @@
         canvas.innerHTML = html;
     }
 
-    function buildPropertyFieldsMarkup(node, nodeIdx) {
+    function buildPropertyFieldsMarkup(node, nodeIdx, context = 'Timeline') {
         let fieldsHtml = '';
-        const schemaFields = NODE_TEMPLATES[node.K_NAME] || Object.keys(node);
+        const schemaFields = (context === 'Conditions' ? CONDITION_TEMPLATES[node.K_NAME] : NODE_TEMPLATES[node.K_NAME]) || Object.keys(node);
 
         schemaFields.forEach(fieldKey => {
             if (fieldKey === 'K_NAME') return;
