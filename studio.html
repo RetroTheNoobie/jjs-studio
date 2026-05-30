@@ -123,7 +123,7 @@
 
         .tooltip-field { background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 12px; flex: 1; }
         .tooltip-field label { display: block; font-size: 0.65rem; color: var(--accent); text-transform: uppercase; margin-bottom: 5px; }
-        .tooltip-field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #333; font-family: var(--font-code); }
+        .tooltip-field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #333; font-family: var(--font-code); text-transform: none !important; }
 
         .branch-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; align-items: center; }
         .branch-tab { 
@@ -174,7 +174,7 @@
         .node-grid { padding: 25px; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; background: rgba(0,0,0,0.1); }
         .field { background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 12px; }
         .field label { display: block; font-size: 0.65rem; color: #8892b0; text-transform: uppercase; margin-bottom: 6px; }
-        .field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 0.95rem; border-bottom: 1px solid var(--border); font-family: var(--font-code); }
+        .field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 0.95rem; border-bottom: 1px solid var(--border); font-family: var(--font-code); text-transform: none !important; }
         .field input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; border-bottom: none; }
 
         .empty-state { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 1.3rem; color: #4f566b; text-transform: uppercase; text-align: center; line-height: 1.8; }
@@ -194,7 +194,7 @@
         .jjs-modal-body { padding: 20px; }
         
         .jjs-modal-textarea { width: 100%; height: 220px; background: #090a0f; color: #00ff66; border: 1px solid var(--border); padding: 15px; font-size: 0.85rem; resize: none; font-family: var(--font-code); }
-        .jjs-modal-input { width: 100%; background: #000; border: 1px solid var(--border); padding: 12px; color: #fff; font-size: 1rem; font-family: var(--font-code); }
+        .jjs-modal-input { width: 100%; background: #000; border: 1px solid var(--border); padding: 12px; color: #fff; font-size: 1rem; font-family: var(--font-code); text-transform: none !important; }
         
         .jjs-modal-footer { padding: 0 20px 20px 20px; display: flex; justify-content: flex-end; gap: 12px; }
         .btn-modal-confirm { background: var(--accent); color: #000; border: 1px solid var(--border); padding: 10px 20px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
@@ -737,7 +737,7 @@
             };
             btn.innerHTML = `
                 <span class="type-tag">${move.K_NAME || 'CONTAINER'}</span>
-                <span class="move-name">${(move.NAME || 'UNNAMED').toUpperCase()}</span>
+                <span class="move-name">${(move.NAME || 'UNNAMED')}</span>
             `;
             listContainer.appendChild(btn);
         });
@@ -767,7 +767,7 @@
         let html = `
             <div class="editor-header">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h1 style="margin:0; font-size:2.2rem; text-transform:uppercase; letter-spacing:1px; color:var(--accent);">${move.NAME || 'UNNAMED'}</h1>
+                    <h1 style="margin:0; font-size:2.2rem; text-transform:none; letter-spacing:1px; color:var(--accent);">${move.NAME || 'UNNAMED'}</h1>
                     <button class="btn-delete-container" onclick="deleteActiveContainer(${idx})"><i class="fa-solid fa-trash-can"></i> Delete Container</button>
                 </div>
                 <div class="container-fields-row">
@@ -805,7 +805,7 @@
             const currentNodesList = (activeBranch === 'Default') ? innerData.Line : innerData.Branch[activeBranch].Line;
             
             if (currentNodesList.length === 0) {
-                html += `<div style="text-align:center; opacity:0.4; font-size:0.8rem; margin-top:20px; text-transform:uppercase;">No nodes in this branch yet. Press Shift + A to add one.</div>`;
+                html += `<div style="text-align:center; opacity:0.4; font-size:0.8rem; margin-top:20px; text-transform:none;">No nodes in this branch yet. Press Shift + A to add one.</div>`;
             } else {
                 currentNodesList.forEach((node, nodeIdx) => {
                     const translationText = TRANSLATIONS[node.K_NAME] || node.K_NAME;
@@ -832,7 +832,7 @@
             const currentReqList = innerData.Req || [];
             
             if (currentReqList.length === 0) {
-                html += `<div style="text-align:center; opacity:0.4; font-size:0.8rem; margin-top:20px; text-transform:uppercase;">No conditions applied to this container. Press Shift + A to add one.</div>`;
+                html += `<div style="text-align:center; opacity:0.4; font-size:0.8rem; margin-top:20px; text-transform:none;">No conditions applied to this container. Press Shift + A to add one.</div>`;
             } else {
                 currentReqList.forEach((node, nodeIdx) => {
                     const translationText = TRANSLATIONS[node.K_NAME] || node.K_NAME;
