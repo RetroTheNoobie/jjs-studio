@@ -338,26 +338,45 @@
         DOMAIN: ["FLIP"], HOLD: ["FLIP"]
     };
 
+// 1. Updated order based on your requirement
     const PROPERTY_ORDER = [
         "DMG", "KNOCK", "INV", "REP", "REP2", "AWK", "KEEP", 
         "AWK2", "USE", "USEONDEATH", "NOSTUN", "NOCANCEL", "VAR"
     ];
 
+    // 2. Updated labels to match your dictionary exactly
     const PROPERTY_LABELS = {
-        DMG: "Dmg multi", KNOCK: "kb multi", INV: "invincible", 
-        REP: "rep skill if occupied", REP2: "prevent override", 
-        AWK: "hide in awk", KEEP: "keep when move switch", 
-        AWK2: "hide in base", USE: "use when obt", 
-        USEONDEATH: "use on death", NOSTUN: "no stun", 
-        NOCANCEL: "no cancel", VAR: "variant tag"
+        DMG: "Damage Multiplier",
+        KNOCK: "Knockback Multiplier",
+        INV: "Invincible",
+        REP: "Replace skill if occupied",
+        REP2: "Prevent Override",
+        AWK: "Hide In awakening",
+        KEEP: "Keep When Moveset Switches",
+        AWK2: "Hide in base",
+        USE: "Use when obtained",
+        USEONDEATH: "Use on death",
+        NOSTUN: "No Stun",
+        NOCANCEL: "No Cancel",
+        VAR: "Variant Tag"
     };
 
     const PROPERTY_DEFAULTS = {
-        DMG: 1.0, KNOCK: 1.0, INV: false, REP: false, REP2: false, 
-        AWK: false, KEEP: false, AWK2: false, USE: false, 
-        USEONDEATH: false, NOSTUN: false, NOCANCEL: false, VAR: ""
+        DMG: 1.0, 
+        KNOCK: 1.0, 
+        INV: false, 
+        REP: false, 
+        REP2: false, 
+        AWK: false, 
+        KEEP: false, 
+        AWK2: false, 
+        USE: false, 
+        USEONDEATH: false, 
+        NOSTUN: false, 
+        NOCANCEL: false, 
+        VAR: ""
     };
-
+    
     const DEFAULTS_LIB = {
         TIME: 1.0, SPEED: 1.0, START: 0.0, "ENABLE VARIANTS": true, "HOLD FOR": 0.0,
         MOVE: "Divergent Fist", SPEC: "Limitless", "FADE IN": 0.1, PREVIEW: [0, 3.59],
