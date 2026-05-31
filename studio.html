@@ -3,252 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JJS Studio - V1.0.0</title>
+    <title>JJS Studio - V1.3.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <script src="./zstd-bundle.js"></script>
 
+    <style id="custom-theme-style"></style>
     <style>
-        * {
-            text-transform: none !important;
-        }
-        .sidebar-header h2,
-        .btn-jjs-action,
-        .container-heading,
-        .workspace-tab,
-        .menu-label,
-        .node-head strong {
-            text-transform: uppercase !important;
-        }
+        * { text-transform: none !important; box-sizing: border-box; font-family: 'Finger Paint', cursive; border-radius: 0 !important; outline: none; }
+        
+        .uppercase-force, .topbar-btn, .sidebar-header h2, .btn-jjs-action, .container-heading, .workspace-tab, .menu-label, .node-head strong, .anim-cat-header, .workshop-tab, .prompt-title { text-transform: uppercase !important; }
+
         :root {
-            --bg: #121317;
-            --panel: #1a1c23;
-            --node-card: #222530;
-            --accent: #ffcc33;
-            --text: #e2e8f0;
-            --border: #2d313f;
-            --thickness: 3px;
-            --font-main: 'Finger Paint', cursive;
-            --font-code: 'Finger Paint', cursive;
+            --bg: #121317; --panel: #1a1c23; --node-card: #222530; --accent: #ffcc33; --text: #e2e8f0; --border: #2d313f; --thickness: 3px;
+            --font-code: 'Finger Paint', cursive; --bg-image: none; --bg-opacity: 1;
         }
 
         body.theme-retro   { --bg: #3c3f41; --panel: #2b2b2b; --node-card: #313335; --accent: #ff5722; --text: #f5f5f5; --border: #000000; }
         body.theme-matrix  { --bg: #030704; --panel: #0a0f0d; --node-card: #121a16; --accent: #00ff66; --text: #33ff77; --border: #00ff66; }
         body.theme-nova    { --bg: #0f051d; --panel: #18092b; --node-card: #240e42; --accent: #cc33ff; --text: #f3e8ff; --border: #4a1d8a; }
-        body.theme-toon    { --bg: #ffffff; --panel: #ffffff; --node-card: #ffffff; --accent: #000000; --text: #000000; --border: #000000; --thickness: 5px; }
-        body.theme-shadow  { --bg:#1c1e22; --accent:#00f0ff; --panel:#111215; --text:#c0c5cd; --node-card:#242930; --border:#00f0ff; --thickness:3px; }
-        body.theme-crimson { --bg:#141414; --accent:#ff2a4b; --panel:#0b0b0b; --text:#f5f5f5; --node-card:#1f1f1f; --border:#ff2a4b; --thickness:4px; }
+        body.theme-cyber   { --bg: #1c1e22; --panel: #111215; --node-card: #242930; --accent: #00f0ff; --text: #c0c5cd; --border: #00f0ff; --thickness: 3px; }
+        body.theme-crimson { --bg: #141414; --panel: #0b0b0b; --node-card: #1f1f1f; --accent: #ff2a4b; --text: #f5f5f5; --border: #ff2a4b; --thickness: 4px; }
+        body.theme-super-dark { --bg: #000000; --panel: #050505; --node-card: #0a0a0a; --accent: #ffffff; --text: #e0e0e0; --border: #1f1f1f; --thickness: 2px; }
 
-        * {
-            box-sizing: border-box;
-            font-family: var(--font-main);
-            border-radius: 0 !important;
-            outline: none;
-        }
-
-        body {
-            margin: 0;
-            background-color: var(--bg);
-            color: var(--text);
-            display: flex;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            transition: background 0.25s, color 0.25s;
-        }
-
-        .sidebar {
-            width: 380px;
-            min-width: 380px;
-            background: var(--panel);
-            border-right: var(--thickness) solid var(--border);
-            display: flex;
-            flex-direction: column;
-            z-index: 10;
-            height: 100%;
-            overflow-y: auto;
-            transition: background 0.2s, border-color 0.2s;
-            box-shadow: 5px 0 0 rgba(0,0,0,0.2);
-        }
-
-        .sidebar-header {
-            padding: 25px;
-            border-bottom: var(--thickness) solid var(--border);
-            text-align: center;
-        }
-
-        .engine-status {
-            font-size: 0.7rem;
-            padding: 6px 12px;
-            background: rgba(0,0,0,0.4);
-            border: 1px solid var(--border);
-            width: fit-content;
-            margin: 10px auto 0 auto;
-        }
-
-        .theme-container {
-            margin: 15px;
-            padding: 12px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .theme-control-row { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 10px; }
-        .theme-container label { font-size: 0.7rem; color: var(--accent);  }
-        .theme-select { background: var(--panel); color: var(--text); border: 2px solid var(--border); padding: 6px; font-size: 0.8rem; cursor: pointer; flex-grow: 1; }
+        body { margin: 0; background-color: var(--bg); color: var(--text); display: flex; flex-direction: column; width: 100vw; height: 100vh; overflow: hidden; position: relative; }
         
-        .jjs-action-container { padding: 0 15px 20px 15px; display: flex; gap: 10px; border-bottom: var(--thickness) solid var(--border); }
+        body::before {
+            content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-image: var(--bg-image); background-size: cover; background-position: center;
+            opacity: var(--bg-opacity); z-index: -1; pointer-events: none;
+        }
 
-        .btn-jjs-action { flex: 1; padding: 12px; border: var(--thickness) solid var(--border); background: rgba(0,0,0,0.2); color: var(--text); font-weight: bold; cursor: pointer;  font-size: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.15s, color 0.15s; }
+        .topbar { flex-shrink: 0; height: 50px; background: var(--panel); border-bottom: var(--thickness) solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 15px; z-index: 50; }
+        .topbar-btn { background: transparent; color: var(--text); border: none; border-bottom: 3px solid transparent; font-weight: bold; cursor: pointer; height: 100%; padding: 0 15px; font-size: 0.85rem; transition: 0.2s; }
+        .topbar-btn:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+        .app-body { display: flex; flex: 1; overflow: hidden; }
+        .sidebar { width: 380px; min-width: 380px; background: var(--panel); border-right: var(--thickness) solid var(--border); display: flex; flex-direction: column; z-index: 10; height: 100%; box-shadow: 5px 0 0 rgba(0,0,0,0.2); }
+        .sidebar-header { padding: 25px; border-bottom: var(--thickness) solid var(--border); text-align: center; }
+        .engine-status { font-size: 0.7rem; padding: 6px 12px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); width: fit-content; margin: 10px auto 0 auto; }
+        
+        .jjs-action-container { padding: 20px 15px; display: flex; flex-direction: column; gap: 10px; border-bottom: var(--thickness) solid var(--border); }
+        .jjs-action-row { display: flex; gap: 10px; width: 100%; }
+        .btn-jjs-action { flex: 1; padding: 12px; border: var(--thickness) solid var(--border); background: rgba(0,0,0,0.2); color: var(--text); font-weight: bold; cursor: pointer; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.15s; }
         .btn-jjs-action i { font-size: 0.9rem; color: var(--accent); }
         .btn-jjs-action:hover { background: var(--accent); color: #000; }
         .btn-jjs-action:hover i { color: #000; }
 
-        .container-heading { padding: 15px 20px 5px 20px; font-size: 0.7rem; color: var(--accent);  letter-spacing: 1px; }
+        .container-heading { padding: 15px 20px 5px 20px; font-size: 0.7rem; color: var(--accent); letter-spacing: 1px; }
         .container-list { padding: 10px 15px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex-grow: 1; }
-
-        .item { padding: 15px; background: var(--node-card); cursor: pointer; border: var(--thickness) solid var(--border); transition: transform 0.1s, background 0.2s; }
+        .item { padding: 15px; background: var(--node-card); cursor: pointer; border: var(--thickness) solid var(--border); transition: 0.1s; }
         .item:hover { background: rgba(255,255,255,0.05); }
         .item.active { background: var(--accent); color: #000 !important; border-color: var(--border); }
         .item.active .type-tag, .item.active .move-name { color: #000 !important; }
-        
-        .item .type-tag { font-size: 0.65rem; color: var(--accent);  display: block; margin-bottom: 2px;}
+        .item .type-tag { font-size: 0.65rem; color: var(--accent); display: block; margin-bottom: 2px;}
         .item .move-name { display: block; font-size: 1.1rem; color: var(--text); }
 
-        .main { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 40px; height: 100%; display: block; }
+        .main { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 40px; height: 100%; display: block; background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px); background-size: 30px 30px; position: relative; }
 
         .editor-header { display: flex; flex-direction: column; gap: 15px; border-left: var(--thickness) solid var(--accent); padding-left: 20px; margin-bottom: 25px; }
-        
-        .btn-delete-container {
-            background: #ff4d4d; color: #fff; border: var(--thickness) solid var(--border); padding: 10px 15px;
-            font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.75rem; 
-             transition: transform 0.1s, filter 0.1s;
-        }
+        .btn-delete-container { background: #ff4d4d; color: #fff; border: var(--thickness) solid var(--border); padding: 10px 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.75rem; transition: 0.1s; }
         .btn-delete-container:hover { transform: translate(-2px, -2px); filter: brightness(1.1); }
-
         .container-fields-row { display: flex; gap: 15px; }
-
-        .tooltip-field { background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 12px; flex: 1; }
-        .tooltip-field label { display: block; font-size: 0.65rem; color: var(--accent);  margin-bottom: 5px; }
-        .tooltip-field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #333; font-family: var(--font-code);  }
+        .tooltip-field { background: rgba(0,0,0,0.8); border: 1px solid var(--border); padding: 12px; flex: 1; }
+        .tooltip-field label { display: block; font-size: 0.65rem; color: var(--accent); margin-bottom: 5px; }
+        .tooltip-field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #333; }
 
         .branch-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; align-items: center; }
-        .branch-tab { 
-            font-family: var(--font-code); 
-            background: var(--panel); 
-            border: var(--thickness) solid var(--border); 
-            padding: 8px 16px; 
-            color: var(--text); 
-            font-size: 0.8rem; 
-             
-            font-weight: bold; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            transition: background 0.1s; 
-        }
+        .branch-tab { background: var(--panel); border: var(--thickness) solid var(--border); padding: 8px 16px; color: var(--text); font-size: 0.8rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.1s; }
         .branch-tab:hover { background: rgba(255,255,255,0.1); }
         .branch-tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
-        
-        .branch-tab .edit-icon { opacity: 0.6; font-size: 0.7rem; padding: 4px; transition: opacity 0.1s; }
-        .branch-tab .edit-icon:hover { opacity: 1; }
-        .branch-tab.active .edit-icon { color: #000; }
-        
-        .branch-tab .delete-icon { opacity: 0.6; font-size: 0.7rem; padding: 4px; transition: opacity 0.1s; color: #ff4d4d; }
-        .branch-tab .delete-icon:hover { opacity: 1; color: #ff1a1a; }
-        .branch-tab.active .delete-icon { color: #cc0000; }
-        
-        .branch-add-btn { background: transparent; border: 2px solid #00ff66; color: #00ff66; padding: 6px 12px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+        .branch-tab .edit-icon, .branch-tab .delete-icon { opacity: 0.6; font-size: 0.7rem; padding: 4px; transition: opacity 0.1s; }
+        .branch-tab .edit-icon:hover { opacity: 1; } .branch-tab.active .edit-icon { color: #000; }
+        .branch-tab .delete-icon { color: #ff4d4d; } .branch-tab .delete-icon:hover { opacity: 1; color: #ff1a1a; } .branch-tab.active .delete-icon { color: #cc0000; }
+        .branch-add-btn { background: var(--panel); border: 2px solid #00ff66; color: #00ff66; padding: 6px 12px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
         .branch-add-btn:hover { background: #00ff66; color: #000; }
 
-        .workspace-tabs { display: flex; gap: 5px; border-bottom: 2px solid var(--border); margin-bottom: 30px; }
-        .workspace-tab { flex: 1; background: transparent; border: none; padding: 12px; color: var(--text); opacity: 0.5; font-size: 0.85rem;  font-weight: bold; cursor: pointer; transition: opacity 0.2s, background 0.2s; border-bottom: 3px solid transparent; }
+        .workspace-tabs { display: flex; gap: 5px; border-bottom: 2px solid var(--border); margin-bottom: 20px; }
+        .workspace-tab { flex: 1; background: rgba(0,0,0,0.5); border: none; padding: 12px; color: var(--text); opacity: 0.5; font-size: 0.85rem; font-weight: bold; cursor: pointer; transition: 0.2s; border-bottom: 3px solid transparent; }
         .workspace-tab:hover { opacity: 0.8; background: rgba(255,255,255,0.05); }
-        .workspace-tab.active { opacity: 1; color: var(--accent); border-bottom: 3px solid var(--accent); background: rgba(0,0,0,0.2); }
+        .workspace-tab.active { opacity: 1; color: var(--accent); border-bottom: 3px solid var(--accent); background: rgba(0,0,0,0.8); }
 
-        .node-card { background: var(--panel); border: var(--thickness) solid var(--border); margin-bottom: 20px; overflow: hidden; box-shadow: 6px 6px 0px rgba(0,0,0,1); transition: background 0.2s, border-color 0.2s; }
+        .node-card { background: var(--panel); border: var(--thickness) solid var(--border); margin-bottom: 20px; overflow: hidden; box-shadow: 6px 6px 0px rgba(0,0,0,0.6); transition: 0.1s; position: relative; }
+        .node-card.selected { border-color: var(--accent); box-shadow: 0 0 15px rgba(255, 204, 51, 0.5); transform: translateY(-2px); }
         .node-head { background: rgba(0,0,0,0.3); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: var(--thickness) solid var(--border); user-select: none; cursor: pointer; }
         .node-head:hover { background: rgba(255,255,255,0.03); }
-
         .node-title-group { display: flex; align-items: center; gap: 12px; }
-        .node-title-group strong { color: var(--accent); font-size: 1rem;  }
-        .node-summary-tag { color: #8892b0; font-size: 0.8rem; font-family: var(--font-code); }
-
-        .btn-delete-node { background: transparent; border: none; color: #ff4d4d; cursor: pointer; font-size: 1.1rem; padding: 5px; transition: color 0.1s; }
-        .btn-delete-node:hover { color: #ff1a1a; }
+        .node-title-group strong { color: var(--accent); font-size: 1rem; }
+        .node-summary-tag { color: #8892b0; font-size: 0.8rem; }
+        .btn-delete-node, .btn-comment-node { background: transparent; border: none; cursor: pointer; font-size: 1.1rem; padding: 5px; transition: color 0.1s; }
+        .btn-delete-node { color: #ff4d4d; } .btn-delete-node:hover { color: #ff1a1a; }
+        .btn-comment-node { color: #a0aec0; } .btn-comment-node:hover { color: #fff; }
 
         .node-grid { padding: 25px; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; background: rgba(0,0,0,0.1); }
-        .field { background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 12px; }
-        .field label { display: block; font-size: 0.65rem; color: #8892b0;  margin-bottom: 6px; }
-        .field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 0.95rem; border-bottom: 1px solid var(--border); font-family: var(--font-code);  }
-        .field input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; border-bottom: none;  }
+        .field { background: rgba(0,0,0,0.4); border: 1px solid var(--border); padding: 12px; }
+        .field label { display: block; font-size: 0.65rem; color: #8892b0; margin-bottom: 6px; }
+        .field input, .field select { width: 100%; background: transparent; border: none; color: #fff; font-size: 0.95rem; border-bottom: 1px solid var(--border); }
+        .field input:disabled { opacity: 0.5; border-bottom: none; cursor: not-allowed; }
+        .field input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; border-bottom: none; }
 
-        .empty-state { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 1.3rem; color: #4f566b;  text-align: center; line-height: 1.8; }
+        .empty-state { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 1.3rem; color: #4f566b; text-align: center; line-height: 1.8; }
+        .gui-scale-bar { display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.6); padding: 10px 20px; border: 1px solid var(--border); margin-bottom: 20px; font-size: 0.75rem; }
+        .gui-scale-bar input[type="range"] { flex-grow: 1; cursor: pointer; accent-color: var(--accent); }
 
         .context-menu { position: fixed; display: none; background: #090a0f; border: var(--thickness) solid var(--border); z-index: 10000; padding: 5px 0; min-width: 220px; max-height: 450px; overflow-y: auto; box-shadow: 0px 10px 30px rgba(0,0,0,0.5); }
-        .context-menu .menu-label { padding: 6px 15px; font-size: 0.65rem; color: var(--accent);  letter-spacing: 0.5px; background: rgba(255,255,255,0.02); }
-        .context-menu .menu-item { padding: 10px 15px; font-size: 0.75rem; color: #e2e8f0; cursor: pointer;  display: flex; justify-content: space-between; align-items: center; }
+        .context-menu .menu-label { padding: 6px 15px; font-size: 0.65rem; color: var(--accent); letter-spacing: 0.5px; background: rgba(255,255,255,0.02); }
+        .context-menu .menu-item { padding: 10px 15px; font-size: 0.75rem; color: #e2e8f0; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .context-menu .menu-item:hover { background: var(--accent); color: #000; }
-        .context-menu .menu-separator { height: 1px; background: var(--border); margin: 5px 0; }
 
-        .jjs-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 9999; display: none; align-items: center; justify-content: center; }
-        .jjs-modal-box { background: var(--panel); border: var(--thickness) solid var(--border); width: 550px; max-width: 90%; }
-        .jjs-modal-header { background: rgba(0,0,0,0.3); padding: 20px; border-bottom: var(--thickness) solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .jjs-modal-title { color: var(--accent);  font-size: 1.1rem; margin: 0; }
+        /* Modals */
+        .jjs-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 10001; display: none; align-items: center; justify-content: center; }
+        .jjs-modal-box { background: var(--panel); border: var(--thickness) solid var(--border); width: 550px; max-width: 90%; display: flex; flex-direction: column; max-height: 90vh; }
+        .jjs-modal-header { background: rgba(0,0,0,0.5); padding: 20px; border-bottom: var(--thickness) solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .jjs-modal-title { color: var(--accent); font-size: 1.1rem; margin: 0; }
         .jjs-modal-close { background: transparent; border: none; color: #ff4d4d; cursor: pointer; font-size: 1.2rem; }
         .jjs-modal-close:hover { color: #ff1a1a; }
-        .jjs-modal-body { padding: 20px; }
-        
-        .jjs-modal-textarea { width: 100%; height: 220px; background: #090a0f; color: #00ff66; border: 1px solid var(--border); padding: 15px; font-size: 0.85rem; resize: none; font-family: var(--font-code); }
-        .jjs-modal-input { width: 100%; background: #000; border: 1px solid var(--border); padding: 12px; color: #fff; font-size: 1rem; font-family: var(--font-code);  }
-        
+        .jjs-modal-body { padding: 20px; overflow-y: auto; flex-grow: 1; }
         .jjs-modal-footer { padding: 0 20px 20px 20px; display: flex; justify-content: flex-end; gap: 12px; }
-        .btn-modal-confirm { background: var(--accent); color: #000; border: 1px solid var(--border); padding: 10px 20px; font-weight: bold; cursor: pointer;  !important; }
+        
+        .jjs-modal-textarea { width: 100%; height: 220px; background: #090a0f; color: #00ff66; border: 1px solid var(--border); padding: 15px; font-size: 0.85rem; resize: none; }
+        .jjs-modal-input { width: 100%; background: #000; border: 1px solid var(--border); padding: 12px; color: #fff; font-size: 1rem; }
+        .btn-modal-confirm { background: var(--accent); color: #000; border: 1px solid var(--border); padding: 10px 20px; font-weight: bold; cursor: pointer; text-transform: uppercase !important; transition: filter 0.1s; }
         .btn-modal-confirm:hover { filter: brightness(1.2); }
+
+        .anim-cat-header { font-weight: bold; padding: 12px 18px; margin-top: 6px; cursor: pointer; border: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); font-size: 0.85rem; }
+        .anim-cat-content { display: none; padding: 8px; background: rgba(0,0,0,0.6); border: 2px solid var(--border); border-top: none; flex-direction: column; gap: 5px; }
+        .anim-item-row { padding: 8px 14px; cursor: pointer; font-size: 0.85rem; color: #fff; transition: background 0.1s; display: flex; justify-content: space-between; }
+        .anim-item-row:hover { background: var(--accent); color: #000; }
+
+        /* Workshop & Drag */
+        #drag-indicator { position: fixed; height: 4px; background-color: #00ffcc; z-index: 10000; pointer-events: none; box-shadow: 0 0 10px #00ffcc; display: none; }
+        .drag-ghost { position: fixed; pointer-events: none; z-index: 9999; opacity: 0.6; filter: brightness(1.3); }
+
+        #workshop-window { position: fixed; top: 100px; left: 100px; width: 750px; height: 550px; background: var(--panel); border: var(--thickness) solid var(--border); z-index: 9000; display: none; flex-direction: column; box-shadow: 10px 10px 0px rgba(0,0,0,0.6); }
+        .workshop-header { padding: 15px; background: rgba(0,0,0,0.5); cursor: move; display: flex; justify-content: space-between; align-items: center; border-bottom: var(--thickness) solid var(--border); }
+        .workshop-tabs { display: flex; border-bottom: 2px solid var(--border); overflow-x: auto; background: rgba(0,0,0,0.3); }
+        .workshop-tab { flex-shrink: 0; padding: 12px 15px; background: transparent; border: none; color: var(--text); opacity: 0.5; font-weight: bold; cursor: pointer; transition: 0.2s; border-bottom: 3px solid transparent; }
+        .workshop-tab.active { opacity: 1; color: var(--accent); border-bottom-color: var(--accent); background: rgba(0,0,0,0.4); }
+        .workshop-content { padding: 20px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+
+        #selection-banner { position: fixed; top: 50px; left: 380px; right: 0; height: 50px; background: rgba(255, 204, 51, 0.9); color: #000; display: none; align-items: center; justify-content: space-between; padding: 0 30px; z-index: 80; font-weight: bold; text-transform: uppercase; font-size: 1.1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
 
-<div class="sidebar">
-    <div class="sidebar-header">
-        <h2 style="margin:0; color: var(--accent);  font-size: 1.5rem; letter-spacing: 1px;">JJS Studio</h2>
-        <div id="engine-status-box" class="engine-status">Loading...</div>
-    </div>
-
-    <div class="theme-container">
-        <div style="width:100%; display:flex; justify-content:space-between; align-items:center;">
-            <label>Workspace Theme</label>
-        </div>
-        <div class="theme-control-row">
-            <select class="theme-select" id="global-theme-picker" onchange="previewTheme(this.value)">
-                <optgroup label="Standard Themes">
-                    <option value="default" selected>Default Dark</option>
-                    <option value="retro">Retro</option>
-                    <option value="matrix">Matrix</option>
-                    <option value="nova">Nova</option>
-                    <option value="toon">Toon</option>
-                    <option value="shadow">Shadow</option>
-                    <option value="crimson">Crimson</option>
-                </optgroup>
-            </select>
-        </div>
-    </div>
-
-    <div class="jjs-action-container">
-        <button class="btn-jjs-action" onclick="openIOModal('import')"><i class="fa-solid fa-file-import"></i> Import</button>
-        <button class="btn-jjs-action" onclick="openIOModal('export')"><i class="fa-solid fa-file-export"></i> Export</button>
-    </div>
-
-    <div class="container-heading">Containers</div>
-    <div class="container-list" id="sidebar-render-target"></div>
+<div class="topbar">
+    <button class="topbar-btn" onclick="openWorkshop()">Workshop <i class="fa-solid fa-toolbox" style="margin-left:5px;"></i></button>
+    <button class="topbar-btn" onclick="openCustomNodeBuilder()">Custom Node Builder <i class="fa-solid fa-hammer" style="margin-left:5px;"></i></button>
+    <button class="topbar-btn" onclick="openThemesUI()">Themes <i class="fa-solid fa-palette" style="margin-left:5px;"></i></button>
+    <button class="topbar-btn" onclick="showShortcuts()"><i class="fa-solid fa-keyboard" style="margin-right:5px;"></i> Shortcuts</button>
+    <div style="flex-grow:1;"></div>
+    <span id="auth-status" style="font-size:0.75rem; opacity:0.6; margin-right:15px;">Unauthenticated</span>
+    <button class="btn-jjs-action" style="padding: 6px 12px; height:auto; width:auto;" onclick="mockRobloxAuth()"><i class="fa-solid fa-user-lock"></i> Roblox Login</button>
 </div>
 
-<div class="main" id="workspace-canvas-timeline"></div>
+<div class="app-body">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2 style="margin:0; color: var(--accent); font-size: 1.5rem; letter-spacing: 1px;">JJS Studio</h2>
+            <div id="engine-status-box" class="engine-status">Loading...</div>
+        </div>
+
+        <div class="jjs-action-container">
+            <div class="jjs-action-row">
+                <button class="btn-jjs-action" onclick="openIOModal('import')"><i class="fa-solid fa-file-import"></i> Import</button>
+                <button class="btn-jjs-action" onclick="openIOModal('export')"><i class="fa-solid fa-file-export"></i> Export</button>
+            </div>
+            <div id="manual-redirect-container" style="display:none; width: 100%;">
+                <button class="btn-jjs-action" style="background: #ff5722; color: #fff; border-color: #000;" onclick="window.open('https://qizhengmo.github.io/Omni/', '_blank')">
+                    <i class="fa-solid fa-life-ring"></i> Manual Encoding/Decoding
+                </button>
+            </div>
+        </div>
+
+        <div class="container-heading">Containers</div>
+        <div class="container-list" id="sidebar-render-target"></div>
+    </div>
+
+    <div class="main" id="workspace-canvas-timeline"></div>
+</div>
+
+<div id="drag-indicator"></div>
+<div id="selection-banner">
+    <span id="selection-banner-text">Select nodes to upload...</span>
+    <div>
+        <button class="btn-modal-confirm" style="background: #e2e8f0; margin-right: 10px;" onclick="cancelSelectionMode()">Cancel</button>
+        <button class="btn-modal-confirm" onclick="confirmSelectionMode()">Confirm</button>
+    </div>
+</div>
 
 <div id="shift-a-context-menu" class="context-menu">
     <div class="menu-label">Create Container</div>
@@ -262,13 +204,40 @@
     <div id="context-menu-nodes-target"></div>
 </div>
 
+<div class="jjs-modal-overlay" id="jjs-prompt-modal" style="z-index: 10005;">
+    <div class="jjs-modal-box" style="width: 450px;">
+        <div class="jjs-modal-header">
+            <h3 class="jjs-modal-title prompt-title" id="prompt-title">Notice</h3>
+        </div>
+        <div class="jjs-modal-body">
+            <p id="prompt-message" style="margin:0; line-height:1.6; font-size:0.9rem;"></p>
+        </div>
+        <div class="jjs-modal-footer" id="prompt-buttons"></div>
+    </div>
+</div>
+
+<div class="jjs-modal-overlay" id="jjs-input-modal" style="z-index: 10005;">
+    <div class="jjs-modal-box" style="width: 450px;">
+        <div class="jjs-modal-header">
+            <h3 class="jjs-modal-title prompt-title" id="input-modal-title">Input</h3>
+            <button class="jjs-modal-close" onclick="document.getElementById('jjs-input-modal').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="jjs-modal-body">
+            <input type="text" id="input-modal-field" class="jjs-modal-input" placeholder="...">
+        </div>
+        <div class="jjs-modal-footer">
+            <button class="btn-modal-confirm" id="input-modal-confirm">Confirm</button>
+        </div>
+    </div>
+</div>
+
 <div class="jjs-modal-overlay" id="jjs-io-modal" onclick="closeIOModal(event)">
     <div class="jjs-modal-box" onclick="event.stopPropagation()">
         <div class="jjs-modal-header">
-            <h3 class="jjs-modal-title" id="io-modal-title-text"><i class="fa-solid fa-terminal"></i> Data Center</h3>
+            <h3 class="jjs-modal-title prompt-title" id="io-modal-title-text"><i class="fa-solid fa-terminal"></i> Data Center</h3>
             <button class="jjs-modal-close" onclick="closeIOModal(null)"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div class="jjs-modal-body" id="io-modal-body-container">
+        <div class="jjs-modal-body">
             <textarea class="jjs-modal-textarea" id="io-terminal-textarea"></textarea>
         </div>
         <div class="jjs-modal-footer">
@@ -277,136 +246,105 @@
     </div>
 </div>
 
-<div class="jjs-modal-overlay" id="jjs-branch-modal" onclick="closeBranchModal(event)">
-    <div class="jjs-modal-box" style="width: 400px;" onclick="event.stopPropagation()">
+<div class="jjs-modal-overlay" id="jjs-anim-modal" onclick="closeAnimModal(event)">
+    <div class="jjs-modal-box" style="width: 500px;" onclick="event.stopPropagation()">
         <div class="jjs-modal-header">
-            <h3 class="jjs-modal-title" id="branch-modal-title-text"><i class="fa-solid fa-code-branch"></i> Branch Config</h3>
-            <button class="jjs-modal-close" onclick="closeBranchModal(null)"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="jjs-modal-title prompt-title"><i class="fa-solid fa-clapperboard"></i> Select Animation</h3>
+            <button class="jjs-modal-close" onclick="closeAnimModal(null)"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div class="jjs-modal-body">
-            <label style="display:block; font-size:0.7rem; color:var(--accent); text-transform:none; margin-bottom:8px;">Branch Name (Case Sensitive)</label>
-            <input type="text" class="jjs-modal-input" id="branch-name-input" placeholder="e.g. AirVariant">
-        </div>
-        <div class="jjs-modal-footer">
-            <button class="btn-modal-confirm" onclick="executeBranchAction()">Confirm</button>
-        </div>
+        <div class="jjs-modal-body" id="anim-modal-body"></div>
     </div>
 </div>
 
+<div class="jjs-modal-overlay" id="jjs-themes-modal" onclick="closeThemesModal(event)">
+    <div class="jjs-modal-box" onclick="event.stopPropagation()">
+        <div class="jjs-modal-header">
+            <h3 class="jjs-modal-title prompt-title"><i class="fa-solid fa-palette"></i> Themes Hub</h3>
+            <button class="jjs-modal-close" onclick="closeThemesModal(null)"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="jjs-modal-body" id="themes-modal-content" style="display: flex; flex-direction: column; gap: 10px;"></div>
+    </div>
+</div>
+
+<div id="workshop-window">
+    <div class="workshop-header" id="workshop-drag-header">
+        <strong style="color:var(--accent); font-size:1.1rem; text-transform:uppercase;"><i class="fa-solid fa-toolbox"></i> Workshop</strong>
+        <button style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-size:1.2rem;" onclick="document.getElementById('workshop-window').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="workshop-tabs" id="workshop-tabs-container">
+        <button class="workshop-tab active" onclick="setWorkshopTab('SFX')">SFX</button>
+        <button class="workshop-tab" onclick="setWorkshopTab('VFX')">VFX</button>
+        <button class="workshop-tab" onclick="setWorkshopTab('Mesh VFX')">Mesh VFX</button>
+        <button class="workshop-tab" onclick="setWorkshopTab('Mixed VFX')">Mixed VFX</button>
+        <button class="workshop-tab" onclick="setWorkshopTab('TEMPLATES')">TEMPLATES</button>
+    </div>
+    <div class="workshop-content" id="workshop-content"></div>
+</div>
+
 <script>
+    // --- Data & Dictionaries ---
     const TRANSLATIONS = {
-        "ULTGIB": "ADD AWAKENING", "HPGIB": "ADD HEALTH", "EVGIB": "ADD EVASION",
-        "HITCNCL": "HIT CANCEL", "ATK": "ATTACK", "ANIM": "ANIMATION",
-        "VELO": "VELOCITY", "PROJ": "PROJECTILE", "SFX": "SOUND",
-        "WAIT": "WAIT", "SKILL": "SKILL", "SPECIAL": "SPECIAL",
-        "CONNECT": "CONNECT", "HITBOX": "HITBOX", "BRANCH": "BRANCH",
-        "VISUAL": "VISUAL", "GRAB": "GRAB", "COUNTER": "COUNTER",
-        "TAG": "TAG", "STATE": "STATE", "TELEPORT": "TELEPORT",
-        "LOOP": "LOOP", "SETCD": "SET COOLDOWN",
-        
-        "AIR": "In air", "JUMP": "Is jumping", "AIM": "Has Target", "ULT": "Is awakened",
-        "BAR": "Has awk bar", "DUR": "Durability", "HP": "Has Health",
-        "DOMAIN": "Is In Domain", "HOLD": "Is holding"
+        "ULTGIB": "ADD AWAKENING", "HPGIB": "ADD HEALTH", "EVGIB": "ADD EVASION", "HITCNCL": "HIT CANCEL", "ATK": "ATTACK", "ANIM": "ANIMATION",
+        "VELO": "VELOCITY", "PROJ": "PROJECTILE", "SFX": "SOUND", "WAIT": "WAIT", "SKILL": "SKILL", "SPECIAL": "SPECIAL", "CONNECT": "CONNECT", 
+        "HITBOX": "HITBOX", "BRANCH": "BRANCH", "VISUAL": "VISUAL", "GRAB": "GRAB", "COUNTER": "COUNTER", "TAG": "TAG", "STATE": "STATE", 
+        "TELEPORT": "TELEPORT", "LOOP": "LOOP", "SETCD": "SET COOLDOWN", "CUSTOM_NODE": "CUSTOM NODE",
+        "AIR": "In air", "JUMP": "Is jumping", "AIM": "Has Target", "ULT": "Is awakened", "BAR": "Has awk bar", "DUR": "Durability", 
+        "HP": "Has Health", "DOMAIN": "Is In Domain", "HOLD": "Is holding"
     };
 
     const NODE_TEMPLATES = {
-        WAIT: ["TIME"],
-        SKILL: ["SPEED", "START", "ENABLE VARIANTS", "HOLD FOR", "MOVE", "CANCEL LAST"],
-        SPECIAL: ["SPEED", "SPEC", "ENABLE VARIANTS", "CANCEL LAST"],
-        ANIM: ["FADE IN", "PREVIEW", "FADE OUT", "LAST HIT", "SPEED", "ANIM_USE"],
-        SFX: ["END", "GLOBAL", "VOLUME", "PROJECTILE TAG", "ID", "START", "CANCEL", "SPEED"],
-        VELO: ["RELATIVE FROM BRANCH", "TRACK", "TIME", "TRUE RAGDOLL", "FORCE", "RAGDOLL", "LAST HIT", "FADE"],
-        CONNECT: ["SIGNAL", "TIME"],
+        WAIT: ["TIME"], SKILL: ["SPEED", "START", "ENABLE VARIANTS", "HOLD FOR", "MOVE", "CANCEL LAST"], SPECIAL: ["SPEED", "SPEC", "ENABLE VARIANTS", "CANCEL LAST"],
+        ANIM: ["FADE IN", "PREVIEW", "FADE OUT", "LAST HIT", "SPEED", "Animation"], SFX: ["END", "GLOBAL", "VOLUME", "PROJECTILE TAG", "ID", "START", "CANCEL", "SPEED"],
+        VELO: ["RELATIVE FROM BRANCH", "TRACK", "TIME", "TRUE RAGDOLL", "FORCE", "RAGDOLL", "LAST HIT", "FADE"], CONNECT: ["SIGNAL", "TIME"],
         HITBOX: ["SIZE", "SINGLE TARGET", "CAN KILL", "BLOCKABLE", "ATTACK TYPE", "PREVIEW", "STUN", "DEBREE", "POSITION", "BRANCH TARGET", "HIT RAGDOLL", "BRANCH FINISHER", "STUN ANIM", "BRANCH", "DAMAGE", "ROTATION", "CANCEL ENEMY", "PROJECTILE TAG", "360 BLOCK", "HIT USER", "CLEAR KNOCKBACK"],
-        BRANCH: ["LAST HIT", "BRANCH", "RANDOM"],
-        VISUAL: ["SIZE", "RELATIVE FROM BRANCH", "CAN COLLIDE", "OPACITY", "TEXTURE", "ALT COLOR", "COLOR", "EASING STYLE", "AMOUNT", "ALT ROTATION", "POSITION", "EASING DIRECTION", "CANCEL ON INTERRUPT", "VISUAL TAG", "ALT SIZE", "TIME", "RUN ON SERVER", "PROJECTILE TAG", "BODY PART", "ROTATION", "LAST HIT", "EFFECT", "ALT POSITION", "ALT OPACITY"],
-        GRAB: ["POSITION", "BODY PART", "ROTATION", "LAST HIT", "TIME", "BODY PART2"],
-        PROJECTILE: ["DAMAGE", "SPEED", "CAN KILL", "BLOCKABLE", "ATTACK TYPE", "CONTINUE", "CLEAR KNOCKBACK", "FILTER INTERVAL", "STUN", "CANCEL ENEMY", "DEBREE", "CACHE", "POSITION", "REFLECT COUNT", "BRANCH TARGET", "HIT RAGDOLL", "BRANCH", "BRANCH COLLIDED", "TIME", "HIT USER", "SIZE", "ROTATION", "PROJECTILE TAG", "360 BLOCK", "STUN ANIM", "AIM LAST HIT"],
-        COUNTER: ["BRANCH", "CANCEL ENEMY", "BRANCH TARGET", "STUN", "REMOVE ON HIT", "TIME", "ATTACK TYPE2"],
-        TAG: ["ADD/REMOVE", "TIME", "TAG", "CHECK", "LAST HIT", "BRANCH", "VALUE", "SET"],
-        STATE: ["DISABLE BURST", "CANCEL ON END", "LAST HIT", "STATE", "TIME", "VALUE"],
-        TELEPORT: ["POSITION", "PROJECTILE TAG", "LAST HIT", "RELATIVE FROM BRANCH", "ROTATION"],
-        ULTGIB: ["AMOUNT"], HPGIB: ["AMOUNT"], EVGIB: ["AMOUNT"],
-        HITCNCL: ["FLIP", "BRANCH", "TIME", "ENDLAG"],
-        LOOP: ["LOOP BACK", "HOLD", "LOOP AMOUNT"],
-        SETCD: ["KEY", "COOLDOWN"]
+        BRANCH: ["LAST HIT", "BRANCH", "RANDOM"], VISUAL: ["SIZE", "RELATIVE FROM BRANCH", "CAN COLLIDE", "OPACITY", "TEXTURE", "ALT COLOR", "COLOR", "EASING STYLE", "AMOUNT", "ALT ROTATION", "POSITION", "EASING DIRECTION", "CANCEL ON INTERRUPT", "VISUAL TAG", "ALT SIZE", "TIME", "RUN ON SERVER", "PROJECTILE TAG", "BODY PART", "ROTATION", "LAST HIT", "EFFECT", "ALT POSITION", "ALT OPACITY"],
+        GRAB: ["POSITION", "BODY PART", "ROTATION", "LAST HIT", "TIME", "BODY PART2"], PROJECTILE: ["DAMAGE", "SPEED", "CAN KILL", "BLOCKABLE", "ATTACK TYPE", "CONTINUE", "CLEAR KNOCKBACK", "FILTER INTERVAL", "STUN", "CANCEL ENEMY", "DEBREE", "CACHE", "POSITION", "REFLECT COUNT", "BRANCH TARGET", "HIT RAGDOLL", "BRANCH", "BRANCH COLLIDED", "TIME", "HIT USER", "SIZE", "ROTATION", "PROJECTILE TAG", "360 BLOCK", "STUN ANIM", "AIM LAST HIT"],
+        COUNTER: ["BRANCH", "CANCEL ENEMY", "BRANCH TARGET", "STUN", "REMOVE ON HIT", "TIME", "ATTACK TYPE2"], TAG: ["ADD/REMOVE", "TIME", "TAG", "CHECK", "LAST HIT", "BRANCH", "VALUE", "SET"],
+        STATE: ["DISABLE BURST", "CANCEL ON END", "LAST HIT", "STATE", "TIME", "VALUE"], TELEPORT: ["POSITION", "PROJECTILE TAG", "LAST HIT", "RELATIVE FROM BRANCH", "ROTATION"],
+        ULTGIB: ["AMOUNT"], HPGIB: ["AMOUNT"], EVGIB: ["AMOUNT"], HITCNCL: ["FLIP", "BRANCH", "TIME", "ENDLAG"], LOOP: ["LOOP BACK", "HOLD", "LOOP AMOUNT"], SETCD: ["KEY", "COOLDOWN"],
+        CUSTOM_NODE: ["NODE_ID", "INPUTS"] // Placeholder schema
     };
 
-    const CONDITION_TEMPLATES = {
-        AIR: ["FLIP"], JUMP: ["FLIP"], AIM: ["FLIP"], ULT: ["FLIP"],
-        BAR: ["FLIP", "AMOUNT"], DUR: ["DURABILITY"], HP: ["FLIP", "AMOUNT"],
-        DOMAIN: ["FLIP"], HOLD: ["FLIP"]
-    };
+    const CONDITION_TEMPLATES = { AIR: ["FLIP"], JUMP: ["FLIP"], AIM: ["FLIP"], ULT: ["FLIP"], BAR: ["FLIP", "AMOUNT"], DUR: ["DURABILITY"], HP: ["FLIP", "AMOUNT"], DOMAIN: ["FLIP"], HOLD: ["FLIP"] };
 
-// 1. Updated order based on your requirement
-    const PROPERTY_ORDER = [
-        "DMG", "KNOCK", "INV", "REP", "REP2", "AWK", "KEEP", 
-        "AWK2", "USE", "USEONDEATH", "NOSTUN", "NOCANCEL", "VAR"
-    ];
+    const PROPERTY_ORDER = ["DMG", "KNOCK", "INV", "REP", "REP2", "AWK", "KEEP", "AWK2", "USE", "USEONDEATH", "NOSTUN", "NOCANCEL", "VAR"];
+    const PROPERTY_LABELS = { DMG: "Damage Multiplier", KNOCK: "Knockback Multiplier", INV: "Invincible", REP: "Replace skill if occupied", REP2: "Prevent Override", AWK: "Hide In awakening", KEEP: "Keep When Moveset Switches", AWK2: "Hide in base", USE: "Use when obtained", USEONDEATH: "Use on death", NOSTUN: "No Stun", NOCANCEL: "No Cancel", VAR: "Variant Tag" };
+    const PROPERTY_DEFAULTS = { DMG: 1.0, KNOCK: 1.0, INV: false, REP: false, REP2: false, AWK: false, KEEP: false, AWK2: false, USE: false, USEONDEATH: false, NOSTUN: false, NOCANCEL: false, VAR: "" };
 
-    // 2. Updated labels to match your dictionary exactly
-    const PROPERTY_LABELS = {
-        DMG: "Damage Multiplier",
-        KNOCK: "Knockback Multiplier",
-        INV: "Invincible",
-        REP: "Replace skill if occupied",
-        REP2: "Prevent Override",
-        AWK: "Hide In awakening",
-        KEEP: "Keep When Moveset Switches",
-        AWK2: "Hide in base",
-        USE: "Use when obtained",
-        USEONDEATH: "Use on death",
-        NOSTUN: "No Stun",
-        NOCANCEL: "No Cancel",
-        VAR: "Variant Tag"
-    };
-
-    const PROPERTY_DEFAULTS = {
-        DMG: 1.0, 
-        KNOCK: 1.0, 
-        INV: false, 
-        REP: false, 
-        REP2: false, 
-        AWK: false, 
-        KEEP: false, 
-        AWK2: false, 
-        USE: false, 
-        USEONDEATH: false, 
-        NOSTUN: false, 
-        NOCANCEL: false, 
-        VAR: ""
-    };
-    
     const DEFAULTS_LIB = {
-        TIME: 1.0, SPEED: 1.0, START: 0.0, "ENABLE VARIANTS": true, "HOLD FOR": 0.0,
-        MOVE: "Divergent Fist", SPEC: "Limitless", "FADE IN": 0.1, PREVIEW: [0, 3.59],
-        "FADE OUT": 0.0, "LAST HIT": -1.0, END: 500.0, GLOBAL: false, VOLUME: 0.5,
-        "PROJECTILE TAG": "nil", ID: 12222253, CANCEL: false, "TRUE RAGDOLL": false,
-        RAGDOLL: 0.0, FADE: false, SIGNAL: "Nothing", SIZE: "6.0, 6.0, 6.0",
-        "SINGLE TARGET": true, "CAN KILL": true, BLOCKABLE: true, "ATTACK TYPE": "Melee",
-        "ATTACK TYPE2": "Melee", STUN: 1.0, DEBREE: 0.0, "BRANCH TARGET": "nil",
-        "HIT RAGDOLL": false, BRANCH: "nil", DAMAGE: 1.0, "CANCEL ENEMY": true,
-        "360 BLOCK": false, "HIT USER": false, "CLEAR KNOCKBACK": false, RANDOM: "",
-        OPACITY: 0.0, TEXTURE: 0.0, "EASING STYLE": "Linear", "EASING DIRECTION": "In",
-        "BODY PART": "HumanoidRootPart", "BODY PART2": "HumanoidRootPart",
-        EFFECT: "Slash", STATE: "Stun", AMOUNT: 1.0, FLIP: false, ENDLAG: 1.0,
-        "LOOP BACK": 1.0, HOLD: false, "LOOP AMOUNT": 3.0, POSITION: "0.0, 0.0, 0.0", 
-        ROTATION: "0.0, 0.0, 0.0", "RELATIVE FROM BRANCH": false, "CAN COLLIDE": false,
-        COLOR: "255, 255, 255", "ALT COLOR": "255, 255, 255", "ALT SIZE": 1.0, "ALT POSITION": "0.0, 0.0, 0.0",
-        "ALT ROTATION": "0.0, 0.0, 0.0", "ALT OPACITY": 0.0, "BRANCH FINISHER": "nil", 
-        "STUN ANIM": false, "RUN ON SERVER": false, "VISUAL TAG": "nil", "FILTER INTERVAL": 1.0,
-        "CACHE": true, "REFLECT COUNT": 0.0, "BRANCH COLLIDED": "nil", "AIM LAST HIT": -1.0,
-        "REMOVE ON HIT": true, "ADD/REMOVE": true, "CHECK": false, "SET": true,
-        "DISABLE BURST": false, "CANCEL ON END": false, "VALUE": "nil", "CONTINUE": false,
-        "ANIM_USE": [1, 1.9], "CANCEL LAST": false, KEY: 1, COOLDOWN: 1.0, DURABILITY: 1.0
+        TIME: 1.0, SPEED: 1.0, START: 0.0, "ENABLE VARIANTS": true, "HOLD FOR": 0.0, MOVE: "Divergent Fist", SPEC: "Limitless", "FADE IN": 0.1, PREVIEW: [0, 3.59], "FADE OUT": 0.0, "LAST HIT": -1.0, END: 500.0, GLOBAL: false, VOLUME: 0.5, "PROJECTILE TAG": "nil", ID: 12222253, CANCEL: false, "TRUE RAGDOLL": false, RAGDOLL: 0.0, FADE: false, SIGNAL: "Nothing", SIZE: "6.0, 6.0, 6.0", "SINGLE TARGET": true, "CAN KILL": true, BLOCKABLE: true, "ATTACK TYPE": "Melee", "ATTACK TYPE2": "Melee", STUN: 1.0, DEBREE: 0.0, "BRANCH TARGET": "nil", "HIT RAGDOLL": false, BRANCH: "nil", DAMAGE: 1.0, "CANCEL ENEMY": true, "360 BLOCK": false, "HIT USER": false, "CLEAR KNOCKBACK": false, RANDOM: "", OPACITY: 0.0, TEXTURE: 0.0, "EASING STYLE": "Linear", "EASING DIRECTION": "In", "BODY PART": "HumanoidRootPart", "BODY PART2": "HumanoidRootPart", EFFECT: "Slash", STATE: "Stun", AMOUNT: 1.0, FLIP: false, ENDLAG: 1.0, "LOOP BACK": 1.0, HOLD: false, "LOOP AMOUNT": 3.0, POSITION: "0.0, 0.0, 0.0", ROTATION: "0.0, 0.0, 0.0", "RELATIVE FROM BRANCH": false, "CAN COLLIDE": false, COLOR: "255, 255, 255", "ALT COLOR": "255, 255, 255", "ALT SIZE": 1.0, "ALT POSITION": "0.0, 0.0, 0.0", "ALT ROTATION": "0.0, 0.0, 0.0", "ALT OPACITY": 0.0, "BRANCH FINISHER": "nil", "STUN ANIM": false, "RUN ON SERVER": false, "VISUAL TAG": "nil", "FILTER INTERVAL": 1.0, "CACHE": true, "REFLECT COUNT": 0.0, "BRANCH COLLIDED": "nil", "AIM LAST HIT": -1.0, "REMOVE ON HIT": true, "ADD/REMOVE": true, "CHECK": false, "SET": true, "DISABLE BURST": false, "CANCEL ON END": false, "VALUE": "nil", "CONTINUE": false, "Animation": [1, 1], "CANCEL LAST": false, KEY: 1, COOLDOWN: 1.0, DURABILITY: 1.0,
+        "NODE_ID": "NewCustom", "INPUTS": ""
     };
 
-    const TYPE_OVERRIDES = {
-        ULTGIB: { AMOUNT: 5.0 }, HPGIB: { AMOUNT: 5.0 }, EVGIB: { AMOUNT: 5.0 },
-        HITBOX: { PREVIEW: [0, 15] },
-        BAR: { AMOUNT: 5.0 }, HP: { AMOUNT: 10.0 }
+    const TYPE_OVERRIDES = { ULTGIB: { AMOUNT: 5.0 }, HPGIB: { AMOUNT: 5.0 }, EVGIB: { AMOUNT: 5.0 }, HITBOX: { PREVIEW: [0, 15] }, BAR: { AMOUNT: 5.0 }, HP: { AMOUNT: 10.0 } };
+
+    const ANIMATION_DICTIONARY = {
+        "HONORED ONE": { color: "cyan", animations: [{name: "Lapse Blue", val: [1, 1]}, {name: "Reversal Red", val: [1, 2]}, {name: "Rapid Punches", val: [1, 3]}, {name: "Twofold Kick", val: [1, 4]}, {name: "Hollow Purple", val: [1, 5]}] },
+        "VESSEL": { color: "#d9534f", animations: [{name: "Cursed Strikes", val: [2, 1]}, {name: "Crushing Blow", val: [2, 2]}, {name: "Divergent Fist", val: [2, 3]}, {name: "Manji Kick", val: [2, 4]}, {name: "Dismantle", val: [2, 5]}, {name: "World Cutting Slash", val: [2, 6]}] },
+        "RESTLESS GAMBLER": { color: "lime", animations: [{name: "Lucky Volley", val: [3, 1]}, {name: "Lucky Rushdown", val: [3, 2]}, {name: "Overwhelming Luck", val: [3, 3]}, {name: "Energy Surge", val: [3, 4]}] },
+        "TEN SHADOWS": { color: "grey", animations: [{name: "Rabbit Escape", val: [4, 1]}, {name: "Nue", val: [4, 2]}, {name: "Toad", val: [4, 3]}, {name: "Divine Dog", val: [4, 4]}] },
+        "MAHORAGA": { color: "white", animations: [{name: "Divine Pummel", val: [5, 1]}, {name: "Ground Pitch", val: [5, 2]}, {name: "Earthquake", val: [5, 3]}, {name: "Adaptation", val: [5, 4]}] },
+        "PERFECTION": { color: "pink", animations: [{name: "Stockpile", val: [6, 1]}, {name: "Soul Fire", val: [6, 2]}, {name: "Focus Strike", val: [6, 3]}, {name: "Idle Transfiguration", val: [6, 4]}] },
+        "BLOOD MANIPULATOR": { color: "#8b0000", animations: [{name: "Piercing Blood", val: [7, 1]}, {name: "Flowing Red Scale", val: [7, 2]}, {name: "Supernova", val: [7, 3]}, {name: "Slicing Exorcism", val: [7, 4]}] },
+        "SWITCHER": { color: "cyan", animations: [{name: "Swift Kick", val: [8, 1]}, {name: "Brute Force", val: [8, 2]}, {name: "Pebble Throw", val: [8, 3]}, {name: "Boogie Woogie", val: [8, 4]}] },
+        "DEFENSE ATTORNEY": { color: "brown", animations: [{name: "Extended Swings", val: [9, 1]}, {name: "Justice Served", val: [9, 2]}, {name: "Judgement's Reach", val: [9, 3]}, {name: "Deadly Sentencing", val: [9, 4]}] },
+        "STAR RAGE": { color: "#aaaaff", animations: [{name: "Garuda Rebound", val: [10, 1]}, {name: "Rising Rage", val: [10, 2]}, {name: "Mass Breaker", val: [10, 3]}] },
+        "HEIAN": { color: "orange", animations: [{name: "Spider Web Cleave", val: [11, 1]}, {name: "World Cutting Slash", val: [11, 2]}] },
+        "SALARYMAN": { color: "#5ebfff", animations: [{name: "Cleaving Whirlwind", val: [12, 1]}, {name: "Severance Kick", val: [12, 2]}, {name: "Ratio Point", val: [12, 3]}] },
+        "MONKEY KID": { color: "#ff1534", animations: [{name: "Kamehameha", val: [13, 1]}, {name: "Staff Uppercut", val: [13, 2]}] },
+        "TRUE CANNON": { color: "#aaffff", animations: [{name: "Granite Blast", val: [14, 1]}, {name: "Unsatisfied", val: [14, 2]}] },
+        "BLACK DEATH": { color: "#65232c", animations: [{name: "Festering Strikes", val: [15, 1]}, {name: "Roach Swarm", val: [15, 2]}] },
+        "DISASTER PLANTS": { color: "#accba3", animations: [{name: "Root Swarm", val: [16, 1]}, {name: "Surging Thorns", val: [16, 2]}, {name: "Flower Field", val: [16, 3]}] },
+        "LOCUST GUY": { color: "lime", animations: [{name: "Clever", val: [17, 1]}, {name: "Black Mucus", val: [17, 2]}] },
+        "ASPIRING MANGAKA": { color: "#eaeaea", animations: [{name: "G-Pen Initial Stroke", val: [18, 1]}] },
+        "PUPPET MASTER": { color: "#e10a4b", animations: [{name: "Hairpin Ingestion", val: [19, 1]}] },
+        "HEAD OF THE HEI": { color: "#807eff", animations: [{name: "Blazing Eruption Frame", val: [20, 1]}] },
+        "LUCKY COWARD": { color: "#a77dcb", animations: [{name: "Miraculous Trip", val: [21, 1]}] },
+        "CROW CHARMER": { color: "#181c38", animations: [{name: "Bird Strike", val: [22, 1]}] },
+        "EMOTES": { color: "white", animations: [{name: "Coming soon", val: [23, 1]}] }
     };
 
+    // --- State Variables ---
     let currentMoves = [];
     let activeIndex = -1;
     let zstd = null;
@@ -415,557 +353,575 @@
     
     let activeBranch = 'Default';
     let activeTab = 'Timeline';
+    let branchModalMode = ''; let editingBranchName = '';
+    let currentGuiScale = 1.0;
 
-    let branchModalMode = '';
-    let editingBranchName = '';
+    let selectedNodes = [];
+    let historyStack = []; let redoStack = [];
+    let clipboard = [];
 
+    // Workshop & Selection State
+    let authUser = null;
+    let currentWorkshopTab = 'SFX';
+    let uploadSelectMode = false;
+    let importPlaceMode = false;
+    let importPayload = null;
+    let draggedNodeIdx = -1;
+
+    // --- Core Engine ---
     async function initEngine() {
         const engine = window.ZstdWeb || window.zstd || window.Zstd;
-        if (engine?.init) {
-            await engine.init();
-            zstd = engine;
-            document.getElementById('engine-status-box').innerHTML = "ZSTD Engine: <span style='color:#00ffcc; font-weight:bold;'>Active</span>";
-        } else {
-            document.getElementById('engine-status-box').innerHTML = "ZSTD Engine: <span style='color:#ff9900; font-weight:bold;'>Standby</span>";
-        }
+        if (engine?.init) { await engine.init(); zstd = engine; document.getElementById('engine-status-box').innerHTML = "ZSTD Engine: <span style='color:#00ffcc;'>Active</span>"; } 
+        else { document.getElementById('engine-status-box').innerHTML = "ZSTD Engine: <span style='color:#ff9900;'>Standby</span>"; }
         
-        const cachedTheme = localStorage.getItem('jjs-theme-pref') || 'default';
-        const picker = document.getElementById('global-theme-picker');
-        if (picker) picker.value = cachedTheme;
-        previewTheme(cachedTheme);
+        setTimeout(() => { if (!zstd) document.getElementById('manual-redirect-container').style.display = 'block'; }, 10000);
 
+        applyThemeFromStorage();
         buildContextMenuNodes();
         renderWorkspaceEmpty();
+        initWorkshopDragger();
     }
 
-    function previewTheme(styleName) {
-        document.body.className = '';
-        if (styleName !== 'default') {
-            document.body.classList.add('theme-' + styleName);
-        }
-        localStorage.setItem('jjs-theme-pref', styleName);
-    }
-
-    function buildContextMenuNodes() {
-        const target = document.getElementById('context-menu-nodes-target');
-        const label = document.getElementById('context-menu-nodes-label');
-        target.innerHTML = '';
-        
-        let templates = (activeTab === 'Conditions') ? CONDITION_TEMPLATES : NODE_TEMPLATES;
-        label.innerText = (activeTab === 'Conditions') ? 'Add Condition' : 'Add Node';
-
-        Object.keys(templates).forEach(type => {
-            const disp = TRANSLATIONS[type] || type;
-            const row = document.createElement('div');
-            row.className = 'menu-item';
-            row.innerHTML = `<span>${disp}</span> <span style="font-size:0.6rem; opacity:0.5; font-family:var(--font-code);">${type}</span>`;
-            row.onclick = () => instantiateNode(type);
-            target.appendChild(row);
+    // --- General Modals & Prompts ---
+    function showCustomPrompt(title, message, buttons) {
+        document.getElementById('prompt-title').innerText = title;
+        document.getElementById('prompt-message').innerText = message;
+        const btnContainer = document.getElementById('prompt-buttons');
+        btnContainer.innerHTML = '';
+        buttons.forEach(btn => {
+            const b = document.createElement('button');
+            b.innerText = btn.text; b.className = 'btn-modal-confirm'; b.style.backgroundColor = btn.color || 'var(--accent)';
+            b.onclick = () => { document.getElementById('jjs-prompt-modal').style.display = 'none'; if (btn.action) btn.action(); };
+            btnContainer.appendChild(b);
         });
+        document.getElementById('jjs-prompt-modal').style.display = 'flex';
     }
+    function customAlert(message) { showCustomPrompt("Notice", message, [{ text: "OK", action: null }]); }
+    function customConfirm(message, onYes) { showCustomPrompt("Confirm", message, [{ text: "Cancel", color: "#e2e8f0", action: null }, { text: "Confirm", color: "#ff4d4d", action: onYes }]); }
 
-    window.addEventListener('keydown', function(e) {
-        if (e.ctrlKey && e.altKey && e.shiftKey && e.key.toLowerCase() === 't') {
-            e.preventDefault();
-            executeLoadMasterCode();
-        }
-    });
-
-    document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
-    document.addEventListener('click', e => {
-        if (!e.target.closest('#shift-a-context-menu')) {
-            document.getElementById('shift-a-context-menu').style.display = 'none';
-        }
-    });
-
-    window.addEventListener('keydown', function(e) {
-        if (e.shiftKey && e.key.toLowerCase() === 'a') {
-            const targetTag = e.target.tagName.toLowerCase();
-            if (targetTag === 'input' || targetTag === 'textarea') return;
-            e.preventDefault();
-            
-            if (activeTab === 'Properties') {
-                return; // Properties are fixed, no adding allowed
-            }
-
-            const menu = document.getElementById('shift-a-context-menu');
-            menu.style.display = 'block';
-            menu.style.left = Math.min(mouseX, window.innerWidth - menu.offsetWidth - 10) + 'px';
-            menu.style.top = Math.min(mouseY, window.innerHeight - menu.offsetHeight - 10) + 'px';
-        }
-    });
-
-    function executeLoadMasterCode() {
-        if (currentMoves.length > 0) {
-            if (!confirm("Are you sure you want to load the master template? This will replace everything you're currently working on.")) return;
-        }
-
-        const masterNodeLines = [];
-        Object.keys(NODE_TEMPLATES).forEach(nodeType => {
-            const uiNode = { "K_NAME": nodeType };
-            NODE_TEMPLATES[nodeType].forEach(fieldKey => {
-                let val = (TYPE_OVERRIDES[nodeType] && TYPE_OVERRIDES[nodeType][fieldKey] !== undefined)
-                    ? TYPE_OVERRIDES[nodeType][fieldKey]
-                    : DEFAULTS_LIB[fieldKey];
-                if (val !== undefined) uiNode[fieldKey] = JSON.parse(JSON.stringify(val));
-            });
-            masterNodeLines.push(uiNode);
-        });
-
-        const masterReqLines = [];
-        Object.keys(CONDITION_TEMPLATES).forEach(nodeType => {
-            const uiNode = { "K_NAME": nodeType };
-            CONDITION_TEMPLATES[nodeType].forEach(fieldKey => {
-                let val = (TYPE_OVERRIDES[nodeType] && TYPE_OVERRIDES[nodeType][fieldKey] !== undefined)
-                    ? TYPE_OVERRIDES[nodeType][fieldKey]
-                    : DEFAULTS_LIB[fieldKey];
-                if (val !== undefined) uiNode[fieldKey] = JSON.parse(JSON.stringify(val));
-            });
-            masterReqLines.push(uiNode);
-        });
-
-        const standardContainers = ['Skill', 'Melee', 'Special', 'Awakening', 'Chase'];
-        currentMoves = standardContainers.map((type, idx) => {
-            return {
-                "ADD": false,
-                "NAME": type,
-                "K_NAME": type,
-                "TOOL TIP": "",
-                "COOLDOWN": idx === 0 ? 0 : 1.0,
-                "KEY": 1,
-                "DATA": JSON.stringify({ 
-                    "Line": idx === 0 ? masterNodeLines : [], 
-                    "Branch": {}, 
-                    "Prop": {}, 
-                    "Req": idx === 0 ? masterReqLines : [] 
-                })
-            };
-        });
-
-        activeIndex = 0;
-        activeBranch = 'Default';
-        activeTab = 'Timeline';
-        renderSidebar();
-        loadMove(0);
-    }
-
-    function getInnerData(moveObj) {
-        if (!moveObj || !moveObj.DATA) return { Line: [], Branch: {}, Prop: {}, Req: [] };
-        try {
-            let parsed = (typeof moveObj.DATA === 'string') ? JSON.parse(moveObj.DATA) : moveObj.DATA;
-            if (!parsed.Branch) parsed.Branch = {};
-            if (!parsed.Line) parsed.Line = [];
-            if (!parsed.Prop || Array.isArray(parsed.Prop)) parsed.Prop = {}; 
-            if (!parsed.Req) parsed.Req = [];
-            
-            // Ensure each custom branch also has initialized Line and Req arrays
-            for (let b in parsed.Branch) {
-                if (!parsed.Branch[b].Line) parsed.Branch[b].Line = [];
-                if (!parsed.Branch[b].Req) parsed.Branch[b].Req = [];
-            }
-            
-            return parsed;
-        } catch(e) {
-            return { Line: [], Branch: {}, Prop: {}, Req: [] };
-        }
-    }
-
-    function saveInnerData(moveObj, innerData) {
-        try {
-            moveObj.DATA = JSON.stringify(innerData);
-        } catch(e) {
-            console.error("Error saving data");
-        }
-    }
-
-    function instantiateContainer(type) {
-        document.getElementById('shift-a-context-menu').style.display = 'none';
-        const newContainer = {
-            "ADD": false,
-            "NAME": type,
-            "K_NAME": type,
-            "TOOL TIP": "",
-            "COOLDOWN": 1.0,
-            "KEY": 1,
-            "DATA": JSON.stringify({ "Line": [], "Branch": {}, "Prop": {}, "Req": [] })
+    function openInputPrompt(title, placeholder, onConfirm) {
+        document.getElementById('input-modal-title').innerText = title;
+        const input = document.getElementById('input-modal-field');
+        input.value = ''; input.placeholder = placeholder;
+        document.getElementById('input-modal-confirm').onclick = () => {
+            const val = input.value.trim();
+            if(val) { document.getElementById('jjs-input-modal').style.display = 'none'; onConfirm(val); }
         };
-        currentMoves.push(newContainer);
-        activeIndex = currentMoves.length - 1;
-        activeBranch = 'Default';
-        activeTab = 'Timeline';
-        renderSidebar();
-        loadMove(activeIndex);
-    }
-
-    function instantiateNode(nodeType) {
-        document.getElementById('shift-a-context-menu').style.display = 'none';
-        if (activeIndex === -1 || currentMoves.length === 0) return alert("Please select or create a container first.");
-
-        const activeMove = currentMoves[activeIndex];
-        const innerData = getInnerData(activeMove);
-        let targetList = (activeTab === 'Conditions') ? 
-            (activeBranch === 'Default' ? innerData.Req : innerData.Branch[activeBranch].Req) : 
-            (activeBranch === 'Default' ? innerData.Line : innerData.Branch[activeBranch].Line);
-
-        const freshNode = { "K_NAME": nodeType };
-        let templates = (activeTab === 'Conditions') ? CONDITION_TEMPLATES : NODE_TEMPLATES;
-
-        templates[nodeType].forEach(field => {
-            let fallbackVal = (TYPE_OVERRIDES[nodeType] && TYPE_OVERRIDES[nodeType][field] !== undefined)
-                ? TYPE_OVERRIDES[nodeType][field]
-                : DEFAULTS_LIB[field];
-            if (fallbackVal !== undefined) {
-                freshNode[field] = JSON.parse(JSON.stringify(fallbackVal));
-            }
-        });
-
-        targetList.push(freshNode);
-        saveInnerData(activeMove, innerData);
-        loadMove(activeIndex);
-    }
-
-    function deleteActiveContainer(idx) {
-        if (!confirm("Are you sure you want to delete this container and everything inside it?")) return;
-        currentMoves.splice(idx, 1);
-        if (currentMoves.length === 0) {
-            activeIndex = -1;
-            renderSidebar();
-            renderWorkspaceEmpty();
-        } else {
-            activeIndex = Math.max(0, idx - 1);
-            activeBranch = 'Default';
-            renderSidebar();
-            loadMove(activeIndex);
-        }
-    }
-
-    function removeNode(nodeIdx) {
-        if (!confirm("Delete this item?")) return;
-        const activeMove = currentMoves[activeIndex];
-        const innerData = getInnerData(activeMove);
-        let targetList = (activeTab === 'Conditions') ? 
-            (activeBranch === 'Default' ? innerData.Req : innerData.Branch[activeBranch].Req) : 
-            (activeBranch === 'Default' ? innerData.Line : innerData.Branch[activeBranch].Line);
-        
-        targetList.splice(nodeIdx, 1);
-        saveInnerData(activeMove, innerData);
-        loadMove(activeIndex);
-    }
-
-    function toggleNodeBody(nodeIdx) {
-        const targetGrid = document.getElementById(`node-grid-${nodeIdx}`);
-        if (targetGrid) {
-            targetGrid.style.display = (targetGrid.style.display === 'none') ? 'grid' : 'none';
-        }
-    }
-
-    function generateSummaryHeaderStr(node) {
-        if (node.K_NAME === 'WAIT') return `[${node.TIME ?? 0}s]`;
-        if (node.K_NAME === 'ANIM') return `[${node.ANIM_USE ?? 'Unset'}]`;
-        if (node.K_NAME === 'SFX') return `[ID: ${node.ID ?? 'Unset'}]`;
-        if (node.K_NAME === 'HITBOX') return `[Size: ${node.SIZE ?? 'Default'}]`;
-        if (node.K_NAME === 'VISUAL') return `[Type: ${node.EFFECT ?? 'Asset'}]`;
-        if (node.K_NAME === 'VELO') return `[Force: ${node.FORCE ?? 'Default'}]`;
-        if (node.K_NAME === 'PROJECTILE') return `[Damage: ${node.DAMAGE ?? 0}]`;
-        if (node.K_NAME === 'HITCNCL') return `[Endlag: ${node.ENDLAG ?? 1.0}]`;
-        if (node.K_NAME === 'TAG') return `[${node.TAG ?? 'Unset'}]`;
-
-        if (node.K_NAME === 'BAR') return `[Meter: ${node.AMOUNT ?? 5}]`;
-        if (node.K_NAME === 'HP') return `[Health: ${node.AMOUNT ?? 10}]`;
-        if (node.K_NAME === 'DUR') return `[Durability: ${node.DURABILITY ?? 1}]`;
-
-        if (node.FLIP !== undefined) return node.FLIP ? '[True]' : '[False]';
-
-        return '';
-    }
-
-    function alterContainerCoreName(idx, val) {
-        currentMoves[idx].NAME = val;
-        const buttonTextNode = document.querySelector(`#btn-${idx} .move-name`);
-        if (buttonTextNode) buttonTextNode.innerText = val;
-    }
-
-    function alterNodeValue(nodeIdx, propertyKey, value) {
-        const activeMove = currentMoves[activeIndex];
-        const innerData = getInnerData(activeMove);
-        let targetList = (activeTab === 'Conditions') ? 
-            (activeBranch === 'Default' ? innerData.Req : innerData.Branch[activeBranch].Req) : 
-            (activeBranch === 'Default' ? innerData.Line : innerData.Branch[activeBranch].Line);
-        
-        targetList[nodeIdx][propertyKey] = value;
-        saveInnerData(activeMove, innerData);
-
-        const textSummarySpan = document.getElementById(`summary-span-${nodeIdx}`);
-        if (textSummarySpan) {
-            textSummarySpan.innerText = generateSummaryHeaderStr(targetList[nodeIdx]);
-        }
-    }
-    
-    function alterPropValue(propertyKey, value) {
-        const activeMove = currentMoves[activeIndex];
-        const innerData = getInnerData(activeMove);
-        
-        innerData.Prop[propertyKey] = value;
-        saveInnerData(activeMove, innerData);
-    }
-
-    function switchBranch(branchName) {
-        activeBranch = branchName;
-        loadMove(activeIndex);
-    }
-
-    function deleteBranch(branchName) {
-        if (!confirm(`Are you sure you want to delete the branch "${branchName}" and all its nodes?`)) return;
-
-        const activeMove = currentMoves[activeIndex];
-        const innerData = getInnerData(activeMove);
-
-        delete innerData.Branch[branchName];
-        
-        if (activeBranch === branchName) {
-            activeBranch = 'Default';
-        }
-
-        saveInnerData(activeMove, innerData);
-        loadMove(activeIndex);
-    }
-
-    function switchTab(tabName) {
-        activeTab = tabName;
-        buildContextMenuNodes(); 
-        loadMove(activeIndex);
-    }
-
-    function openBranchModal(mode, oldName = '') {
-        branchModalMode = mode;
-        editingBranchName = oldName;
-        const overlay = document.getElementById('jjs-branch-modal');
-        const input = document.getElementById('branch-name-input');
-        const title = document.getElementById('branch-modal-title-text');
-        
-        input.value = (mode === 'edit') ? oldName : '';
-        title.innerHTML = (mode === 'edit') ? `<i class="fa-solid fa-pen"></i> Rename Branch` : `<i class="fa-solid fa-code-branch"></i> New Branch`;
-        
-        overlay.style.display = 'flex';
+        document.getElementById('jjs-input-modal').style.display = 'flex';
         input.focus();
     }
 
-    function closeBranchModal(e) {
-        if (!e || e.target === document.getElementById('jjs-branch-modal')) {
-            document.getElementById('jjs-branch-modal').style.display = 'none';
-        }
+    // --- History ---
+    function pushHistory() {
+        redoStack = [];
+        historyStack.push(JSON.stringify(currentMoves));
+        if(historyStack.length > 30) historyStack.shift();
+    }
+    function performUndo() {
+        if(!historyStack.length) return;
+        redoStack.push(JSON.stringify(currentMoves));
+        currentMoves = JSON.parse(historyStack.pop());
+        selectedNodes = []; loadMove(activeIndex);
+    }
+    function performRedo() {
+        if(!redoStack.length) return;
+        historyStack.push(JSON.stringify(currentMoves));
+        currentMoves = JSON.parse(redoStack.pop());
+        selectedNodes = []; loadMove(activeIndex);
     }
 
-    function executeBranchAction() {
-        const newName = document.getElementById('branch-name-input').value.trim();
-        if (!newName || newName === 'Default') {
-            alert("Invalid branch name. It can't be empty or named 'Default'.");
-            return;
-        }
+    // --- Shortcuts System ---
+    function showShortcuts() {
+        customAlert("SHORTCUTS:\n\nShift + Click: Multi-select nodes\nShift + A: Add Node/Container Menu\nShift + C: Copy selected nodes\nShift + V: Paste nodes\nShift + X: Cut selected nodes\nShift + Delete: Delete selected nodes\nShift + Z: Undo\nShift + Y: Redo");
+    }
 
-        const activeMove = currentMoves[activeIndex];
-        const innerData = getInnerData(activeMove);
-
-        if (branchModalMode === 'create') {
-            if (innerData.Branch[newName]) {
-                activeBranch = newName;
-            } else {
-                innerData.Branch[newName] = { Req: [], Line: [] };
-                activeBranch = newName;
-                saveInnerData(activeMove, innerData);
-            }
-        } else if (branchModalMode === 'edit') {
-            if (innerData.Branch[newName] && newName !== editingBranchName) {
-                alert("A branch with this name already exists.");
-                return;
-            }
-            innerData.Branch[newName] = innerData.Branch[editingBranchName];
-            delete innerData.Branch[editingBranchName];
-            if (activeBranch === editingBranchName) {
-                activeBranch = newName;
-            }
-            saveInnerData(activeMove, innerData);
-        }
+    document.addEventListener('keydown', e => {
+        if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
         
-        closeBranchModal(null);
-        loadMove(activeIndex);
-    }
-
-    function renderSidebar() {
-        const listContainer = document.getElementById('sidebar-render-target');
-        listContainer.innerHTML = '';
-
-        if (currentMoves.length === 0) {
-            listContainer.innerHTML = `<div style="text-align:center; padding-top:40px; font-size:0.75rem; opacity:0.4;">No containers loaded.</div>`;
-            return;
+        if (e.shiftKey) {
+            const key = e.key.toLowerCase();
+            if(key === 'a') {
+                e.preventDefault(); if (activeTab === 'Properties') return;
+                const menu = document.getElementById('shift-a-context-menu');
+                menu.style.display = 'block'; menu.style.left = Math.min(mouseX, window.innerWidth - 230) + 'px'; menu.style.top = Math.min(mouseY, window.innerHeight - menu.offsetHeight - 10) + 'px';
+            }
+            if(key === 'c') { e.preventDefault(); copySelected(); }
+            if(key === 'x') { e.preventDefault(); cutSelected(); }
+            if(key === 'v') { e.preventDefault(); pasteCopied(); }
+            if(key === 'delete' || e.key === 'Backspace') { e.preventDefault(); deleteSelected(); }
+            if(key === 'z') { e.preventDefault(); performUndo(); }
+            if(key === 'y') { e.preventDefault(); performRedo(); }
         }
+    });
 
-        currentMoves.forEach((move, i) => {
-            const btn = document.createElement('div');
-            btn.className = `item ${i === activeIndex ? 'active' : ''}`;
-            btn.id = `btn-${i}`;
-            btn.onclick = () => {
-                activeBranch = 'Default';
-                activeTab = 'Timeline';
-                buildContextMenuNodes(); 
-                loadMove(i);
-            };
-            btn.innerHTML = `
-                <span class="type-tag">${move.K_NAME || 'CONTAINER'}</span>
-                <span class="move-name">${(move.NAME || 'UNNAMED')}</span>
-            `;
-            listContainer.appendChild(btn);
-        });
+    function getActiveList() {
+        if(activeIndex === -1 || activeTab === 'Properties') return null;
+        const inner = getInnerData(currentMoves[activeIndex]);
+        return (activeTab === 'Conditions') ? (activeBranch === 'Default' ? inner.Req : inner.Branch[activeBranch].Req) : (activeBranch === 'Default' ? inner.Line : inner.Branch[activeBranch].Line);
     }
 
-    function renderWorkspaceEmpty() {
-        document.getElementById('workspace-canvas-timeline').innerHTML = `
-            <div class="empty-state">
-                Press Shift + A to add nodes or containers.
+    function copySelected() {
+        if(!selectedNodes.length) return;
+        const list = getActiveList(); if(!list) return;
+        clipboard = selectedNodes.sort((a,b)=>a-b).map(idx => JSON.parse(JSON.stringify(list[idx])));
+    }
+    function cutSelected() { copySelected(); deleteSelected(); }
+    function pasteCopied() {
+        if(!clipboard.length) return;
+        pushHistory();
+        const list = getActiveList(); if(!list) return;
+        const insertIdx = selectedNodes.length ? Math.max(...selectedNodes) + 1 : list.length;
+        clipboard.forEach((node, i) => list.splice(insertIdx + i, 0, JSON.parse(JSON.stringify(node))));
+        saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
+        selectedNodes = []; loadMove(activeIndex);
+    }
+    function deleteSelected() {
+        if(!selectedNodes.length) return;
+        pushHistory();
+        const list = getActiveList(); if(!list) return;
+        const toDelete = selectedNodes.sort((a,b)=>b-a);
+        toDelete.forEach(idx => list.splice(idx, 1));
+        saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
+        selectedNodes = []; loadMove(activeIndex);
+    }
+
+    // --- Theme System ---
+    function applyThemeFromStorage() {
+        const t = localStorage.getItem('jjs-theme-pref') || 'default';
+        if(t === 'custom') {
+            const c = JSON.parse(localStorage.getItem('jjs-custom-colors'));
+            if(c) {
+                document.body.className = '';
+                document.getElementById('custom-theme-style').innerHTML = `body { --bg: ${c.bg}; --panel: ${c.panel}; --node-card: ${c.card}; --accent: ${c.accent}; --text: ${c.text}; --border: ${c.border}; --bg-image: url('${c.bgimg}'); --bg-opacity: ${c.bgop}; }`;
+            }
+        } else {
+            previewTheme(t);
+        }
+    }
+
+    function previewTheme(styleName) {
+        document.body.className = ''; document.getElementById('custom-theme-style').innerHTML = '';
+        if (styleName !== 'default' && styleName !== 'custom') document.body.classList.add('theme-' + styleName);
+        localStorage.setItem('jjs-theme-pref', styleName);
+        if(document.getElementById('global-theme-picker')) document.getElementById('global-theme-picker').value = styleName;
+    }
+
+    function openThemesUI() {
+        const content = document.getElementById('themes-modal-content');
+        const savedThemes = JSON.parse(localStorage.getItem('jjs-saved-themes') || '[]');
+        
+        let savedHtml = savedThemes.map((t, i) => `<button class="btn-jjs-action" onclick="applySavedTheme(${i})">${t.name}</button>`).join('');
+        if(!savedHtml) savedHtml = `<div style="opacity:0.5; font-size:0.8rem; text-align:center;">No saved themes yet.</div>`;
+
+        content.innerHTML = `
+            <div style="display:flex; flex-direction:column; gap:8px; border-bottom:2px solid var(--border); padding-bottom:15px; margin-bottom:5px;">
+                <strong style="color:var(--accent); font-size:0.8rem;" class="uppercase-force">Pre-Made Themes</strong>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <button class="btn-jjs-action" onclick="previewTheme('default')">Default Dark</button>
+                    <button class="btn-jjs-action" onclick="previewTheme('super-dark')">Super Dark</button>
+                    <button class="btn-jjs-action" onclick="previewTheme('retro')">Retro</button>
+                    <button class="btn-jjs-action" onclick="previewTheme('matrix')">Matrix</button>
+                    <button class="btn-jjs-action" onclick="previewTheme('nova')">Nova</button>
+                    <button class="btn-jjs-action" onclick="previewTheme('cyber')">Cyber</button>
+                    <button class="btn-jjs-action" onclick="previewTheme('crimson')">Crimson</button>
+                </div>
             </div>
+            
+            <div style="display:flex; flex-direction:column; gap:8px; border-bottom:2px solid var(--border); padding-bottom:15px; margin-bottom:5px;">
+                <strong style="color:var(--accent); font-size:0.8rem;" class="uppercase-force">Saved Themes</strong>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">${savedHtml}</div>
+            </div>
+
+            <div style="padding:10px 0;">
+                <button class="btn-jjs-action" style="width:100%; border-color:#00ff66; color:#00ff66;" onclick="renderThemeMaker()"><i class="fa-solid fa-paintbrush"></i> Create New Theme</button>
+            </div>
+            
+            <div style="display:flex; flex-direction:column; gap:8px; border-top:2px solid var(--border); padding-top:15px; margin-top:5px;">
+                <strong style="color:var(--accent); font-size:0.8rem;" class="uppercase-force">Downloaded Themes</strong>
+                <div style="padding:20px; text-align:center; opacity:0.5; font-size:0.85rem; background:rgba(0,0,0,0.3); border:1px dashed var(--border);">Placeholder [Coming Soon]</div>
+            </div>
+        `;
+        document.getElementById('jjs-themes-modal').style.display = 'flex';
+    }
+
+    function renderThemeMaker() {
+        const content = document.getElementById('themes-modal-content');
+        const s = JSON.parse(localStorage.getItem('jjs-custom-colors')) || { name:"My Theme", bg:"#121317", panel:"#1a1c23", card:"#222530", accent:"#ffcc33", text:"#e2e8f0", border:"#2d313f", bgimg:"", bgop:1 };
+        content.innerHTML = `
+            <button class="btn-jjs-action" style="margin-bottom:15px; background:transparent;" onclick="openThemesUI()"><i class="fa-solid fa-arrow-left"></i> Back</button>
+            <strong style="color:var(--accent); font-size:0.8rem; margin-bottom:10px;" class="uppercase-force">Theme Editor</strong>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <div class="tooltip-field" style="display:flex; align-items:center; justify-content:space-between;"><label>Theme Name</label><input type="text" id="ct-name" value="${s.name||'Custom'}" style="width:60%; text-align:right;"></div>
+                <div class="tooltip-field" style="display:flex; align-items:center; justify-content:space-between;"><label>BG Image URL</label><input type="text" id="ct-bgimg" value="${s.bgimg||''}" style="width:60%; text-align:right;"></div>
+                <div class="tooltip-field" style="display:flex; align-items:center; justify-content:space-between;"><label>BG Opacity</label><input type="range" id="ct-bgop" min="0" max="1" step="0.05" value="${s.bgop||1}" style="width:60%;"></div>
+                
+                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Background</label><input type="color" id="ct-bg" value="${s.bg}" style="background:transparent; border:none;"></div>
+                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Panel</label><input type="color" id="ct-panel" value="${s.panel}" style="background:transparent; border:none;"></div>
+                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Node Card</label><input type="color" id="ct-card" value="${s.card}" style="background:transparent; border:none;"></div>
+                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Accent</label><input type="color" id="ct-accent" value="${s.accent}" style="background:transparent; border:none;"></div>
+                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Text</label><input type="color" id="ct-text" value="${s.text}" style="background:transparent; border:none;"></div>
+                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Border</label><input type="color" id="ct-border" value="${s.border}" style="background:transparent; border:none;"></div>
+            </div>
+            <button class="btn-modal-confirm" style="margin-top:20px; width:100%;" onclick="saveCustomTheme()">Save & Apply</button>
         `;
     }
 
+    function saveCustomTheme() {
+        const c = { name: document.getElementById('ct-name').value, bg: document.getElementById('ct-bg').value, panel: document.getElementById('ct-panel').value, card: document.getElementById('ct-card').value, accent: document.getElementById('ct-accent').value, text: document.getElementById('ct-text').value, border: document.getElementById('ct-border').value, bgimg: document.getElementById('ct-bgimg').value, bgop: document.getElementById('ct-bgop').value };
+        localStorage.setItem('jjs-custom-colors', JSON.stringify(c));
+        
+        let saved = JSON.parse(localStorage.getItem('jjs-saved-themes') || '[]');
+        const idx = saved.findIndex(t => t.name === c.name);
+        if(idx !== -1) saved[idx] = c; else saved.push(c);
+        localStorage.setItem('jjs-saved-themes', JSON.stringify(saved));
+        
+        localStorage.setItem('jjs-theme-pref', 'custom'); applyThemeFromStorage();
+        customAlert(`Theme '${c.name}' saved and applied!`); openThemesUI();
+    }
+    
+    function applySavedTheme(idx) {
+        const saved = JSON.parse(localStorage.getItem('jjs-saved-themes') || '[]');
+        localStorage.setItem('jjs-custom-colors', JSON.stringify(saved[idx]));
+        localStorage.setItem('jjs-theme-pref', 'custom'); applyThemeFromStorage();
+    }
+    function closeThemesModal(e) { if (!e || e.target === document.getElementById('jjs-themes-modal')) document.getElementById('jjs-themes-modal').style.display = 'none'; }
+
+
+    // --- Workshop System ---
+    function mockRobloxAuth() {
+        authUser = { name: "JJS_Creator_" + Math.floor(Math.random()*1000) };
+        document.getElementById('auth-status').innerHTML = `<span style="color:#00ff66;">Authenticated as ${authUser.name}</span>`;
+        customAlert("Successfully authenticated with Roblox API (Mocked).");
+    }
+
+    function initWorkshopDragger() {
+        const win = document.getElementById('workshop-window'); const header = document.getElementById('workshop-drag-header');
+        let isDraggingWin = false; let offsetX, offsetY;
+        header.addEventListener('mousedown', e => { if(e.target.tagName === 'BUTTON' || e.target.tagName === 'I') return; isDraggingWin = true; offsetX = e.clientX - win.getBoundingClientRect().left; offsetY = e.clientY - win.getBoundingClientRect().top; });
+        document.addEventListener('mousemove', e => { if(isDraggingWin) { win.style.left = (e.clientX - offsetX) + 'px'; win.style.top = (e.clientY - offsetY) + 'px'; } });
+        document.addEventListener('mouseup', () => isDraggingWin = false );
+    }
+
+    function openWorkshop() { document.getElementById('workshop-window').style.display = 'flex'; setWorkshopTab(currentWorkshopTab); }
+    
+    function setWorkshopTab(tab) {
+        currentWorkshopTab = tab;
+        document.querySelectorAll('.workshop-tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        let content = `<div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+            <strong style="color:var(--accent);" class="uppercase-force">${tab} Hub</strong>
+            <button class="btn-jjs-action" style="width:auto; padding:5px 15px;" onclick="startWorkshopUpload()"><i class="fa-solid fa-cloud-arrow-up"></i> Upload to ${tab}</button>
+        </div>`;
+
+        // Render mock items from localstorage
+        const items = JSON.parse(localStorage.getItem(`ws_${tab}`) || '[]');
+        if(items.length === 0) {
+            content += `<div style="text-align:center; padding:50px; opacity:0.5;">Placeholder [${tab} is Empty]</div>`;
+        } else {
+            content += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">`;
+            items.forEach((item, i) => {
+                content += `<div style="background:rgba(0,0,0,0.4); border:1px solid var(--border); padding:15px;">
+                    <div style="font-weight:bold; color:#fff; font-size:1.1rem; margin-bottom:5px;">${item.title}</div>
+                    <div style="font-size:0.75rem; opacity:0.7; margin-bottom:10px;">By: ${item.author}</div>
+                    <div style="font-size:0.85rem; margin-bottom:15px; color:#aaa;">${item.desc}</div>
+                    <button class="btn-modal-confirm" style="width:100%; font-size:0.7rem;" onclick="importFromWorkshop('${tab}', ${i})"><i class="fa-solid fa-download"></i> Get</button>
+                </div>`;
+            });
+            content += `</div>`;
+        }
+        document.getElementById('workshop-content').innerHTML = content;
+    }
+
+    function startWorkshopUpload() {
+        if(!authUser) { customAlert("You must authenticate with Roblox first to upload."); return; }
+        document.getElementById('workshop-window').style.display = 'none';
+        
+        if(currentWorkshopTab === 'TEMPLATES') {
+            openInputPrompt("Upload Template", "Paste encrypted string here...", (val) => {
+                processWorkshopUpload(val);
+            });
+            return;
+        }
+
+        uploadSelectMode = true; selectedNodes = [];
+        document.getElementById('selection-banner').style.display = 'flex';
+        loadMove(activeIndex);
+    }
+
+    function cancelSelectionMode() { uploadSelectMode = false; document.getElementById('selection-banner').style.display = 'none'; selectedNodes=[]; loadMove(activeIndex); }
+    
+    function confirmSelectionMode() {
+        if(!selectedNodes.length) { customAlert("No nodes selected."); return; }
+        const list = getActiveList();
+        
+        // Validation Criteria
+        for(let idx of selectedNodes) {
+            let node = list[idx];
+            if(currentWorkshopTab === 'SFX' && node.K_NAME !== 'SFX') { customAlert("SFX category only accepts Sound nodes."); return; }
+            if(currentWorkshopTab === 'VFX' && (node.K_NAME !== 'VISUAL' || node.EFFECT === 'Mesh')) { customAlert("VFX accepts non-mesh visual nodes only."); return; }
+            if(currentWorkshopTab === 'Mesh VFX' && (node.K_NAME !== 'VISUAL' || node.EFFECT !== 'Mesh')) { customAlert("Mesh VFX requires visual nodes with the 'Mesh' effect."); return; }
+            if(currentWorkshopTab === 'Mixed VFX' && node.K_NAME !== 'VISUAL') { customAlert("Mixed VFX accepts any Visual nodes only."); return; }
+        }
+
+        const dataToUpload = selectedNodes.sort((a,b)=>a-b).map(i => list[i]);
+        cancelSelectionMode();
+        processWorkshopUpload(dataToUpload);
+    }
+
+    function processWorkshopUpload(data) {
+        openInputPrompt("Upload Title", "Enter title...", (title) => {
+            openInputPrompt("Description", "Enter short description...", (desc) => {
+                let items = JSON.parse(localStorage.getItem(`ws_${currentWorkshopTab}`) || '[]');
+                items.push({ title, desc, author: authUser.name, payload: data });
+                localStorage.setItem(`ws_${currentWorkshopTab}`, JSON.stringify(items));
+                customAlert("Successfully uploaded to workshop!");
+                openWorkshop();
+            });
+        });
+    }
+
+    function importFromWorkshop(tab, idx) {
+        const item = JSON.parse(localStorage.getItem(`ws_${tab}`))[idx];
+        document.getElementById('workshop-window').style.display = 'none';
+
+        if(tab === 'TEMPLATES') {
+            // Act like normal import
+            document.getElementById('io-terminal-textarea').value = item.payload;
+            ioModalMode = 'import'; executeIOAction();
+        } else {
+            // Enter place mode
+            importPlaceMode = true; importPayload = item.payload;
+            document.getElementById('selection-banner-text').innerText = "Click between nodes to place download...";
+            document.getElementById('selection-banner').style.display = 'flex';
+            document.getElementById('selection-banner').querySelector('button:last-child').style.display = 'none'; // hide confirm
+        }
+    }
+
+
+    // --- Custom Node Builder (Alpha) ---
+    function openCustomNodeBuilder() {
+        customAlert("Custom Node Builder: This will create a macro block wrapping selected nodes. Select nodes, hit Shift+A, and choose Custom Node to encapsulate them! (Full UI under construction)");
+    }
+    
+    // Core Engine Export intercept for Custom Nodes & Comments
+    function generateCleanExportData() {
+        // Deep clone
+        let clean = JSON.parse(JSON.stringify(currentMoves));
+        clean.forEach(move => {
+            let inner = getInnerData(move);
+            const processList = (list) => {
+                for(let i = list.length - 1; i >= 0; i--) {
+                    delete list[i]._COMMENT; // Strip comments
+                    if(list[i].K_NAME === 'CUSTOM_NODE') {
+                        // Expand Custom Node Logic
+                        let node = list[i];
+                        let expansion = [
+                            { "K_NAME": "TAG", "ADD/REMOVE": false, "CHECK": false, "SET": false, "VALUE": `Start [${node.NODE_ID}]` },
+                            // Mock expansion - would normally evaluate node.INPUTS here and inject children
+                            { "K_NAME": "TAG", "ADD/REMOVE": false, "CHECK": false, "SET": false, "VALUE": `End [ReconstructionData]` }
+                        ];
+                        list.splice(i, 1, ...expansion);
+                    }
+                }
+            };
+            processList(inner.Line); processList(inner.Req);
+            for(let b in inner.Branch) { processList(inner.Branch[b].Line); processList(inner.Branch[b].Req); }
+            move.DATA = JSON.stringify(inner);
+        });
+        return clean;
+    }
+
+
+    // --- Context Menu / Core Interaction Modifications ---
+    document.addEventListener('mousemove', e => { 
+        mouseX = e.clientX; mouseY = e.clientY; 
+        
+        // Drag indicator logic (Placing mode & Drag mode)
+        if((isDraggingNode || importPlaceMode) && activeTab !== 'Properties') {
+            if(isDraggingNode && dragClone) { dragClone.style.left = (e.clientX + 10) + 'px'; dragClone.style.top = (e.clientY + 10) + 'px'; }
+            
+            const container = document.getElementById('nodes-scale-container-target');
+            if(!container) return;
+            const nodes = Array.from(container.querySelectorAll('.node-card:not(.drag-ghost)'));
+            
+            let closestIdx = nodes.length;
+            for(let i = 0; i < nodes.length; i++) {
+                const rect = nodes[i].getBoundingClientRect();
+                if(e.clientY < (rect.top + rect.height / 2)) { closestIdx = i; break; }
+            }
+            currentDropIdx = closestIdx;
+            
+            if(nodes.length > 0) {
+                let ind = document.getElementById('drag-indicator');
+                let refRect = closestIdx < nodes.length ? nodes[closestIdx].getBoundingClientRect() : nodes[nodes.length-1].getBoundingClientRect();
+                let indicatorY = closestIdx < nodes.length ? refRect.top - 10 : refRect.bottom + 10;
+                ind.style.width = refRect.width + 'px';
+                ind.style.left = refRect.left + 'px';
+                ind.style.top = indicatorY + 'px';
+                ind.style.display = 'block';
+            }
+        }
+    });
+
+    document.addEventListener('mouseup', e => {
+        if(importPlaceMode && currentDropIdx !== -1) {
+            pushHistory();
+            const list = getActiveList();
+            list.splice(currentDropIdx, 0, ...importPayload);
+            saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
+            
+            importPlaceMode = false; importPayload = null;
+            document.getElementById('selection-banner').style.display = 'none';
+            document.getElementById('selection-banner').querySelector('button:last-child').style.display = 'inline-block';
+            document.getElementById('drag-indicator').style.display = 'none';
+            loadMove(activeIndex);
+            return;
+        }
+
+        if(!isDraggingNode) return;
+        isDraggingNode = false;
+        if(dragClone && dragClone.parentNode) document.body.removeChild(dragClone);
+        dragClone = null; document.getElementById('drag-indicator').style.display = 'none';
+        
+        if(currentDropIdx !== -1 && currentDropIdx !== draggedNodeIdx && currentDropIdx !== draggedNodeIdx + 1) {
+            pushHistory();
+            const list = getActiveList();
+            const movingNode = list.splice(draggedNodeIdx, 1)[0];
+            let adjustedDropIdx = currentDropIdx > draggedNodeIdx ? currentDropIdx - 1 : currentDropIdx;
+            list.splice(adjustedDropIdx, 0, movingNode);
+            saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
+            selectedNodes = []; loadMove(activeIndex);
+        }
+        draggedNodeIdx = -1; currentDropIdx = -1;
+    });
+
+    function initCustomDrag(e, idx) {
+        e.preventDefault(); e.stopPropagation();
+        if(activeTab === 'Properties') return;
+        isDraggingNode = true; draggedNodeIdx = idx;
+        const nodeEl = document.getElementById(`node-block-${idx}`);
+        dragClone = nodeEl.cloneNode(true); dragClone.classList.add('drag-ghost');
+        dragClone.style.width = nodeEl.offsetWidth + 'px';
+        document.body.appendChild(dragClone);
+    }
+
+    function handleNodeClick(e, idx) {
+        if(uploadSelectMode) {
+            if(selectedNodes.includes(idx)) selectedNodes = selectedNodes.filter(i => i !== idx);
+            else selectedNodes.push(idx);
+            loadMove(activeIndex);
+            return;
+        }
+        
+        if(e.shiftKey) {
+            if(selectedNodes.includes(idx)) selectedNodes = selectedNodes.filter(i => i !== idx);
+            else selectedNodes.push(idx);
+            loadMove(activeIndex); // Re-render for selection rings
+        } else {
+            if(selectedNodes.length === 1 && selectedNodes[0] === idx) {
+                // If it's the only one selected, toggle it open
+                toggleNodeBody(idx);
+            } else {
+                selectedNodes = [idx];
+                loadMove(activeIndex);
+            }
+        }
+    }
+    
+    function promptComment(idx) {
+        const list = getActiveList();
+        openInputPrompt("Set Comment", "Type comment...", (val) => {
+            pushHistory(); list[idx]._COMMENT = val;
+            saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
+            loadMove(activeIndex);
+        });
+    }
+
+    // --- Loading Routine Overrides ---
     function loadMove(idx) {
         if (currentMoves.length === 0) { renderWorkspaceEmpty(); return; }
         activeIndex = idx;
-
         document.querySelectorAll('.container-list .item').forEach(el => el.classList.remove('active'));
-        const targetSideButton = document.getElementById(`btn-${idx}`);
-        if (targetSideButton) targetSideButton.classList.add('active');
+        const tb = document.getElementById(`btn-${idx}`); if (tb) tb.classList.add('active');
 
-        const move = currentMoves[idx];
-        const innerData = getInnerData(move);
+        const move = currentMoves[idx]; const innerData = getInnerData(move);
         const branchNames = Object.keys(innerData.Branch).sort();
         const canvas = document.getElementById('workspace-canvas-timeline');
+
+        let displayKName = move.K_NAME ? (move.K_NAME.charAt(0).toUpperCase() + move.K_NAME.slice(1).toLowerCase()) : 'UNNAMED';
 
         let html = `
             <div class="editor-header">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h1 style="margin:0; font-size:2.2rem; text-transform:none; letter-spacing:1px; color:var(--accent);">${move.K_NAME || 'UNNAMED'}</h1>
+                    <h1 style="margin:0; font-size:2.2rem; letter-spacing:1px; color:var(--accent);">${displayKName}</h1>
                     <button class="btn-delete-container" onclick="deleteActiveContainer(${idx})"><i class="fa-solid fa-trash-can"></i> Delete Container</button>
                 </div>
                 <div class="container-fields-row">
-                    <div class="tooltip-field">
-                        <label>Name</label>
-                        <input type="text" value="${move.NAME || ''}" oninput="alterContainerCoreName(${idx}, this.value)">
-                    </div>
+                    <div class="tooltip-field"><label>Name</label><input type="text" value="${move.NAME || ''}" oninput="alterContainerCoreName(${idx}, this.value)"></div>
                 </div>
-            </div>
-        `;
+            </div>`;
 
         if (activeTab === 'Timeline' || activeTab === 'Conditions') {
-            html += `<div class="branch-bar">`;
-            html += `<button class="branch-tab ${activeBranch === 'Default' ? 'active' : ''}" onclick="switchBranch('Default')">Default</button>`;
-            branchNames.forEach(b => {
-                html += `<button class="branch-tab ${activeBranch === b ? 'active' : ''}" onclick="switchBranch('${b}')">
-                            ${b} 
-                            <span style="display:flex; gap:2px; margin-left:6px;">
-                                <i class="fa-solid fa-pen edit-icon" title="Rename Branch" onclick="openBranchModal('edit', '${b}'); event.stopPropagation();"></i>
-                                <i class="fa-solid fa-trash delete-icon" title="Delete Branch" onclick="deleteBranch('${b}'); event.stopPropagation();"></i>
-                            </span>
-                         </button>`;
-            });
-            html += `<button class="branch-add-btn" onclick="openBranchModal('create')"><i class="fa-solid fa-plus"></i></button>`;
-            html += `</div>`;
+            html += `<div class="branch-bar"><button class="branch-tab ${activeBranch === 'Default' ? 'active' : ''}" onclick="switchBranch('Default')">Default</button>`;
+            branchNames.forEach(b => { html += `<button class="branch-tab ${activeBranch === b ? 'active' : ''}" onclick="switchBranch('${b}')">${b} <span style="display:flex; gap:2px; margin-left:6px;"><i class="fa-solid fa-pen edit-icon" onclick="openBranchModal('edit', '${b}'); event.stopPropagation();"></i><i class="fa-solid fa-trash delete-icon" onclick="deleteBranch('${b}'); event.stopPropagation();"></i></span></button>`; });
+            html += `<button class="branch-add-btn" onclick="openBranchModal('create')"><i class="fa-solid fa-plus"></i></button></div>`;
         }
 
-        html += `<div class="workspace-tabs">
-            <button class="workspace-tab ${activeTab === 'Timeline' ? 'active' : ''}" onclick="switchTab('Timeline')">Timeline</button>
-            <button class="workspace-tab ${activeTab === 'Conditions' ? 'active' : ''}" onclick="switchTab('Conditions')">Conditions</button>
-            <button class="workspace-tab ${activeTab === 'Properties' ? 'active' : ''}" onclick="switchTab('Properties')">Properties</button>
-        </div>`;
+        html += `<div class="workspace-tabs"><button class="workspace-tab ${activeTab === 'Timeline' ? 'active' : ''}" onclick="switchTab('Timeline')">Timeline</button><button class="workspace-tab ${activeTab === 'Conditions' ? 'active' : ''}" onclick="switchTab('Conditions')">Conditions</button><button class="workspace-tab ${activeTab === 'Properties' ? 'active' : ''}" onclick="switchTab('Properties')">Properties</button></div>`;
 
-        if (activeTab === 'Timeline') {
-            const currentNodesList = (activeBranch === 'Default') ? innerData.Line : innerData.Branch[activeBranch].Line;
+        if (activeTab === 'Timeline' || activeTab === 'Conditions') {
+            html += `<div class="gui-scale-bar"><label style="color: var(--accent); font-weight: bold;">GUI SCALE:</label><input type="range" min="0.6" max="1.1" step="0.05" value="${currentGuiScale}" oninput="changeGuiScale(this.value)"><span id="gui-scale-value-text" style="font-weight: bold; width: 45px; text-align: right;">${Math.round(currentGuiScale *100)}%</span></div>
+                <div id="nodes-scale-container-target" style="transform: scale(${currentGuiScale}); transform-origin: top left; width: ${100 / currentGuiScale}%; position:relative;">`;
             
-            if (currentNodesList.length === 0) {
-                html += `<div style="text-align:center; opacity:0.4; font-size:0.8rem; margin-top:20px; text-transform:none;">No nodes in this branch yet. Press Shift + A to add one.</div>`;
+            const currentNodesList = (activeTab === 'Timeline') ? ((activeBranch === 'Default') ? innerData.Line : innerData.Branch[activeBranch].Line) : ((activeBranch === 'Default') ? innerData.Req : innerData.Branch[activeBranch].Req);
+            
+            if (!currentNodesList || currentNodesList.length === 0) {
+                html += `<div style="text-align:center; opacity:0.4; font-size:0.8rem; padding: 40px 0;">No nodes here yet. Press Shift + A to add one.</div>`;
             } else {
                 currentNodesList.forEach((node, nodeIdx) => {
                     const translationText = TRANSLATIONS[node.K_NAME] || node.K_NAME;
+                    const isSelected = selectedNodes.includes(nodeIdx) ? 'selected' : '';
+                    const cmt = node._COMMENT ? `<div style="font-size:0.6rem; color:#a0aec0; margin-top:2px;"><i class="fa-solid fa-quote-left"></i> ${node._COMMENT}</div>` : '';
+                    
                     html += `
-                        <div class="node-card" id="node-block-${nodeIdx}">
-                            <div class="node-head" onclick="toggleNodeBody(${nodeIdx})">
+                        <div class="node-card ${isSelected}" id="node-block-${nodeIdx}">
+                            <div class="node-head" onclick="handleNodeClick(event, ${nodeIdx})">
                                 <div class="node-title-group">
-                                    <strong>${translationText}</strong>
-                                    <span class="node-summary-tag" id="summary-span-${nodeIdx}">${generateSummaryHeaderStr(node)}</span>
+                                    <i class="fa-solid fa-grip-vertical" style="color: var(--accent); cursor: grab; margin-right: 5px; font-size: 1.1rem; padding: 5px;" onmousedown="initCustomDrag(event, ${nodeIdx})"></i>
+                                    <div>
+                                        <strong>${translationText}</strong>
+                                        <span class="node-summary-tag" id="summary-span-${nodeIdx}">${generateSummaryHeaderStr(node)}</span>
+                                        ${cmt}
+                                    </div>
                                 </div>
-                                <div style="display:flex; align-items:center; gap:20px;">
-                                    <span style="font-family:var(--font-code); font-weight:bold; color:var(--accent); font-size:0.85rem;">#${nodeIdx + 1}</span>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <span style="font-family:var(--font-code); font-weight:bold; color:var(--accent); font-size:0.85rem; margin-right:10px;">#${nodeIdx + 1}</span>
+                                    <button class="btn-comment-node" onclick="promptComment(${nodeIdx}); event.stopPropagation();"><i class="fa-solid fa-comment"></i></button>
                                     <button class="btn-delete-node" onclick="removeNode(${nodeIdx}); event.stopPropagation();"><i class="fa-solid fa-square-minus"></i></button>
                                 </div>
                             </div>
                             <div class="node-grid" id="node-grid-${nodeIdx}" style="display:none;">
-                                ${buildPropertyFieldsMarkup(node, nodeIdx, 'Timeline')}
+                                ${buildPropertyFieldsMarkup(node, nodeIdx, activeTab)}
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                 });
             }
-        } else if (activeTab === 'Conditions') {
-            const currentReqList = (activeBranch === 'Default') ? innerData.Req : innerData.Branch[activeBranch].Req;
-            
-            if (currentReqList.length === 0) {
-                html += `<div style="text-align:center; opacity:0.4; font-size:0.8rem; margin-top:20px; text-transform:none;">No conditions applied to this branch. Press Shift + A to add one.</div>`;
-            } else {
-                currentReqList.forEach((node, nodeIdx) => {
-                    const translationText = TRANSLATIONS[node.K_NAME] || node.K_NAME;
-                    html += `
-                        <div class="node-card" id="node-block-${nodeIdx}">
-                            <div class="node-head" onclick="toggleNodeBody(${nodeIdx})">
-                                <div class="node-title-group">
-                                    <strong>${translationText}</strong>
-                                    <span class="node-summary-tag" id="summary-span-${nodeIdx}">${generateSummaryHeaderStr(node)}</span>
-                                </div>
-                                <div style="display:flex; align-items:center; gap:20px;">
-                                    <span style="font-family:var(--font-code); font-weight:bold; color:var(--accent); font-size:0.85rem;">#${nodeIdx + 1}</span>
-                                    <button class="btn-delete-node" onclick="removeNode(${nodeIdx}); event.stopPropagation();"><i class="fa-solid fa-square-minus"></i></button>
-                                </div>
-                            </div>
-                            <div class="node-grid" id="node-grid-${nodeIdx}" style="display:none;">
-                                ${buildPropertyFieldsMarkup(node, nodeIdx, 'Conditions')}
-                            </div>
-                        </div>
-                    `;
-                });
-            }
+            html += `</div>`;
         } else if (activeTab === 'Properties') {
-            html += `
-                <div class="node-card">
-                    <div class="node-head" style="cursor:default;">
-                        <div class="node-title-group">
-                            <strong>Global Container Settings</strong>
-                            <span class="node-summary-tag">These properties apply to the entire container, regardless of branch.</span>
-                        </div>
-                    </div>
-                    <div class="node-grid" style="display:grid;">
-            `;
-            
+            if(!innerData.Prop || Array.isArray(innerData.Prop)) innerData.Prop = {};
+            html += `<div class="node-card"><div class="node-head" style="cursor:default;"><div class="node-title-group"><strong>Global Container Settings</strong></div></div><div class="node-grid" style="display:grid;">`;
             PROPERTY_ORDER.forEach(key => {
                 let val = innerData.Prop[key] !== undefined ? innerData.Prop[key] : PROPERTY_DEFAULTS[key];
-                let inputHtml = '';
-                
-                if (typeof PROPERTY_DEFAULTS[key] === 'boolean') {
-                    inputHtml = `<input type="checkbox" ${val === true || val === 'true' ? 'checked' : ''} onchange="alterPropValue('${key}', this.checked)">`;
-                } else if (typeof PROPERTY_DEFAULTS[key] === 'number') {
-                    inputHtml = `<input type="number" step="0.1" value="${val}" oninput="alterPropValue('${key}', parseFloat(this.value) || 0)">`;
-                } else {
-                    inputHtml = `<input type="text" value="${val}" oninput="alterPropValue('${key}', this.value)">`;
-                }
-                
-                html += `
-                    <div class="field">
-                        <label>${PROPERTY_LABELS[key]}</label>
-                        ${inputHtml}
-                    </div>
-                `;
+                let inputHtml = typeof PROPERTY_DEFAULTS[key] === 'boolean' ? `<input type="checkbox" ${val === true || val === 'true' ? 'checked' : ''} onchange="alterPropValue('${key}', this.checked)">` : (typeof PROPERTY_DEFAULTS[key] === 'number' ? `<input type="number" step="0.1" value="${val}" oninput="alterPropValue('${key}', parseFloat(this.value) || 0)">` : `<input type="text" value="${val}" oninput="alterPropValue('${key}', this.value)">`);
+                html += `<div class="field"><label>${PROPERTY_LABELS[key]}</label>${inputHtml}</div>`;
             });
-
             html += `</div></div>`;
         }
-
         canvas.innerHTML = html;
+        
+        // Safety hook for drag indicator bounds
+        document.getElementById('drag-indicator').style.display = 'none';
     }
 
     function buildPropertyFieldsMarkup(node, nodeIdx, context = 'Timeline') {
@@ -973,109 +929,114 @@
         const schemaFields = (context === 'Conditions' ? CONDITION_TEMPLATES[node.K_NAME] : NODE_TEMPLATES[node.K_NAME]) || Object.keys(node);
 
         schemaFields.forEach(fieldKey => {
-            if (fieldKey === 'K_NAME') return;
-            const currentVal = node[fieldKey] !== undefined ? node[fieldKey] : DEFAULTS_LIB[fieldKey];
+            if (fieldKey === 'K_NAME' || fieldKey === '_COMMENT') return;
             
-            let targetInputMarkup = '';
-            if (typeof currentVal === 'boolean' || currentVal === 'true' || currentVal === 'false') {
-                const checkedAttr = (currentVal === true || currentVal === 'true') ? 'checked' : '';
-                targetInputMarkup = `<input type="checkbox" ${checkedAttr} onchange="alterNodeValue(${nodeIdx}, '${fieldKey}', this.checked)">`;
-            } else if (Array.isArray(currentVal)) {
-                targetInputMarkup = `<input type="text" value="${currentVal.join(', ')}" oninput="alterNodeValue(${nodeIdx}, '${fieldKey}', this.value.split(',').map(n => parseFloat(n.trim()) || n.trim()))">`;
-            } else if (typeof currentVal === 'number' || (!isNaN(currentVal) && currentVal !== '')) {
-                targetInputMarkup = `<input type="number" step="0.01" value="${currentVal}" oninput="alterNodeValue(${nodeIdx}, '${fieldKey}', parseFloat(this.value) || 0)">`;
-            } else {
-                targetInputMarkup = `<input type="text" value="${currentVal ?? ''}" oninput="alterNodeValue(${nodeIdx}, '${fieldKey}', this.value)">`;
-            }
-
-            fieldsHtml += `
-                <div class="field">
-                    <label>${fieldKey}</label>
-                    ${targetInputMarkup}
-                </div>
-            `;
-        });
-
-        return fieldsHtml;
-    }
-
-    function openIOModal(mode) {
-        ioModalMode = mode;
-        const overlay = document.getElementById('jjs-io-modal');
-        const title = document.getElementById('io-modal-title-text');
-        const tx = document.getElementById('io-terminal-textarea');
-        const btn = document.getElementById('io-action-button');
-
-        tx.value = '';
-        overlay.style.display = 'flex';
-
-        if (mode === 'import') {
-            title.innerHTML = "<i class='fa-solid fa-file-import'></i> Import Data";
-            tx.placeholder = "Paste your moveset data here...";
-            tx.readOnly = false;
-            btn.innerText = "Import";
-        } else if (mode === 'export') {
-            title.innerHTML = "<i class='fa-solid fa-file-export'></i> Export Data";
-            tx.readOnly = true;
-            btn.innerText = "Copy to Clipboard";
-
-            if (currentMoves.length === 0) {
-                tx.value = "[]";
+            if (fieldKey === 'Animation' || fieldKey === 'ANIM_USE') {
+                let currentVal = node.ANIM_USE || [1, 1]; let matchedLabel = "Select Animation Asset";
+                for (let cat in ANIMATION_DICTIONARY) {
+                    let match = ANIMATION_DICTIONARY[cat].animations.find(a => a.val[0] === currentVal[0] && a.val[1] === currentVal[1]);
+                    if (match) { matchedLabel = match.name; break; }
+                }
+                fieldsHtml += `<div class="field" style="grid-column: span 2;"><label>Animation Asset Lookup</label><button class="branch-tab" style="width: 100%; border: 1px solid var(--border); background: rgba(0,0,0,0.5); text-transform:none !important;" onclick="triggerAnimMenu(${nodeIdx})"><i class="fa-solid fa-clapperboard"></i> ${matchedLabel} [${currentVal.join(', ')}]</button></div>`;
                 return;
             }
 
-            try {
-                if (!zstd) {
-                    tx.value = JSON.stringify(currentMoves, null, 2);
-                } else {
-                    const encodedBinary = zstd.compress(new TextEncoder().encode(JSON.stringify(currentMoves)), 3);
-                    let base64BinaryStr = "";
-                    for (let i = 0; i < encodedBinary.length; i++) {
-                        base64BinaryStr += String.fromCharCode(encodedBinary[i]);
-                    }
-                    tx.value = btoa(base64BinaryStr);
-                }
-            } catch (err) {
-                tx.value = JSON.stringify(currentMoves, null, 2);
+            if (node.K_NAME === 'BRANCH' && fieldKey === 'RANDOM') {
+                const availableBranches = ["", "Default", ...Object.keys(getInnerData(currentMoves[activeIndex]).Branch)];
+                let val = node[fieldKey] !== undefined ? node[fieldKey] : "";
+                let opts = availableBranches.map(b => `<option value="${b}" ${val === b ? 'selected' : ''}>${b || 'None'}</option>`).join('');
+                fieldsHtml += `<div class="field"><label>RANDOM (Existing Target Branch)</label><select style="width:100%; color:#fff; background:transparent; border:none; border-bottom:1px solid var(--border);" onchange="alterNodeValue(${nodeIdx}, 'RANDOM', this.value)">${opts}</select></div>`;
+                return;
             }
-        }
+
+            const currentVal = node[fieldKey] !== undefined ? node[fieldKey] : DEFAULTS_LIB[fieldKey];
+            let markup = '';
+            if (typeof currentVal === 'boolean' || currentVal === 'true' || currentVal === 'false') {
+                markup = `<input type="checkbox" ${(currentVal === true || currentVal === 'true') ? 'checked' : ''} onchange="pushHistory(); alterNodeValue(${nodeIdx}, '${fieldKey}', this.checked)">`;
+            } else if (Array.isArray(currentVal)) {
+                markup = `<input type="text" value="${currentVal.join(', ')}" oninput="pushHistory(); alterNodeValue(${nodeIdx}, '${fieldKey}', this.value.split(',').map(n => parseFloat(n.trim()) || n.trim()))">`;
+            } else if (typeof currentVal === 'number' || (!isNaN(currentVal) && currentVal !== '')) {
+                markup = `<input type="number" step="0.01" value="${currentVal}" oninput="pushHistory(); alterNodeValue(${nodeIdx}, '${fieldKey}', parseFloat(this.value) || 0)">`;
+            } else {
+                markup = `<input type="text" value="${currentVal ?? ''}" oninput="pushHistory(); alterNodeValue(${nodeIdx}, '${fieldKey}', this.value)">`;
+            }
+            fieldsHtml += `<div class="field"><label>${fieldKey}</label>${markup}</div>`;
+        });
+        return fieldsHtml;
     }
 
-    function closeIOModal(e) {
-        if (!e || e.target === document.getElementById('jjs-io-modal')) {
-            document.getElementById('jjs-io-modal').style.display = 'none';
-        }
+    function triggerAnimMenu(nodeIdx) {
+        activeAnimPickNodeIdx = nodeIdx; const body = document.getElementById('anim-modal-body'); body.innerHTML = '';
+        Object.keys(ANIMATION_DICTIONARY).forEach(catName => {
+            const catData = ANIMATION_DICTIONARY[catName];
+            const header = document.createElement('div'); header.className = 'anim-cat-header'; header.style.color = catData.color; header.style.borderColor = catData.color;
+            header.innerHTML = `<span class="uppercase-force">${catName}</span> <i class="fa-solid fa-chevron-down"></i>`;
+            const contentBlock = document.createElement('div'); contentBlock.className = 'anim-cat-content'; contentBlock.style.borderColor = catData.color;
+
+            header.onclick = () => {
+                const isOpen = contentBlock.style.display === 'flex'; contentBlock.style.display = isOpen ? 'none' : 'flex';
+                header.querySelector('i').className = isOpen ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-up';
+            };
+
+            catData.animations.forEach(anim => {
+                const row = document.createElement('div'); row.className = 'anim-item-row';
+                row.innerHTML = `<span>${anim.name}</span> <span style="font-family:var(--font-code); font-size:0.7rem; opacity:0.5;">[${anim.val.join(',')}]</span>`;
+                row.onclick = () => { pushHistory(); alterNodeValue(activeAnimPickNodeIdx, 'ANIM_USE', anim.val); closeAnimModal(null); loadMove(activeIndex); };
+                contentBlock.appendChild(row);
+            });
+            body.appendChild(header); body.appendChild(contentBlock);
+        });
+        document.getElementById('jjs-anim-modal').style.display = 'flex';
     }
 
+    function closeAnimModal(e) { if (!e || e.target === document.getElementById('jjs-anim-modal')) document.getElementById('jjs-anim-modal').style.display = 'none'; }
+
+    // --- Export Override ---
     function executeIOAction() {
         const tx = document.getElementById('io-terminal-textarea');
         if (ioModalMode === 'export') {
-            tx.select();
-            document.execCommand('copy');
-            alert("Data copied to clipboard!");
-            closeIOModal(null);
+            tx.select(); document.execCommand('copy'); customAlert("Data copied to clipboard!"); closeIOModal(null);
         } else if (ioModalMode === 'import') {
-            const rawVal = tx.value.trim();
-            if (!rawVal) return;
+            const rawVal = tx.value.trim(); if (!rawVal) return;
+            let pData = [];
             try {
-                if (rawVal.startsWith('[') || rawVal.startsWith('{')) {
-                    currentMoves = JSON.parse(rawVal);
-                } else {
-                    if (!zstd) { alert("ZSTD Engine is still loading. Please wait a moment."); return; }
-                    const rawBuffer = Uint8Array.from(atob(rawVal), c => c.charCodeAt(0));
-                    currentMoves = JSON.parse(new TextDecoder().decode(zstd.decompress(rawBuffer)));
+                if (rawVal.startsWith('[') || rawVal.startsWith('{')) pData = JSON.parse(rawVal);
+                else {
+                    if (!zstd) { document.getElementById('manual-redirect-container').style.display='block'; customAlert("Engine standby. Use manual tool."); return; }
+                    pData = JSON.parse(new TextDecoder().decode(zstd.decompress(Uint8Array.from(atob(rawVal), c => c.charCodeAt(0)))));
                 }
-
-                if (!Array.isArray(currentMoves)) currentMoves = [currentMoves];
-                activeIndex = currentMoves.length > 0 ? 0 : -1;
-                activeBranch = 'Default';
-                activeTab = 'Timeline';
-                renderSidebar();
-                loadMove(activeIndex);
-                closeIOModal(null);
-            } catch(e) {
-                alert("Import failed. Please make sure the code is correct.");
-            }
+                if (!Array.isArray(pData)) pData = [pData];
+                
+                if (currentMoves.length > 0) {
+                    importPayload = pData;
+                    showCustomPrompt("Conflict", "Workspace not empty. Import method?", [
+                        { text: "Merge", color: "#00ff66", action: () => { pushHistory(); currentMoves = currentMoves.concat(importPayload); finalizeImport(); } },
+                        { text: "Overwrite", color: "#ff4d4d", action: () => { pushHistory(); currentMoves = importPayload; finalizeImport(); } },
+                        { text: "Cancel", color: "#e2e8f0", action: () => importPayload = null }
+                    ]);
+                } else { currentMoves = pData; finalizeImport(); }
+            } catch(e) { document.getElementById('manual-redirect-container').style.display='block'; customAlert("Import failed. Check formatting."); }
+        }
+    }
+    
+    function finalizeImport() { activeIndex = currentMoves.length > 0 ? 0 : -1; activeBranch = 'Default'; activeTab = 'Timeline'; selectedNodes=[]; renderSidebar(); loadMove(activeIndex); closeIOModal(null); }
+    
+    function openIOModal(mode) {
+        ioModalMode = mode; const overlay = document.getElementById('jjs-io-modal'); const title = document.getElementById('io-modal-title-text'); const tx = document.getElementById('io-terminal-textarea'); const btn = document.getElementById('io-action-button');
+        tx.value = ''; overlay.style.display = 'flex';
+        if (mode === 'import') { title.innerHTML = "<i class='fa-solid fa-file-import'></i> Import Data"; tx.readOnly = false; btn.innerText = "Import"; } 
+        else {
+            title.innerHTML = "<i class='fa-solid fa-file-export'></i> Export Data"; tx.readOnly = true; btn.innerText = "Copy to Clipboard";
+            if (currentMoves.length === 0) { tx.value = "[]"; return; }
+            try {
+                const expData = generateCleanExportData(); // Cleans comments and expands custom nodes
+                if (!zstd) tx.value = JSON.stringify(expData, null, 2); 
+                else {
+                    const eBin = zstd.compress(new TextEncoder().encode(JSON.stringify(expData)), 3);
+                    let b64 = ""; for (let i = 0; i < eBin.length; i++) b64 += String.fromCharCode(eBin[i]);
+                    tx.value = btoa(b64);
+                }
+            } catch (err) { tx.value = "[]"; }
         }
     }
 
