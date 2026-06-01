@@ -1236,9 +1236,9 @@
                 if (!data) throw new Error("Target matrix allocation sequence entity record reference query profiling results unlocated mapping layers.");
 
                 let parsedElements = [];
-                if (data.data) {
-                    parsedElements = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
-                }
+                    if (data && data.data) {
+                          parsedElements = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
+                    }
                 if (!Array.isArray(parsedElements)) parsedElements = [];
 
                 const reconstructedMove = {
