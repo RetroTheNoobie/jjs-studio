@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JJS Studio - V1.3.0</title>
-    <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap\" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="./zstd-bundle.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script async crossorigin="anonymous" data-clerk-publishable-key="YOUR_CLERK_PUBLISHABLE_KEY" src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
 
     <style id="custom-theme-style"></style>
     <style>
@@ -18,1076 +19,1321 @@
 
         :root {
             --bg: #121317; --panel: #1a1c23; --node-card: #222530; --accent: #ffcc33; --text: #e2e8f0; --border: #2d313f; --thickness: 3px;
-            --font-code: 'Finger Paint', cursive; --bg-image: none; --bg-opacity: 1;
+            --font-code: 'Finger Paint', cursive;
         }
 
-        body.theme-retro   { --bg: #3c3f41; --panel: #2b2b2b; --node-card: #313335; --accent: #ff5722; --text: #f5f5f5; --border: #000000; }
-        body.theme-matrix  { --bg: #030704; --panel: #0a0f0d; --node-card: #121a16; --accent: #00ff66; --text: #33ff77; --border: #00ff66; }
-        body.theme-nova    { --bg: #0f051d; --panel: #18092b; --node-card: #240e42; --accent: #cc33ff; --text: #f3e8ff; --border: #4a1d8a; }
-        body.theme-cyber   { --bg: #1c1e22; --panel: #111215; --node-card: #242930; --accent: #00f0ff; --text: #c0c5cd; --border: #00f0ff; --thickness: 3px; }
-        body.theme-crimson { --bg: #141414; --panel: #0b0b0b; --node-card: #1f1f1f; --accent: #ff2a4b; --text: #f5f5f5; --border: #ff2a4b; --thickness: 4px; }
-        body.theme-super-dark { --bg: #000000; --panel: #050505; --node-card: #0a0a0a; --accent: #ffffff; --text: #e0e0e0; --border: #1f1f1f; --thickness: 2px; }
-
-        body { margin: 0; background-color: var(--bg); color: var(--text); display: flex; flex-direction: column; width: 100vw; height: 100vh; overflow: hidden; position: relative; }
+        body { margin: 0; background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; font-size: 14px; user-select: none; }
         
-        body::before {
-            content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background-image: var(--bg-image); background-size: cover; background-position: center;
-            opacity: var(--bg-opacity); z-index: -1; pointer-events: none;
-        }
+        /* Account Dropdown Styles */
+        .account-menu-container { position: relative; display: inline-block; }
+        .account-dropdown { display: none; position: absolute; right: 0; top: calc(100% + 5px); background: var(--panel); border: var(--thickness) solid var(--border); min-width: 240px; z-index: 2000; box-shadow: 0 8px 24px rgba(0,0,0,0.6); flex-direction: column; }
+        .account-dropdown.show { display: flex; }
+        .account-item { padding: 12px 15px; border-bottom: 1px solid var(--border); font-size: 0.8rem; cursor: pointer; color: var(--text); transition: background 0.15s; display: flex; align-items: center; gap: 10px; }
+        .account-item:last-child { border-bottom: none; }
+        .account-item:hover { background: var(--accent); color: #000; }
+        .account-item.active-session { background: rgba(0,255,102,0.08); border-left: var(--thickness) solid #00ff66; cursor: default; color: var(--text); }
+        .account-item.active-session:hover { background: rgba(0,255,102,0.08); color: var(--text); }
 
-        .topbar { flex-shrink: 0; height: 50px; background: var(--panel); border-bottom: var(--thickness) solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 15px; z-index: 50; }
-        .topbar-btn { background: transparent; color: var(--text); border: none; border-bottom: 3px solid transparent; font-weight: bold; cursor: pointer; height: 100%; padding: 0 15px; font-size: 0.85rem; transition: 0.2s; }
-        .topbar-btn:hover { color: var(--accent); border-bottom-color: var(--accent); }
+        #topbar { height: 50px; background: var(--panel); border-bottom: var(--thickness) solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 10; }
+        .topbar-brand { display: flex; align-items: center; gap: 10px; }
+        .topbar-brand h1 { margin: 0; font-size: 1.2rem; color: var(--accent); letter-spacing: 1px; }
+        .btn-jjs-action { background: var(--panel); border: var(--thickness) solid var(--border); color: var(--text); padding: 8px 16px; cursor: pointer; font-size: 0.85rem; font-weight: bold; transition: all 0.15s ease; display: inline-flex; align-items: center; gap: 8px; box-shadow: 3px 3px 0 var(--border); }
+        .btn-jjs-action:hover { background: var(--accent); color: #000; border-color: var(--accent); box-shadow: 1px 1px 0 #000; transform: translate(2px, 2px); }
+        .btn-jjs-action:active { transform: translate(3px, 3px); box-shadow: 0 0 0 #000; }
 
-        .app-body { display: flex; flex: 1; overflow: hidden; }
-        .sidebar { width: 380px; min-width: 380px; background: var(--panel); border-right: var(--thickness) solid var(--border); display: flex; flex-direction: column; z-index: 10; height: 100%; box-shadow: 5px 0 0 rgba(0,0,0,0.2); }
-        .sidebar-header { padding: 25px; border-bottom: var(--thickness) solid var(--border); text-align: center; }
-        .engine-status { font-size: 0.7rem; padding: 6px 12px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); width: fit-content; margin: 10px auto 0 auto; }
+        #main-container { display: flex; flex: 1; height: calc(100vh - 50px); overflow: hidden; position: relative; }
+        #left-sidebar { width: 320px; background: var(--panel); border-right: var(--thickness) solid var(--border); display: flex; flex-direction: column; z-index: 5; }
+        .sidebar-header { padding: 15px; border-bottom: var(--thickness) solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .sidebar-header h2 { margin: 0; font-size: 0.9rem; color: var(--accent); letter-spacing: 0.5px; }
         
-        .jjs-action-container { padding: 20px 15px; display: flex; flex-direction: column; gap: 10px; border-bottom: var(--thickness) solid var(--border); }
-        .jjs-action-row { display: flex; gap: 10px; width: 100%; }
-        .btn-jjs-action { flex: 1; padding: 12px; border: var(--thickness) solid var(--border); background: rgba(0,0,0,0.2); color: var(--text); font-weight: bold; cursor: pointer; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.15s; }
-        .btn-jjs-action i { font-size: 0.9rem; color: var(--accent); }
-        .btn-jjs-action:hover { background: var(--accent); color: #000; }
-        .btn-jjs-action:hover i { color: #000; }
+        .list-container { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+        .move-card { background: var(--node-card); border: var(--thickness) solid var(--border); padding: 12px; cursor: pointer; transition: all 0.15s ease; position: relative; display: flex; flex-direction: column; gap: 4px; }
+        .move-card:hover { border-color: var(--accent); }
+        .move-card.active { border-color: var(--accent); background: rgba(255,204,51,0.05); }
+        .move-card-title { font-weight: bold; font-size: 0.9rem; color: #fff; word-break: break-all; padding-right: 25px; }
+        .move-card-branch { font-size: 0.7rem; color: var(--accent); opacity: 0.8; }
+        .move-card-actions { position: absolute; right: 10px; top: 12px; display: flex; gap: 8px; opacity: 0; transition: opacity 0.15s; }
+        .move-card:hover .move-card-actions { opacity: 1; }
+        .move-action-btn { background: none; border: none; color: var(--text); cursor: pointer; padding: 2px; font-size: 0.85rem; opacity: 0.6; transition: opacity 0.15s, color 0.15s; }
+        .move-action-btn:hover { opacity: 1; color: var(--accent); }
+        .move-action-btn.del-btn:hover { color: #ff4d4d; }
 
-        .container-heading { padding: 15px 20px 5px 20px; font-size: 0.7rem; color: var(--accent); letter-spacing: 1px; }
-        .container-list { padding: 10px 15px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex-grow: 1; }
-        .item { padding: 15px; background: var(--node-card); cursor: pointer; border: var(--thickness) solid var(--border); transition: 0.1s; }
-        .item:hover { background: rgba(255,255,255,0.05); }
-        .item.active { background: var(--accent); color: #000 !important; border-color: var(--border); }
-        .item.active .type-tag, .item.active .move-name { color: #000 !important; }
-        .item .type-tag { font-size: 0.65rem; color: var(--accent); display: block; margin-bottom: 2px;}
-        .item .move-name { display: block; font-size: 1.1rem; color: var(--text); }
-
-        .main { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 40px; height: 100%; display: block; background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px); background-size: 30px 30px; position: relative; }
-
-        .editor-header { display: flex; flex-direction: column; gap: 15px; border-left: var(--thickness) solid var(--accent); padding-left: 20px; margin-bottom: 25px; }
-        .btn-delete-container { background: #ff4d4d; color: #fff; border: var(--thickness) solid var(--border); padding: 10px 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.75rem; transition: 0.1s; }
-        .btn-delete-container:hover { transform: translate(-2px, -2px); filter: brightness(1.1); }
-        .container-fields-row { display: flex; gap: 15px; }
-        .tooltip-field { background: rgba(0,0,0,0.8); border: 1px solid var(--border); padding: 12px; flex: 1; }
-        .tooltip-field label { display: block; font-size: 0.65rem; color: var(--accent); margin-bottom: 5px; }
-        .tooltip-field input { width: 100%; background: transparent; border: none; color: #fff; font-size: 1rem; border-bottom: 2px solid #333; }
-
-        .branch-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; align-items: center; }
-        .branch-tab { background: var(--panel); border: var(--thickness) solid var(--border); padding: 8px 16px; color: var(--text); font-size: 0.8rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.1s; }
-        .branch-tab:hover { background: rgba(255,255,255,0.1); }
-        .branch-tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
-        .branch-tab .edit-icon, .branch-tab .delete-icon { opacity: 0.6; font-size: 0.7rem; padding: 4px; transition: opacity 0.1s; }
-        .branch-tab .edit-icon:hover { opacity: 1; } .branch-tab.active .edit-icon { color: #000; }
-        .branch-tab .delete-icon { color: #ff4d4d; } .branch-tab .delete-icon:hover { opacity: 1; color: #ff1a1a; } .branch-tab.active .delete-icon { color: #cc0000; }
-        .branch-add-btn { background: var(--panel); border: 2px solid #00ff66; color: #00ff66; padding: 6px 12px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
-        .branch-add-btn:hover { background: #00ff66; color: #000; }
-
-        .workspace-tabs { display: flex; gap: 5px; border-bottom: 2px solid var(--border); margin-bottom: 20px; }
-        .workspace-tab { flex: 1; background: rgba(0,0,0,0.5); border: none; padding: 12px; color: var(--text); opacity: 0.5; font-size: 0.85rem; font-weight: bold; cursor: pointer; transition: 0.2s; border-bottom: 3px solid transparent; }
-        .workspace-tab:hover { opacity: 0.8; background: rgba(255,255,255,0.05); }
-        .workspace-tab.active { opacity: 1; color: var(--accent); border-bottom: 3px solid var(--accent); background: rgba(0,0,0,0.8); }
-
-        .node-card { background: var(--panel); border: var(--thickness) solid var(--border); margin-bottom: 20px; overflow: hidden; box-shadow: 6px 6px 0px rgba(0,0,0,0.6); transition: 0.1s; position: relative; }
-        .node-card.selected { border-color: var(--accent); box-shadow: 0 0 15px rgba(255, 204, 51, 0.5); transform: translateY(-2px); }
-        .node-head { background: rgba(0,0,0,0.3); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: var(--thickness) solid var(--border); user-select: none; cursor: pointer; }
-        .node-head:hover { background: rgba(255,255,255,0.03); }
-        .node-title-group { display: flex; align-items: center; gap: 12px; }
-        .node-title-group strong { color: var(--accent); font-size: 1rem; }
-        .node-summary-tag { color: #8892b0; font-size: 0.8rem; }
-        .btn-delete-node, .btn-comment-node { background: transparent; border: none; cursor: pointer; font-size: 1.1rem; padding: 5px; transition: color 0.1s; }
-        .btn-delete-node { color: #ff4d4d; } .btn-delete-node:hover { color: #ff1a1a; }
-        .btn-comment-node { color: #a0aec0; } .btn-comment-node:hover { color: #fff; }
-
-        .node-grid { padding: 25px; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; background: rgba(0,0,0,0.1); }
-        .field { background: rgba(0,0,0,0.4); border: 1px solid var(--border); padding: 12px; }
-        .field label { display: block; font-size: 0.65rem; color: #8892b0; margin-bottom: 6px; }
-        .field input, .field select { width: 100%; background: transparent; border: none; color: #fff; font-size: 0.95rem; border-bottom: 1px solid var(--border); }
-        .field input:disabled { opacity: 0.5; border-bottom: none; cursor: not-allowed; }
-        .field input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; border-bottom: none; }
-
-        .empty-state { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 1.3rem; color: #4f566b; text-align: center; line-height: 1.8; }
-        .gui-scale-bar { display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.6); padding: 10px 20px; border: 1px solid var(--border); margin-bottom: 20px; font-size: 0.75rem; }
-        .gui-scale-bar input[type="range"] { flex-grow: 1; cursor: pointer; accent-color: var(--accent); }
-
-        .context-menu { position: fixed; display: none; background: #090a0f; border: var(--thickness) solid var(--border); z-index: 10000; padding: 5px 0; min-width: 220px; max-height: 450px; overflow-y: auto; box-shadow: 0px 10px 30px rgba(0,0,0,0.5); }
-        .context-menu .menu-label { padding: 6px 15px; font-size: 0.65rem; color: var(--accent); letter-spacing: 0.5px; background: rgba(255,255,255,0.02); }
-        .context-menu .menu-item { padding: 10px 15px; font-size: 0.75rem; color: #e2e8f0; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .context-menu .menu-item:hover { background: var(--accent); color: #000; }
-        .context-menu .menu-separator { height: 1px; background: var(--border); margin: 5px 0; }
-
-        /* Modals */
-        .jjs-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 10001; display: none; align-items: center; justify-content: center; }
-        .jjs-modal-box { background: var(--panel); border: var(--thickness) solid var(--border); width: 550px; max-width: 90%; display: flex; flex-direction: column; max-height: 90vh; }
-        .jjs-modal-header { background: rgba(0,0,0,0.5); padding: 20px; border-bottom: var(--thickness) solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .jjs-modal-title { color: var(--accent); font-size: 1.1rem; margin: 0; }
-        .jjs-modal-close { background: transparent; border: none; color: #ff4d4d; cursor: pointer; font-size: 1.2rem; }
-        .jjs-modal-close:hover { color: #ff1a1a; }
-        .jjs-modal-body { padding: 20px; overflow-y: auto; flex-grow: 1; }
-        .jjs-modal-footer { padding: 0 20px 20px 20px; display: flex; justify-content: flex-end; gap: 12px; }
+        #workspace { flex: 1; display: flex; flex-direction: column; background: var(--bg); position: relative; overflow: hidden; }
+        #workspace-tabs { height: 40px; background: var(--panel); border-bottom: var(--thickness) solid var(--border); display: flex; align-items: center; padding: 0 10px; gap: 5px; }
+        .workspace-tab { padding: 0 15px; height: calc(100% + var(--thickness)); display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: bold; border: var(--thickness) solid transparent; border-bottom: none; cursor: pointer; transition: all 0.15s; position: relative; top: calc(var(--thickness) / 2); margin-top: calc(var(--thickness) * -1); color: var(--text); opacity: 0.6; }
+        .workspace-tab:hover { opacity: 1; background: rgba(255,255,255,0.02); }
+        .workspace-tab.active { opacity: 1; background: var(--bg); border-color: var(--border); border-bottom-color: var(--bg); color: var(--accent); z-index: 2; }
         
-        .jjs-modal-textarea { width: 100%; height: 220px; background: #090a0f; color: #00ff66; border: 1px solid var(--border); padding: 15px; font-size: 0.85rem; resize: none; }
-        .jjs-modal-input { width: 100%; background: #000; border: 1px solid var(--border); padding: 12px; color: #fff; font-size: 1rem; }
-        .btn-modal-confirm { background: var(--accent); color: #000; border: 1px solid var(--border); padding: 10px 20px; font-weight: bold; cursor: pointer; text-transform: uppercase !important; transition: filter 0.1s; }
-        .btn-modal-confirm:hover { filter: brightness(1.2); }
+        #workspace-view-content { flex: 1; position: relative; overflow: hidden; display: flex; }
+        .view-panel { display: none; width: 100%; height: 100%; position: relative; }
+        .view-panel.active { display: flex; }
 
-        .anim-cat-header { font-weight: bold; padding: 12px 18px; margin-top: 6px; cursor: pointer; border: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); font-size: 0.85rem; }
-        .anim-cat-content { display: none; padding: 8px; background: rgba(0,0,0,0.6); border: 2px solid var(--border); border-top: none; flex-direction: column; gap: 5px; }
-        .anim-item-row { padding: 8px 14px; cursor: pointer; font-size: 0.85rem; color: #fff; transition: background 0.1s; display: flex; justify-content: space-between; }
-        .anim-item-row:hover { background: var(--accent); color: #000; }
+        #timeline-view { flex-direction: column; overflow-y: auto; padding: 20px; gap: 20px; }
+        .timeline-section { background: var(--panel); border: var(--thickness) solid var(--border); display: flex; flex-direction: column; }
+        .timeline-section-header { padding: 10px 15px; border-bottom: var(--thickness) solid var(--border); display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.15); }
+        .timeline-section-header h3 { margin: 0; font-size: 0.85rem; color: var(--accent); }
+        .timeline-row-container { display: flex; flex-direction: column; }
+        .timeline-row { display: flex; border-bottom: 1px solid var(--border); min-height: 45px; align-items: center; }
+        .timeline-row:last-child { border-bottom: none; }
+        .timeline-label { width: 150px; padding: 0 15px; border-right: var(--thickness) solid var(--border); font-size: 0.75rem; font-weight: bold; color: #fff; display: flex; align-items: center; gap: 8px; height: 100%; background: rgba(0,0,0,0.05); }
+        .timeline-track { flex: 1; display: flex; position: relative; height: 100%; min-height: 45px; align-items: center; padding: 0 10px; gap: 10px; overflow-x: auto; }
+        
+        .timeline-node { background: var(--node-card); border: 2px solid var(--border); padding: 6px 12px; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s; white-space: nowrap; height: 30px; }
+        .timeline-node:hover { border-color: var(--accent); }
+        .timeline-node.selected { border-color: var(--accent); background: rgba(255,204,51,0.1); box-shadow: 0 0 8px rgba(255,204,51,0.2); }
 
-        /* Workshop & Drag */
-        #drag-indicator { position: fixed; height: 4px; background-color: #00ffcc; z-index: 10000; pointer-events: none; box-shadow: 0 0 10px #00ffcc; display: none; }
-        .drag-ghost { position: fixed; pointer-events: none; z-index: 9999; opacity: 0.6; filter: brightness(1.3); }
+        #canvas-view { position: relative; background: var(--bg); overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        #canvas-container { position: absolute; width: 5000px; height: 5000px; background-image: radial-gradient(var(--border) 1px, transparent 1px); background-size: 24px 24px; transform-origin: 0 0; }
+        
+        .canvas-node-card { position: absolute; background: var(--panel); border: var(--thickness) solid var(--border); width: 220px; display: flex; flex-direction: column; box-shadow: 5px 5px 15px rgba(0,0,0,0.3); z-index: 1; cursor: grab; }
+        .canvas-node-card:active { cursor: grabbing; }
+        .canvas-node-card.selected { border-color: var(--accent); box-shadow: 0 0 12px rgba(255,204,51,0.3); z-index: 2; }
+        .node-head { padding: 8px 12px; background: rgba(0,0,0,0.2); border-bottom: var(--thickness) solid var(--border); display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: var(--accent); }
+        .node-body { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; font-size: 0.75rem; background: var(--node-card); }
+        .node-body-row { display: flex; justify-content: space-between; opacity: 0.8; }
+        .node-body-row span:last-child { color: #fff; font-weight: bold; }
+        
+        #right-inspector { width: 340px; background: var(--panel); border-left: var(--thickness) solid var(--border); display: flex; flex-direction: column; z-index: 5; }
+        .inspector-placeholder { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; pading: 40px; text-align: center; opacity: 0.4; gap: 15px; }
+        .inspector-placeholder i { font-size: 2.5rem; }
+        .inspector-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .inspector-group { padding: 15px; border-bottom: var(--thickness) solid var(--border); display: flex; flex-direction: column; gap: 12px; }
+        .inspector-group:last-child { border-bottom: none; }
+        .inspector-group-title { font-size: 0.75rem; color: var(--accent); margin: 0 0 4px 0; letter-spacing: 0.5px; }
+        
+        .field-row { display: flex; flex-direction: column; gap: 6px; }
+        .field-row label { font-size: 0.7rem; opacity: 0.6; font-weight: bold; }
+        .field-input { background: var(--bg); border: 2px solid var(--border); color: #fff; padding: 8px 10px; font-size: 0.8rem; width: 100%; transition: border-color 0.15s; }
+        .field-input:focus { border-color: var(--accent); }
+        .field-input[type="checkbox"] { width: auto; align-self: flex-start; cursor: pointer; accent-color: var(--accent); margin: 4px 0; }
+        
+        .window-overlay { position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 100; }
+        .jjs-window { background: var(--panel); border: var(--thickness) solid var(--border); width: 650px; max-width: 90%; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .window-header { padding: 15px; border-bottom: var(--thickness) solid var(--border); display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.15); }
+        .window-title { margin:0; font-size: 0.9rem; color: var(--accent); display: flex; align-items: center; gap: 10px; }
+        .window-close { background: none; border: none; color: var(--text); cursor: pointer; font-size: 1.1rem; opacity: 0.5; transition: opacity 0.15s, color 0.15s; }
+        .window-close:hover { opacity: 1; color: #ff4d4d; }
+        .window-body { padding: 20px; overflow-y: auto; max-height: 70vh; display: flex; flex-direction: column; gap: 15px; }
+        
+        .workshop-tabs { display: flex; gap: 10px; border-bottom: var(--thickness) solid var(--border); padding-bottom: 12px; }
+        .workshop-tab { padding: 8px 16px; background: var(--node-card); border: 2px solid var(--border); font-size: 0.8rem; font-weight: bold; cursor: pointer; transition: all 0.15s; }
+        .workshop-tab:hover { border-color: var(--accent); }
+        .workshop-tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
+        
+        .workshop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; padding: 5px 0; }
+        .workshop-card { background: var(--node-card); border: var(--thickness) solid var(--border); padding: 15px; cursor: pointer; transition: all 0.15s ease; display: flex; flex-direction: column; gap: 8px; position: relative; }
+        .workshop-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .workshop-card-title { font-weight: bold; font-size: 0.95rem; color: #fff; word-break: break-all; padding-right: 25px; }
+        .workshop-card-desc { font-size: 0.75rem; opacity: 0.6; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
+        .workshop-card-meta { margin-top: auto; display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--accent); opacity: 0.8; border-top: 1px solid var(--border); padding-top: 8px; }
+        .workshop-delete-btn { position: absolute; right: 12px; top: 12px; background: none; border: none; color: opacity:0.5; cursor: pointer; font-size: 0.85rem; color: var(--text); transition: color 0.15s, opacity 0.15s; opacity: 0.5; }
+        .workshop-card:hover .workshop-delete-btn { opacity: 1; }
+        .workshop-delete-btn:hover { color: #ff4d4d !important; }
 
-        #workshop-window { position: fixed; top: 100px; left: 100px; width: 750px; height: 550px; background: var(--panel); border: var(--thickness) solid var(--border); z-index: 9000; display: none; flex-direction: column; box-shadow: 10px 10px 0px rgba(0,0,0,0.6); }
-        .workshop-header { padding: 15px; background: rgba(0,0,0,0.5); cursor: move; display: flex; justify-content: space-between; align-items: center; border-bottom: var(--thickness) solid var(--border); }
-        .workshop-tabs { display: flex; border-bottom: 2px solid var(--border); overflow-x: auto; background: rgba(0,0,0,0.3); }
-        .workshop-tab { flex-shrink: 0; padding: 12px 15px; background: transparent; border: none; color: var(--text); opacity: 0.5; font-weight: bold; cursor: pointer; transition: 0.2s; border-bottom: 3px solid transparent; }
-        .workshop-tab.active { opacity: 1; color: var(--accent); border-bottom-color: var(--accent); background: rgba(0,0,0,0.4); }
-        .workshop-content { padding: 20px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        .terminal-textarea { background: #0c0d10; border: 2px solid var(--border); color: #00ff66; font-family: monospace; font-size: 0.85rem; padding: 12px; width: 100%; height: 180px; resize: none; line-height: 1.5; }
+        
+        .branch-tag-container { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.1); }
+        .branch-tag { padding: 4px 10px; font-size: 0.7rem; font-weight: bold; background: var(--node-card); border: 2px solid var(--border); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
+        .branch-tag:hover { border-color: var(--accent); }
+        .branch-tag.active { border-color: var(--accent); color: var(--accent); background: rgba(255,204,51,0.05); }
+        .branch-tag-del { font-size: 0.75rem; opacity: 0.5; transition: opacity 0.15s; }
+        .branch-tag-del:hover { opacity: 1; color: #ff4d4d; }
 
-        #selection-banner { position: fixed; top: 50px; left: 380px; right: 0; height: 50px; background: rgba(255, 204, 51, 0.9); color: #000; display: none; align-items: center; justify-content: space-between; padding: 0 30px; z-index: 80; font-weight: bold; text-transform: uppercase; font-size: 1.1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .jjs-prompt-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); display: flex; align-items: center; justify-content: center; z-index: 10000; }
+        .jjs-prompt-box { background: var(--panel); border: var(--thickness) solid var(--border); width: 400px; max-width: 90%; display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.5); padding: 20px; gap: 15px; }
+        .prompt-title { margin: 0; font-size: 0.95rem; color: var(--accent); }
+        .prompt-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 5px; }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border: 1px solid var(--bg); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
     </style>
 </head>
 <body>
 
-<div class="topbar">
-    <button class="topbar-btn" onclick="openWorkshop()">Workshop <i class="fa-solid fa-toolbox" style="margin-left:5px;"></i></button>
-    <button class="topbar-btn" onclick="openCustomNodeBuilder()">Custom Node Builder <i class="fa-solid fa-hammer" style="margin-left:5px;"></i></button>
-    <button class="topbar-btn" onclick="openThemesUI()">Themes <i class="fa-solid fa-palette" style="margin-left:5px;"></i></button>
-    <button class="topbar-btn" onclick="showShortcuts()"><i class="fa-solid fa-keyboard" style="margin-right:5px;"></i> Shortcuts</button>
-    <div style="flex-grow:1;"></div>
-    <span id="auth-status" style="font-size:0.75rem; opacity:0.6; margin-right:15px;">Unauthenticated</span>
-    <button class="btn-jjs-action" style="padding: 6px 12px; height:auto; width:auto;" onclick="Auth()"><i class="fa-solid fa-user-lock"></i>Register</button>
-</div>
-
-<div class="app-body">
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h2 style="margin:0; color: var(--accent); font-size: 1.5rem; letter-spacing: 1px;">JJS Studio</h2>
-            <div id="engine-status-box" class="engine-status">Loading...</div>
+    <div id="topbar">
+        <div class="topbar-brand">
+            <h1>JJS STUDIO</h1>
+            <span style="font-size:0.7rem; background:var(--border); padding:2px 6px; font-weight:bold; opacity:0.8; letter-spacing:0.5px;">V1.3.0</span>
         </div>
-
-        <div class="jjs-action-container">
-            <div class="jjs-action-row">
-                <button class="btn-jjs-action" onclick="openIOModal('import')"><i class="fa-solid fa-file-import"></i> Import</button>
-                <button class="btn-jjs-action" onclick="openIOModal('export')"><i class="fa-solid fa-file-export"></i> Export</button>
-            </div>
-            <div id="manual-redirect-container" style="display:none; width: 100%;">
-                <button class="btn-jjs-action" style="background: #ff5722; color: #fff; border-color: #000;" onclick="window.open('https://qizhengmo.github.io/Omni/', '_blank')">
-                    <i class="fa-solid fa-life-ring"></i> Manual Encoding/Decoding
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="account-menu-container">
+                <button class="btn-jjs-action" style="padding: 6px 12px; height:auto; width:auto;" onclick="toggleAccountMenu(event)">
+                    <i class="fa-solid fa-user"></i> <span id="account-btn-text">Account</span>
                 </button>
+                <div id="account-dropdown" class="account-dropdown">
+                    </div>
+            </div>
+
+            <button class="btn-jjs-action" style="padding: 6px 12px; height:auto; width:auto;" onclick="openWorkshopWindow()"><i class="fa-solid fa-cloud"></i> Cloud Workshop</button>
+            <button class="btn-jjs-action" style="padding: 6px 12px; height:auto; width:auto;" onclick="openSettingsWindow()"><i class="fa-solid fa-gear"></i> Settings</button>
+        </div>
+    </div>
+
+    <div id="main-container">
+        <div id="left-sidebar">
+            <div class="sidebar-header">
+                <h2>Move Sequences</h2>
+                <button class="btn-jjs-action" style="padding:4px 8px; font-size:0.75rem; box-shadow: 2px 2px 0 var(--border);" onclick="createNewMove()"><i class="fa-solid fa-plus"></i> New Move</button>
+            </div>
+            <div id="branch-tags" class="branch-tag-container"></div>
+            <div id="move-list" class="list-container"></div>
+        </div>
+
+        <div id="workspace">
+            <div id="workspace-tabs">
+                <div class="workspace-tab active" data-tab="Timeline" onclick="switchWorkspaceTab('Timeline')"><i class="fa-solid fa-timeline"></i> Timeline View</div>
+                <div class="workspace-tab" data-tab="Canvas" onclick="switchWorkspaceTab('Canvas')"><i class="fa-solid fa-diagram-project"></i> Node Graph Canvas</div>
+            </div>
+            
+            <div id="workspace-view-content">
+                <div id="timeline-view" class="view-panel active">
+                    </div>
+                
+                <div id="canvas-view" class="view-panel">
+                    <div id="canvas-container"></div>
+                </div>
             </div>
         </div>
 
-        <div class="container-heading">Containers</div>
-        <div class="container-list" id="sidebar-render-target"></div>
-    </div>
-
-    <div class="main" id="workspace-canvas-timeline"></div>
-</div>
-
-<div id="drag-indicator"></div>
-<div id="selection-banner">
-    <span id="selection-banner-text">Select nodes to upload...</span>
-    <div>
-        <button class="btn-modal-confirm" style="background: #e2e8f0; margin-right: 10px;" onclick="cancelSelectionMode()">Cancel</button>
-        <button class="btn-modal-confirm" onclick="confirmSelectionMode()">Confirm</button>
-    </div>
-</div>
-
-<div id="shift-a-context-menu" class="context-menu">
-    <div class="menu-label">Create Container</div>
-    <div class="menu-item" onclick="instantiateContainer('Skill')">Skill <i class="fa-solid fa-folder-plus"></i></div>
-    <div class="menu-item" onclick="instantiateContainer('Melee')">Melee <i class="fa-solid fa-folder-plus"></i></div>
-    <div class="menu-item" onclick="instantiateContainer('Special')">Special <i class="fa-solid fa-folder-plus"></i></div>
-    <div class="menu-item" onclick="instantiateContainer('Awakening')">Awakening <i class="fa-solid fa-folder-plus"></i></div>
-    <div class="menu-item" onclick="instantiateContainer('Chase')">Chase <i class="fa-solid fa-folder-plus"></i></div>
-    <div class="menu-separator"></div>
-    <div class="menu-label" id="context-menu-nodes-label">Add Node</div>
-    <div id="context-menu-nodes-target"></div>
-</div>
-
-<div class="jjs-modal-overlay" id="jjs-prompt-modal" style="z-index: 10005;">
-    <div class="jjs-modal-box" style="width: 450px;">
-        <div class="jjs-modal-header">
-            <h3 class="jjs-modal-title prompt-title" id="prompt-title">Notice</h3>
-        </div>
-        <div class="jjs-modal-body">
-            <p id="prompt-message" style="margin:0; line-height:1.6; font-size:0.9rem;"></p>
-        </div>
-        <div class="jjs-modal-footer" id="prompt-buttons"></div>
-    </div>
-</div>
-
-<div class="jjs-modal-overlay" id="jjs-input-modal" style="z-index: 10005;">
-    <div class="jjs-modal-box" style="width: 450px;">
-        <div class="jjs-modal-header">
-            <h3 class="jjs-modal-title prompt-title" id="input-modal-title">Input</h3>
-            <button class="jjs-modal-close" onclick="document.getElementById('jjs-input-modal').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div class="jjs-modal-body">
-            <input type="text" id="input-modal-field" class="jjs-modal-input" placeholder="...">
-        </div>
-        <div class="jjs-modal-footer">
-            <button class="btn-modal-confirm" id="input-modal-confirm">Confirm</button>
+        <div id="right-inspector">
+            <div id="inspector-root" style="display:contents;"></div>
         </div>
     </div>
-</div>
 
-<div class="jjs-modal-overlay" id="jjs-io-modal" onclick="closeIOModal(event)">
-    <div class="jjs-modal-box" onclick="event.stopPropagation()">
-        <div class="jjs-modal-header">
-            <h3 class="jjs-modal-title prompt-title" id="io-modal-title-text"><i class="fa-solid fa-terminal"></i> Data Center</h3>
-            <button class="jjs-modal-close" onclick="closeIOModal(null)"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div class="jjs-modal-body">
-            <textarea class="jjs-modal-textarea" id="io-terminal-textarea"></textarea>
-        </div>
-        <div class="jjs-modal-footer">
-            <button class="btn-modal-confirm" id="io-action-button" onclick="executeIOAction()">Process</button>
+    <div id="workshop-window" class="window-overlay" onclick="closeWorkshopWindow(event)">
+        <div class="jjs-window">
+            <div class="window-header">
+                <h2 class="window-title"><i class="fa-solid fa-cloud"></i> Cloud Move Workshop</h2>
+                <button class="window-close" onclick="document.getElementById('workshop-window').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="window-body">
+                <div class="workshop-tabs">
+                    <div class="workshop-tab active" data-tab="official" onclick="switchWorkshopCategory('official')">Official Presets</div>
+                    <div class="workshop-tab" data-tab="community" onclick="switchWorkshopCategory('community')">Community Shared</div>
+                </div>
+                <div style="display:flex; justify-content:flex-end;">
+                    <button class="btn-jjs-action" style="font-size:0.75rem; padding:6px 12px;" onclick="openPublishModal()"><i class="fa-solid fa-cloud-arrow-up"></i> Share Current Workspace</button>
+                </div>
+                <div id="workshop-content" style="min-height:200px;"></div>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="jjs-modal-overlay" id="jjs-anim-modal" onclick="closeAnimModal(event)">
-    <div class="jjs-modal-box" style="width: 500px;" onclick="event.stopPropagation()">
-        <div class="jjs-modal-header">
-            <h3 class="jjs-modal-title prompt-title"><i class="fa-solid fa-clapperboard"></i> Select Animation</h3>
-            <button class="jjs-modal-close" onclick="closeAnimModal(null)"><i class="fa-solid fa-xmark"></i></button>
+    <div id="publish-modal" class="window-overlay" onclick="closePublishModal(event)">
+        <div class="jjs-window" style="width: 450px;">
+            <div class="window-header">
+                <h2 class="window-title"><i class="fa-solid fa-upload"></i> Publish to Cloud</h2>
+                <button class="window-close" onclick="document.getElementById('publish-modal').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="window-body">
+                <div class="field-row">
+                    <label>Sequence Title</label>
+                    <input type="text" id="publish-title-input" class="field-input" placeholder="e.g., Ultimate Fireball Combo">
+                </div>
+                <div class="field-row">
+                    <label>Sequence Category</label>
+                    <input type="text" id="publish-category-input" class="field-input" placeholder="e.g., Combat, Movement, VFX">
+                </div>
+                <div class="field-row">
+                    <label>Sequence Description</label>
+                    <input type="text" id="publish-desc-input" class="field-input" placeholder="Brief details about controls or styling features...">
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:5px;">
+                    <button class="btn-jjs-action" style="background:var(--node-card);" onclick="document.getElementById('publish-modal').style.display='none'">Cancel</button>
+                    <button id="publish-submit-btn" class="btn-jjs-action" onclick="submitPublishTemplate()">Publish Sequence</button>
+                </div>
+            </div>
         </div>
-        <div class="jjs-modal-body" id="anim-modal-body"></div>
     </div>
-</div>
 
-<div class="jjs-modal-overlay" id="jjs-themes-modal" onclick="closeThemesModal(event)">
-    <div class="jjs-modal-box" onclick="event.stopPropagation()">
-        <div class="jjs-modal-header">
-            <h3 class="jjs-modal-title prompt-title"><i class="fa-solid fa-palette"></i> Themes Hub</h3>
-            <button class="jjs-modal-close" onclick="closeThemesModal(null)"><i class="fa-solid fa-xmark"></i></button>
+    <div id="jjs-io-modal" class="window-overlay" onclick="closeIOModal(event)">
+        <div class="jjs-window">
+            <div class="window-header">
+                <h2 class="window-title" id="io-modal-title-text"><i class="fa-solid fa-file-import"></i> Porting Studio Context Data</h2>
+                <button class="window-close" onclick="closeIOModal(null)"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="window-body">
+                <div class="field-row">
+                    <label>Raw Content Streams</label>
+                    <textarea id="io-terminal-textarea" class="terminal-textarea" placeholder="Paste data matrix profiles here..."></textarea>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:10px;">
+                    <button class="btn-jjs-action" style="background:var(--node-card);" onclick="closeIOModal(null)">Close Terminal</button>
+                    <button id="io-action-button" class="btn-jjs-action" onclick="executeIOAction()">Execute</button>
+                </div>
+            </div>
         </div>
-        <div class="jjs-modal-body" id="themes-modal-content" style="display: flex; flex-direction: column; gap: 10px;"></div>
     </div>
-</div>
 
-<div id="workshop-window">
-    <div class="workshop-header" id="workshop-drag-header">
-        <strong style="color:var(--accent); font-size:1.1rem; text-transform:uppercase;"><i class="fa-solid fa-toolbox"></i> Workshop</strong>
-        <button style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-size:1.2rem;" onclick="document.getElementById('workshop-window').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+    <div id="settings-window" class="window-overlay" onclick="closeSettingsWindow(event)">
+        <div class="jjs-window" style="width: 500px;">
+            <div class="window-header">
+                <h2 class="window-title"><i class="fa-solid fa-gear"></i> Application Configuration Settings</h2>
+                <button class="window-close" onclick="document.getElementById('settings-window').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="window-body">
+                <div class="inspector-group-title" style="font-size:0.8rem; margin-bottom:5px;">Data Pipeline Pipeline Routing</div>
+                <div class="field-row">
+                    <label style="display:flex; align-items:center; gap:8px;">
+                        <input type="checkbox" id="setting-compression-toggle" onchange="toggleSettingCompression()"> Enforce Compression Encoding Layers (Zstd Encoder Array Engine Matrix)
+                    </label>
+                </div>
+                <div style="border-top: 1px solid var(--border); margin: 10px 0;"></div>
+                <div class="inspector-group-title" style="font-size:0.8rem; margin-bottom:5px;">Interface Theme Profiling</div>
+                <div class="field-row">
+                    <label>Color Accent Matrix Profile</label>
+                    <input type="color" id="setting-theme-color" class="field-input" style="height:40px; padding:2px; cursor:pointer;" onchange="applyCustomThemeColor(this.value)">
+                </div>
+                <div style="display:flex; justify-content:flex-end; margin-top:10px;">
+                    <button class="btn-jjs-action" onclick="document.getElementById('settings-window').style.display='none'">Apply Configuration</button>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="workshop-tabs" id="workshop-tabs-container">
-        <button class="workshop-tab active" onclick="setWorkshopTab('SFX')">SFX</button>
-        <button class="workshop-tab" onclick="setWorkshopTab('VFX')">VFX</button>
-        <button class="workshop-tab" onclick="setWorkshopTab('Mesh VFX')">Mesh VFX</button>
-        <button class="workshop-tab" onclick="setWorkshopTab('Mixed VFX')">Mixed VFX</button>
-        <button class="workshop-tab" onclick="setWorkshopTab('TEMPLATES')">TEMPLATES</button>
-    </div>
-    <div class="workshop-content" id="workshop-content"></div>
-</div>
 
-<script>
-    // --- SETUP SUPABASE HERE ---
-    const SUPABASE_URL = 'https://uhcxuhlghuntphodbevk.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_2qxVQqhPZZy0Xw-3DSHaQA_AVfWamC6';
-    const supabaseclient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    // ---------------------------
-    const TRANSLATIONS = {
-        "ULTGIB": "ADD AWAKENING", "HPGIB": "ADD HEALTH", "EVGIB": "ADD EVASION", "HITCNCL": "HIT CANCEL", "ATK": "ATTACK", "ANIM": "ANIMATION",
-        "VELO": "VELOCITY", "PROJ": "PROJECTILE", "SFX": "SOUND", "WAIT": "WAIT", "SKILL": "SKILL", "SPECIAL": "SPECIAL", "CONNECT": "CONNECT", 
-        "HITBOX": "HITBOX", "BRANCH": "BRANCH", "VISUAL": "VISUAL", "GRAB": "GRAB", "COUNTER": "COUNTER", "TAG": "TAG", "STATE": "STATE", 
-        "TELEPORT": "TELEPORT", "LOOP": "LOOP", "SETCD": "SET COOLDOWN", "CUSTOM_NODE": "CUSTOM NODE",
-        "AIR": "In air", "JUMP": "Is jumping", "AIM": "Has Target", "ULT": "Is awakened", "BAR": "Has awk bar", "DUR": "Durability", 
-        "HP": "Has Health", "DOMAIN": "Is In Domain", "HOLD": "Is holding"
-    };
-
-    const NODE_TEMPLATES = {
-        WAIT: ["TIME"], SKILL: ["SPEED", "START", "ENABLE VARIANTS", "HOLD FOR", "MOVE", "CANCEL LAST"], SPECIAL: ["SPEED", "SPEC", "ENABLE VARIANTS", "CANCEL LAST"],
-        ANIM: ["FADE IN", "PREVIEW", "FADE OUT", "LAST HIT", "SPEED", "Animation"], SFX: ["END", "GLOBAL", "VOLUME", "PROJECTILE TAG", "ID", "START", "CANCEL", "SPEED"],
-        VELO: ["RELATIVE FROM BRANCH", "TRACK", "TIME", "TRUE RAGDOLL", "FORCE", "RAGDOLL", "LAST HIT", "FADE"], CONNECT: ["SIGNAL", "TIME"],
-        HITBOX: ["SIZE", "SINGLE TARGET", "CAN KILL", "BLOCKABLE", "ATTACK TYPE", "PREVIEW", "STUN", "DEBREE", "POSITION", "BRANCH TARGET", "HIT RAGDOLL", "BRANCH FINISHER", "STUN ANIM", "BRANCH", "DAMAGE", "ROTATION", "CANCEL ENEMY", "PROJECTILE TAG", "360 BLOCK", "HIT USER", "CLEAR KNOCKBACK"],
-        BRANCH: ["LAST HIT", "BRANCH", "RANDOM"], VISUAL: ["SIZE", "RELATIVE FROM BRANCH", "CAN COLLIDE", "OPACITY", "TEXTURE", "ALT COLOR", "COLOR", "EASING STYLE", "AMOUNT", "ALT ROTATION", "POSITION", "EASING DIRECTION", "CANCEL ON INTERRUPT", "VISUAL TAG", "ALT SIZE", "TIME", "RUN ON SERVER", "PROJECTILE TAG", "BODY PART", "ROTATION", "LAST HIT", "EFFECT", "ALT POSITION", "ALT OPACITY"],
-        GRAB: ["POSITION", "BODY PART", "ROTATION", "LAST HIT", "TIME", "BODY PART2"], PROJECTILE: ["DAMAGE", "SPEED", "CAN KILL", "BLOCKABLE", "ATTACK TYPE", "CONTINUE", "CLEAR KNOCKBACK", "FILTER INTERVAL", "STUN", "CANCEL ENEMY", "DEBREE", "CACHE", "POSITION", "REFLECT COUNT", "BRANCH TARGET", "HIT RAGDOLL", "BRANCH", "BRANCH COLLIDED", "TIME", "HIT USER", "SIZE", "ROTATION", "PROJECTILE TAG", "360 BLOCK", "STUN ANIM", "AIM LAST HIT"],
-        COUNTER: ["BRANCH", "CANCEL ENEMY", "BRANCH TARGET", "STUN", "REMOVE ON HIT", "TIME", "ATTACK TYPE2"], TAG: ["ADD/REMOVE", "TIME", "TAG", "CHECK", "LAST HIT", "BRANCH", "VALUE", "SET"],
-        STATE: ["DISABLE BURST", "CANCEL ON END", "LAST HIT", "STATE", "TIME", "VALUE"], TELEPORT: ["POSITION", "PROJECTILE TAG", "LAST HIT", "RELATIVE FROM BRANCH", "ROTATION"],
-        ULTGIB: ["AMOUNT"], HPGIB: ["AMOUNT"], EVGIB: ["AMOUNT"], HITCNCL: ["FLIP", "BRANCH", "TIME", "ENDLAG"], LOOP: ["LOOP BACK", "HOLD", "LOOP AMOUNT"], SETCD: ["KEY", "COOLDOWN"],
-        CUSTOM_NODE: ["NODE_ID", "INPUTS"]
-    };
-
-    const CONDITION_TEMPLATES = { AIR: ["FLIP"], JUMP: ["FLIP"], AIM: ["FLIP"], ULT: ["FLIP"], BAR: ["FLIP", "AMOUNT"], DUR: ["DURABILITY"], HP: ["FLIP", "AMOUNT"], DOMAIN: ["FLIP"], HOLD: ["FLIP"] };
-
-    const PROPERTY_ORDER = ["DMG", "KNOCK", "INV", "REP", "REP2", "AWK", "KEEP", "AWK2", "USE", "USEONDEATH", "NOSTUN", "NOCANCEL", "VAR"];
-    const PROPERTY_LABELS = { DMG: "Damage Multiplier", KNOCK: "Knockback Multiplier", INV: "Invincible", REP: "Replace skill if occupied", REP2: "Prevent Override", AWK: "Hide In awakening", KEEP: "Keep When Moveset Switches", AWK2: "Hide in base", USE: "Use when obtained", USEONDEATH: "Use on death", NOSTUN: "No Stun", NOCANCEL: "No Cancel", VAR: "Variant Tag" };
-    const PROPERTY_DEFAULTS = { DMG: 1.0, KNOCK: 1.0, INV: false, REP: false, REP2: false, AWK: false, KEEP: false, AWK2: false, USE: false, USEONDEATH: false, NOSTUN: false, NOCANCEL: false, VAR: "" };
-
-    const DEFAULTS_LIB = {
-        TIME: 1.0, SPEED: 1.0, START: 0.0, "ENABLE VARIANTS": true, "HOLD FOR": 0.0, MOVE: "Divergent Fist", SPEC: "Limitless", "FADE IN": 0.1, PREVIEW: [0, 3.59], "FADE OUT": 0.0, "LAST HIT": -1.0, END: 500.0, GLOBAL: false, VOLUME: 0.5, "PROJECTILE TAG": "nil", ID: 12222253, CANCEL: false, "TRUE RAGDOLL": false, RAGDOLL: 0.0, FADE: false, SIGNAL: "Nothing", SIZE: "6.0, 6.0, 6.0", "SINGLE TARGET": true, "CAN KILL": true, BLOCKABLE: true, "ATTACK TYPE": "Melee", "ATTACK TYPE2": "Melee", STUN: 1.0, DEBREE: 0.0, "BRANCH TARGET": "nil", "HIT RAGDOLL": false, BRANCH: "nil", DAMAGE: 1.0, "CANCEL ENEMY": true, "360 BLOCK": false, "HIT USER": false, "CLEAR KNOCKBACK": false, RANDOM: "", OPACITY: 0.0, TEXTURE: 0.0, "EASING STYLE": "Linear", "EASING DIRECTION": "In", "BODY PART": "HumanoidRootPart", "BODY PART2": "HumanoidRootPart", EFFECT: "Slash", STATE: "Stun", AMOUNT: 1.0, FLIP: false, ENDLAG: 1.0, "LOOP BACK": 1.0, HOLD: false, "LOOP AMOUNT": 3.0, POSITION: "0.0, 0.0, 0.0", ROTATION: "0.0, 0.0, 0.0", "RELATIVE FROM BRANCH": false, "CAN COLLIDE": false, COLOR: "255, 255, 255", "ALT COLOR": "255, 255, 255", "ALT SIZE": 1.0, "ALT POSITION": "0.0, 0.0, 0.0", "ALT ROTATION": "0.0, 0.0, 0.0", "ALT OPACITY": 0.0, "BRANCH FINISHER": "nil", "STUN ANIM": false, "RUN ON SERVER": false, "VISUAL TAG": "nil", "FILTER INTERVAL": 1.0, "CACHE": true, "REFLECT COUNT": 0.0, "BRANCH COLLIDED": "nil", "AIM LAST HIT": -1.0, "REMOVE ON HIT": true, "ADD/REMOVE": true, "CHECK": false, "SET": true, "DISABLE BURST": false, "CANCEL ON END": false, "VALUE": "nil", "CONTINUE": false, "Animation": [1, 1], "CANCEL LAST": false, KEY: 1, COOLDOWN: 1.0, DURABILITY: 1.0,
-        "NODE_ID": "NewCustom", "INPUTS": ""
-    };
-
-    const TYPE_OVERRIDES = { ULTGIB: { AMOUNT: 5.0 }, HPGIB: { AMOUNT: 5.0 }, EVGIB: { AMOUNT: 5.0 }, HITBOX: { PREVIEW: [0, 15] }, BAR: { AMOUNT: 5.0 }, HP: { AMOUNT: 10.0 } };
-
-    const ANIMATION_DICTIONARY = {
-        "HONORED ONE": { color: "cyan", animations: [{name: "Lapse Blue", val: [1, 1]}, {name: "Reversal Red", val: [1, 2]}, {name: "Rapid Punches", val: [1, 3]}, {name: "Twofold Kick", val: [1, 4]}, {name: "Hollow Purple", val: [1, 5]}] },
-        "VESSEL": { color: "#d9534f", animations: [{name: "Cursed Strikes", val: [2, 1]}, {name: "Crushing Blow", val: [2, 2]}, {name: "Divergent Fist", val: [2, 3]}, {name: "Manji Kick", val: [2, 4]}, {name: "Dismantle", val: [2, 5]}, {name: "World Cutting Slash", val: [2, 6]}] },
-        "RESTLESS GAMBLER": { color: "lime", animations: [{name: "Lucky Volley", val: [3, 1]}, {name: "Lucky Rushdown", val: [3, 2]}, {name: "Overwhelming Luck", val: [3, 3]}, {name: "Energy Surge", val: [3, 4]}] },
-        "TEN SHADOWS": { color: "grey", animations: [{name: "Rabbit Escape", val: [4, 1]}, {name: "Nue", val: [4, 2]}, {name: "Toad", val: [4, 3]}, {name: "Divine Dog", val: [4, 4]}] },
-        "MAHORAGA": { color: "white", animations: [{name: "Divine Pummel", val: [5, 1]}, {name: "Ground Pitch", val: [5, 2]}, {name: "Earthquake", val: [5, 3]}, {name: "Adaptation", val: [5, 4]}] },
-        "PERFECTION": { color: "pink", animations: [{name: "Stockpile", val: [6, 1]}, {name: "Soul Fire", val: [6, 2]}, {name: "Focus Strike", val: [6, 3]}, {name: "Idle Transfiguration", val: [6, 4]}] },
-        "BLOOD MANIPULATOR": { color: "#8b0000", animations: [{name: "Piercing Blood", val: [7, 1]}, {name: "Flowing Red Scale", val: [7, 2]}, {name: "Supernova", val: [7, 3]}, {name: "Slicing Exorcism", val: [7, 4]}] },
-        "SWITCHER": { color: "cyan", animations: [{name: "Swift Kick", val: [8, 1]}, {name: "Brute Force", val: [8, 2]}, {name: "Pebble Throw", val: [8, 3]}, {name: "Boogie Woogie", val: [8, 4]}] },
-        "DEFENSE ATTORNEY": { color: "brown", animations: [{name: "Extended Swings", val: [9, 1]}, {name: "Justice Served", val: [9, 2]}, {name: "Judgement's Reach", val: [9, 3]}, {name: "Deadly Sentencing", val: [9, 4]}] },
-        "STAR RAGE": { color: "#aaaaff", animations: [{name: "Garuda Rebound", val: [10, 1]}, {name: "Rising Rage", val: [10, 2]}, {name: "Mass Breaker", val: [10, 3]}] },
-        "HEIAN": { color: "orange", animations: [{name: "Spider Web Cleave", val: [11, 1]}, {name: "World Cutting Slash", val: [11, 2]}] },
-        "SALARYMAN": { color: "#5ebfff", animations: [{name: "Cleaving Whirlwind", val: [12, 1]}, {name: "Severance Kick", val: [12, 2]}, {name: "Ratio Point", val: [12, 3]}] },
-        "MONKEY KID": { color: "#ff1534", animations: [{name: "Kamehameha", val: [13, 1]}, {name: "Staff Uppercut", val: [13, 2]}] },
-        "TRUE CANNON": { color: "#aaffff", animations: [{name: "Granite Blast", val: [14, 1]}, {name: "Unsatisfied", val: [14, 2]}] },
-        "BLACK DEATH": { color: "#65232c", animations: [{name: "Festering Strikes", val: [15, 1]}, {name: "Roach Swarm", val: [15, 2]}] },
-        "DISASTER PLANTS": { color: "#accba3", animations: [{name: "Root Swarm", val: [16, 1]}, {name: "Surging Thorns", val: [16, 2]}, {name: "Flower Field", val: [16, 3]}] },
-        "LOCUST GUY": { color: "lime", animations: [{name: "Clever", val: [17, 1]}, {name: "Black Mucus", val: [17, 2]}] },
-        "ASPIRING MANGAKA": { color: "#eaeaea", animations: [{name: "G-Pen Initial Stroke", val: [18, 1]}] },
-        "PUPPET MASTER": { color: "#e10a4b", animations: [{name: "Hairpin Ingestion", val: [19, 1]}] },
-        "HEAD OF THE HEI": { color: "#807eff", animations: [{name: "Blazing Eruption Frame", val: [20, 1]}] },
-        "LUCKY COWARD": { color: "#a77dcb", animations: [{name: "Miraculous Trip", val: [21, 1]}] },
-        "CROW CHARMER": { color: "#181c38", animations: [{name: "Bird Strike", val: [22, 1]}] },
-        "EMOTES": { color: "white", animations: [{name: "Coming soon", val: [23, 1]}] }
-    };
-
-    // --- State Variables ---
-    let currentMoves = [];
-    let activeIndex = -1;
-    let zstd = null;
-    let ioModalMode = '';
-    let mouseX = 0, mouseY = 0;
-    
-    let activeBranch = 'Default';
-    let activeTab = 'Timeline';
-    let branchModalMode = ''; let editingBranchName = '';
-    let currentGuiScale = 1.0;
-
-    let selectedNodes = [];
-    let historyStack = []; let redoStack = [];
-    let clipboard = [];
-
-    let authUser = null;
-    let currentWorkshopTab = 'SFX';
-    let uploadSelectMode = false;
-    let importPlaceMode = false;
-    let importPayload = null;
-    
-    let isDraggingNode = false;
-    let draggedNodeIdx = -1;
-    let dragClone = null;
-    let currentDropIdx = -1;
-    let activeAnimPickNodeIdx = -1;
-
-    // --- Core Engine Helpers ---
-    function getInnerData(move) {
-        if (!move || !move.DATA) return { Line: [], Req: [], Branch: {}, Prop: {} };
-        try { return typeof move.DATA === 'string' ? JSON.parse(move.DATA) : move.DATA; } 
-        catch(e) { return { Line: [], Req: [], Branch: {}, Prop: {} }; }
-    }
-    function saveInnerData(move, inner) { if (move) move.DATA = typeof inner === 'string' ? inner : JSON.stringify(inner); }
-
-    // --- Init ---
-    async function initEngine() {
-        const engine = window.ZstdWeb || window.zstd || window.Zstd;
-        if (engine?.init) { await engine.init(); zstd = engine; document.getElementById('engine-status-box').innerHTML = "ZSTD Engine: <span style='color:#00ffcc;'>Active</span>"; } 
-        else { document.getElementById('engine-status-box').innerHTML = "ZSTD Engine: <span style='color:#ff9900;'>Standby</span>"; }
+    <script>
+        // --- DATA DECOUPLING LAYERS & STRUCTS ---
+        const SUPABASE_URL = 'https://YOUR_SUPABASE_PROJECT_REF.supabase.co';
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
         
-        setTimeout(() => { if (!zstd) document.getElementById('manual-redirect-container').style.display = 'block'; }, 10000);
-
-        applyThemeFromStorage();
-        buildContextMenuNodes();
-        renderWorkspaceEmpty();
-        initWorkshopDragger();
-        
-        // Check if user is logged into Supabase on reload
-        const { data: { session } } = await supabaseclient.auth.getSession();
-        if(session) {
-            authUser = { name: "Creator_" + session.user.id.substring(0,6), uid: session.user.id };
-            document.getElementById('auth-status').innerHTML = `<span style="color:#00ff66;">Authenticated</span>`;
-        }
-    }
-
-    function showCustomPrompt(title, message, buttons) {
-        document.getElementById('prompt-title').innerText = title;
-        document.getElementById('prompt-message').innerText = message;
-        const btnContainer = document.getElementById('prompt-buttons');
-        btnContainer.innerHTML = '';
-        buttons.forEach(btn => {
-            const b = document.createElement('button');
-            b.innerText = btn.text; b.className = 'btn-modal-confirm'; b.style.backgroundColor = btn.color || 'var(--accent)';
-            b.onclick = () => { document.getElementById('jjs-prompt-modal').style.display = 'none'; if (btn.action) btn.action(); };
-            btnContainer.appendChild(b);
-        });
-        document.getElementById('jjs-prompt-modal').style.display = 'flex';
-    }
-    function customAlert(message) { showCustomPrompt("Notice", message, [{ text: "OK", action: null }]); }
-    function customConfirm(message, onYes) { showCustomPrompt("Confirm", message, [{ text: "Cancel", color: "#e2e8f0", action: null }, { text: "Confirm", color: "#ff4d4d", action: onYes }]); }
-
-    function openInputPrompt(title, placeholder, onConfirm) {
-        document.getElementById('input-modal-title').innerText = title;
-        const input = document.getElementById('input-modal-field');
-        input.value = ''; input.placeholder = placeholder;
-        document.getElementById('input-modal-confirm').onclick = () => {
-            const val = input.value.trim();
-            if(val) { document.getElementById('jjs-input-modal').style.display = 'none'; onConfirm(val); }
-        };
-        document.getElementById('jjs-input-modal').style.display = 'flex';
-        input.focus();
-    }
-
-    function pushHistory() {
-        redoStack = []; historyStack.push(JSON.stringify(currentMoves));
-        if(historyStack.length > 30) historyStack.shift();
-    }
-    function performUndo() {
-        if(!historyStack.length) return;
-        redoStack.push(JSON.stringify(currentMoves));
-        currentMoves = JSON.parse(historyStack.pop()); selectedNodes = []; loadMove(activeIndex);
-    }
-    function performRedo() {
-        if(!redoStack.length) return;
-        historyStack.push(JSON.stringify(currentMoves));
-        currentMoves = JSON.parse(redoStack.pop()); selectedNodes = []; loadMove(activeIndex);
-    }
-
-    function showShortcuts() { customAlert("SHORTCUTS:\n\nShift + Click: Multi-select nodes\nShift + A: Add Node/Menu\nShift + C: Copy\nShift + V: Paste\nShift + X: Cut\nShift + Delete: Delete\nShift + Z: Undo\nShift + Y: Redo"); }
-
-    document.addEventListener('keydown', e => {
-        if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
-        if (e.shiftKey) {
-            const key = e.key.toLowerCase();
-            if(key === 'a') {
-                e.preventDefault(); if (activeTab === 'Properties') return;
-                const menu = document.getElementById('shift-a-context-menu');
-                menu.style.display = 'block'; menu.style.left = Math.min(mouseX, window.innerWidth - 230) + 'px'; menu.style.top = Math.min(mouseY, window.innerHeight - menu.offsetHeight - 10) + 'px';
+        // Supabase Client Setup with Dynamic Clerk Token Hook Access Layer Injection
+        const supabaseclient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            global: {
+                fetch: async (url, options = {}) => {
+                    const headers = new Headers(options?.headers);
+                    if (window.Clerk?.session) {
+                        try {
+                            const token = await window.Clerk.session.getToken({ template: 'supabase' });
+                            if (token) {
+                                headers.set('Authorization', `Bearer ${token}`);
+                            }
+                        } catch (clerkErr) {
+                            console.error("Token translation pipeline fault:", clerkErr);
+                        }
+                    }
+                    return fetch(url, { ...options, headers });
+                }
             }
-            if(key === 'c') { e.preventDefault(); copySelected(); }
-            if(key === 'x') { e.preventDefault(); cutSelected(); }
-            if(key === 'v') { e.preventDefault(); pasteCopied(); }
-            if(key === 'delete' || e.key === 'Backspace') { e.preventDefault(); deleteSelected(); }
-            if(key === 'z') { e.preventDefault(); performUndo(); }
-            if(key === 'y') { e.preventDefault(); performRedo(); }
-        }
-    });
-
-    document.addEventListener('click', e => {
-        const menu = document.getElementById('shift-a-context-menu');
-        if (menu && !menu.contains(e.target)) menu.style.display = 'none';
-    });
-
-    function getActiveList() {
-        if(activeIndex === -1 || activeTab === 'Properties') return null;
-        const inner = getInnerData(currentMoves[activeIndex]);
-        return (activeTab === 'Conditions') ? (activeBranch === 'Default' ? inner.Req : inner.Branch[activeBranch].Req) : (activeBranch === 'Default' ? inner.Line : inner.Branch[activeBranch].Line);
-    }
-
-    function copySelected() {
-        if(!selectedNodes.length) return;
-        const list = getActiveList(); if(!list) return;
-        clipboard = selectedNodes.sort((a,b)=>a-b).map(idx => JSON.parse(JSON.stringify(list[idx])));
-    }
-    function cutSelected() { copySelected(); deleteSelected(); }
-    function pasteCopied() {
-        if(!clipboard.length) return; pushHistory();
-        const list = getActiveList(); if(!list) return;
-        const insertIdx = selectedNodes.length ? Math.max(...selectedNodes) + 1 : list.length;
-        clipboard.forEach((node, i) => list.splice(insertIdx + i, 0, JSON.parse(JSON.stringify(node))));
-        saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
-        selectedNodes = []; loadMove(activeIndex);
-    }
-    function deleteSelected() {
-        if(!selectedNodes.length) return; pushHistory();
-        const list = getActiveList(); if(!list) return;
-        const toDelete = selectedNodes.sort((a,b)=>b-a);
-        toDelete.forEach(idx => list.splice(idx, 1));
-        saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
-        selectedNodes = []; loadMove(activeIndex);
-    }
-
-    // --- Container/Node Engine ---
-    function instantiateContainer(type) {
-        pushHistory();
-        currentMoves.push({ K_NAME: type.toUpperCase(), NAME: "New " + type, DATA: JSON.stringify({ Line: [], Req: [], Branch: {}, Prop: {} }) });
-        activeIndex = currentMoves.length - 1; activeBranch = 'Default'; activeTab = 'Timeline'; selectedNodes = [];
-        renderSidebar(); loadMove(activeIndex); document.getElementById('shift-a-context-menu').style.display = 'none';
-    }
-
-    function buildContextMenuNodes() {
-        const target = document.getElementById('context-menu-nodes-target'); if (!target) return;
-        target.innerHTML = '';
-        Object.keys(NODE_TEMPLATES).forEach(k => {
-            const item = document.createElement('div'); item.className = 'menu-item';
-            item.innerHTML = `${TRANSLATIONS[k] || k} <i class="fa-solid fa-plus" style="font-size:0.65rem; opacity:0.5;"></i>`;
-            item.onclick = () => { appendNodeToActiveList(k); document.getElementById('shift-a-context-menu').style.display = 'none'; };
-            target.appendChild(item);
         });
-    }
 
-    function appendNodeToActiveList(type) {
-        if (activeIndex === -1 || activeTab === 'Properties') return;
-        pushHistory();
-        const inner = getInnerData(currentMoves[activeIndex]);
-        const nodeTemplate = { K_NAME: type };
-        const fields = (activeTab === 'Conditions' ? CONDITION_TEMPLATES[type] : NODE_TEMPLATES[type]) || [];
-        fields.forEach(f => {
-            if(f === "Animation") nodeTemplate["ANIM_USE"] = [1,1];
-            else nodeTemplate[f] = TYPE_OVERRIDES[type]?.[f] !== undefined ? TYPE_OVERRIDES[type][f] : DEFAULTS_LIB[f];
-        });
-        const list = (activeTab === 'Conditions') ? (activeBranch === 'Default' ? inner.Req : inner.Branch[activeBranch].Req) : (activeBranch === 'Default' ? inner.Line : inner.Branch[activeBranch].Line);
-        list.push(nodeTemplate); saveInnerData(currentMoves[activeIndex], inner); loadMove(activeIndex);
-    }
+        let authUser = null; 
 
-    function renderSidebar() {
-        const target = document.getElementById('sidebar-render-target'); if (!target) return;
-        target.innerHTML = '';
-        if (currentMoves.length === 0) { target.innerHTML = `<div style="text-align:center; padding:20px; opacity:0.5; font-size:0.8rem;">No containers</div>`; return; }
-        currentMoves.forEach((move, idx) => {
-            const el = document.createElement('div'); el.className = `item ${idx === activeIndex ? 'active' : ''}`; el.id = `btn-${idx}`;
-            el.onclick = () => { activeBranch = 'Default'; activeTab = 'Timeline'; selectedNodes = []; loadMove(idx); };
-            el.innerHTML = `<span class="type-tag">${move.K_NAME || 'SKILL'}</span><span class="move-name">${move.NAME || 'Unnamed'}</span>`;
-            target.appendChild(el);
-        });
-    }
-
-    function generateSummaryHeaderStr(node) {
-        if (node.K_NAME === 'WAIT') return ` (${node.TIME ?? 1}s)`; if (node.K_NAME === 'ANIM') return ` (Asset: ${node.ANIM_USE ? node.ANIM_USE.join(',') : '1,1'})`;
-        if (node.K_NAME === 'SFX') return ` (ID: ${node.ID ?? ''})`; if (node.K_NAME === 'HITBOX') return ` (Size: ${node.SIZE ?? ''})`;
-        if (node.K_NAME === 'TELEPORT') return ` (Pos: ${node.POSITION ?? ''})`; if (node.K_NAME === 'CUSTOM_NODE') return ` [${node.NODE_ID ?? 'Custom'}]`;
-        return '';
-    }
-
-    function toggleNodeBody(idx) { const grid = document.getElementById(`node-grid-${idx}`); if (grid) grid.style.display = grid.style.display === 'none' ? 'grid' : 'none'; }
-    function alterContainerCoreName(idx, val) { currentMoves[idx].NAME = val; const sidebarItem = document.getElementById(`btn-${idx}`); if (sidebarItem) sidebarItem.querySelector('.move-name').innerText = val || 'Unnamed'; }
-    
-    function deleteActiveContainer(idx) {
-        customConfirm("Delete this entire container?", () => { pushHistory(); currentMoves.splice(idx, 1); activeIndex = currentMoves.length > 0 ? 0 : -1; activeBranch = 'Default'; activeTab = 'Timeline'; selectedNodes = []; renderSidebar(); loadMove(activeIndex); });
-    }
-
-    function switchBranch(b) { activeBranch = b; selectedNodes = []; loadMove(activeIndex); }
-    function openBranchModal(mode, currentName = '') {
-        branchModalMode = mode; editingBranchName = currentName;
-        openInputPrompt(mode === 'create' ? "Create Branch" : "Rename Branch", "Enter branch name...", (val) => {
-            const inner = getInnerData(currentMoves[activeIndex]); if (!inner.Branch) inner.Branch = {};
-            if (mode === 'create') {
-                if (inner.Branch[val] || val === 'Default') { customAlert("Branch already exists!"); return; }
-                pushHistory(); inner.Branch[val] = { Line: [], Req: [] }; activeBranch = val;
-            } else {
-                if (val === 'Default' || (inner.Branch[val] && val !== currentName)) { customAlert("Invalid branch name!"); return; }
-                pushHistory(); inner.Branch[val] = inner.Branch[currentName]; delete inner.Branch[currentName];
-                if (activeBranch === currentName) activeBranch = val;
-            }
-            saveInnerData(currentMoves[activeIndex], inner); loadMove(activeIndex);
-        });
-    }
-
-    function deleteBranch(b) {
-        customConfirm(`Delete branch '${b}'?`, () => { pushHistory(); const inner = getInnerData(currentMoves[activeIndex]); delete inner.Branch[b]; if (activeBranch === b) activeBranch = 'Default'; saveInnerData(currentMoves[activeIndex], inner); loadMove(activeIndex); });
-    }
-
-    function switchTab(t) { activeTab = t; selectedNodes = []; loadMove(activeIndex); }
-    function changeGuiScale(v) { currentGuiScale = parseFloat(v); document.getElementById('gui-scale-value-text').innerText = Math.round(currentGuiScale * 100) + '%'; const el = document.getElementById('nodes-scale-container-target'); if (el) { el.style.transform = `scale(${currentGuiScale})`; el.style.width = `${100 / currentGuiScale}%`; } }
-
-    function removeNode(idx) { pushHistory(); const list = getActiveList(); list.splice(idx, 1); saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex])); selectedNodes = selectedNodes.filter(i => i !== idx).map(i => i > idx ? i - 1 : i); loadMove(activeIndex); }
-    function alterNodeValue(nodeIdx, fieldKey, val) { const list = getActiveList(); if (!list || !list[nodeIdx]) return; list[nodeIdx][fieldKey] = val; saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex])); const summarySpan = document.getElementById(`summary-span-${nodeIdx}`); if (summarySpan) summarySpan.innerText = generateSummaryHeaderStr(list[nodeIdx]); }
-    function alterPropValue(key, val) { pushHistory(); const inner = getInnerData(currentMoves[activeIndex]); if (!inner.Prop || Array.isArray(inner.Prop)) inner.Prop = {}; inner.Prop[key] = val; saveInnerData(currentMoves[activeIndex], inner); }
-
-    function renderWorkspaceEmpty() {
-        const canvas = document.getElementById('workspace-canvas-timeline');
-        if (canvas) canvas.innerHTML = `<div class="empty-state"><div><i class="fa-solid fa-folder-open" style="font-size: 3rem; color: var(--border); margin-bottom: 15px; display: block;"></i>No container open.<br><span style="font-size:0.9rem; opacity:0.6;">Select a container from the sidebar or press Shift + A to build a new one.</span></div></div>`;
-        renderSidebar();
-    }
-
-    // --- Drag Mechanics ---
-    document.addEventListener('mousemove', e => { 
-        mouseX = e.clientX; mouseY = e.clientY; 
-        if((isDraggingNode || importPlaceMode) && activeTab !== 'Properties') {
-            if(isDraggingNode && dragClone) { dragClone.style.left = (e.clientX + 10) + 'px'; dragClone.style.top = (e.clientY + 10) + 'px'; }
-            const container = document.getElementById('nodes-scale-container-target'); if(!container) return;
-            const nodes = Array.from(container.querySelectorAll('.node-card:not(.drag-ghost)'));
-            
-            let closestIdx = nodes.length;
-            for(let i = 0; i < nodes.length; i++) {
-                const rect = nodes[i].getBoundingClientRect();
-                if(e.clientY < (rect.top + rect.height / 2)) { closestIdx = i; break; }
-            }
-            currentDropIdx = closestIdx;
-            
-            if(nodes.length > 0) {
-                let ind = document.getElementById('drag-indicator');
-                let refRect = closestIdx < nodes.length ? nodes[closestIdx].getBoundingClientRect() : nodes[nodes.length-1].getBoundingClientRect();
-                let indicatorY = closestIdx < nodes.length ? refRect.top - 10 : refRect.bottom + 10;
-                ind.style.width = refRect.width + 'px'; ind.style.left = refRect.left + 'px'; ind.style.top = indicatorY + 'px'; ind.style.display = 'block';
-            }
-        }
-    });
-
-    document.addEventListener('mouseup', e => {
-        if(importPlaceMode && currentDropIdx !== -1) {
-            pushHistory(); const list = getActiveList(); list.splice(currentDropIdx, 0, ...importPayload); saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
-            importPlaceMode = false; importPayload = null; document.getElementById('selection-banner').style.display = 'none'; document.getElementById('selection-banner').querySelector('button:last-child').style.display = 'inline-block'; document.getElementById('drag-indicator').style.display = 'none'; loadMove(activeIndex); return;
-        }
-
-        if(!isDraggingNode) return;
-        isDraggingNode = false; if(dragClone && dragClone.parentNode) document.body.removeChild(dragClone); dragClone = null; document.getElementById('drag-indicator').style.display = 'none';
-        
-        if(currentDropIdx !== -1 && currentDropIdx !== draggedNodeIdx && currentDropIdx !== draggedNodeIdx + 1) {
-            pushHistory(); const list = getActiveList(); const movingNode = list.splice(draggedNodeIdx, 1)[0];
-            let adjustedDropIdx = currentDropIdx > draggedNodeIdx ? currentDropIdx - 1 : currentDropIdx;
-            list.splice(adjustedDropIdx, 0, movingNode); saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
-            selectedNodes = []; loadMove(activeIndex);
-        }
-        draggedNodeIdx = -1; currentDropIdx = -1;
-    });
-
-    function initCustomDrag(e, idx) { e.preventDefault(); e.stopPropagation(); if(activeTab === 'Properties') return; isDraggingNode = true; draggedNodeIdx = idx; const nodeEl = document.getElementById(`node-block-${idx}`); dragClone = nodeEl.cloneNode(true); dragClone.classList.add('drag-ghost'); dragClone.style.width = nodeEl.offsetWidth + 'px'; document.body.appendChild(dragClone); }
-
-    function handleNodeClick(e, idx) {
-        if(uploadSelectMode) {
-            if(selectedNodes.includes(idx)) selectedNodes = selectedNodes.filter(i => i !== idx); else selectedNodes.push(idx);
-            loadMove(activeIndex); return;
-        }
-        if(e.shiftKey) {
-            if(selectedNodes.includes(idx)) selectedNodes = selectedNodes.filter(i => i !== idx); else selectedNodes.push(idx);
-            loadMove(activeIndex);
-        } else {
-            if(selectedNodes.length === 1 && selectedNodes[0] === idx) toggleNodeBody(idx);
-            else { selectedNodes = [idx]; loadMove(activeIndex); }
-        }
-    }
-    
-    function promptComment(idx) {
-        const list = getActiveList();
-        openInputPrompt("Set Comment", "Type comment...", (val) => { pushHistory(); list[idx]._COMMENT = val; saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex])); loadMove(activeIndex); });
-    }
-
-    // --- Loading Routine ---
-    function loadMove(idx) {
-        if (currentMoves.length === 0) { renderWorkspaceEmpty(); return; }
-        activeIndex = idx; document.querySelectorAll('.container-list .item').forEach(el => el.classList.remove('active')); const tb = document.getElementById(`btn-${idx}`); if (tb) tb.classList.add('active');
-
-        const move = currentMoves[idx]; const innerData = getInnerData(move); const branchNames = innerData.Branch ? Object.keys(innerData.Branch).sort() : []; const canvas = document.getElementById('workspace-canvas-timeline');
-        let displayKName = move.K_NAME ? (move.K_NAME.charAt(0).toUpperCase() + move.K_NAME.slice(1).toLowerCase()) : 'UNNAMED';
-
-        let html = `<div class="editor-header"><div style="display:flex; justify-content:space-between; align-items:center;"><h1 style="margin:0; font-size:2.2rem; letter-spacing:1px; color:var(--accent);">${displayKName}</h1><button class="btn-delete-container" onclick="deleteActiveContainer(${idx})"><i class="fa-solid fa-trash-can"></i> Delete Container</button></div><div class="container-fields-row"><div class="tooltip-field"><label>Name</label><input type="text" value="${move.NAME || ''}" oninput="alterContainerCoreName(${idx}, this.value)"></div></div></div>`;
-
-        if (activeTab === 'Timeline' || activeTab === 'Conditions') {
-            html += `<div class="branch-bar"><button class="branch-tab ${activeBranch === 'Default' ? 'active' : ''}" onclick="switchBranch('Default')">Default</button>`;
-            branchNames.forEach(b => { html += `<button class="branch-tab ${activeBranch === b ? 'active' : ''}" onclick="switchBranch('${b}')">${b} <span style="display:flex; gap:2px; margin-left:6px;"><i class="fa-solid fa-pen edit-icon" onclick="openBranchModal('edit', '${b}'); event.stopPropagation();"></i><i class="fa-solid fa-trash delete-icon" onclick="deleteBranch('${b}'); event.stopPropagation();"></i></span></button>`; });
-            html += `<button class="branch-add-btn" onclick="openBranchModal('create')"><i class="fa-solid fa-plus"></i></button></div>`;
-        }
-
-        html += `<div class="workspace-tabs"><button class="workspace-tab ${activeTab === 'Timeline' ? 'active' : ''}" onclick="switchTab('Timeline')">Timeline</button><button class="workspace-tab ${activeTab === 'Conditions' ? 'active' : ''}" onclick="switchTab('Conditions')">Conditions</button><button class="workspace-tab ${activeTab === 'Properties' ? 'active' : ''}" onclick="switchTab('Properties')">Properties</button></div>`;
-
-        if (activeTab === 'Timeline' || activeTab === 'Conditions') {
-            html += `<div class="gui-scale-bar"><label style="color: var(--accent); font-weight: bold;">GUI SCALE:</label><input type="range" min="0.6" max="1.1" step="0.05" value="${currentGuiScale}" oninput="changeGuiScale(this.value)"><span id="gui-scale-value-text" style="font-weight: bold; width: 45px; text-align: right;">${Math.round(currentGuiScale *100)}%</span></div><div id="nodes-scale-container-target" style="transform: scale(${currentGuiScale}); transform-origin: top left; width: ${100 / currentGuiScale}%; position:relative;">`;
-            
-            const currentNodesList = (activeTab === 'Timeline') ? ((activeBranch === 'Default') ? innerData.Line : innerData.Branch[activeBranch]?.Line) : ((activeBranch === 'Default') ? innerData.Req : innerData.Branch[activeBranch]?.Req);
-            
-            if (!currentNodesList || currentNodesList.length === 0) {
-                html += `<div style="text-align:center; opacity:0.4; font-size:0.8rem; padding: 40px 0;">No nodes here yet. Press Shift + A to add one.</div>`;
-            } else {
-                currentNodesList.forEach((node, nodeIdx) => {
-                    const translationText = TRANSLATIONS[node.K_NAME] || node.K_NAME;
-                    const isSelected = selectedNodes.includes(nodeIdx) ? 'selected' : '';
-                    const cmt = node._COMMENT ? `<div style="font-size:0.6rem; color:#a0aec0; margin-top:2px;"><i class="fa-solid fa-quote-left"></i> ${node._COMMENT}</div>` : '';
+        // Core Clerk Multi-Session Embedded Initialization Runtime
+        window.addEventListener('load', async () => {
+            if (window.Clerk) {
+                try {
+                    await window.Clerk.load({ multiSessionSingleSignOut: true });
                     
-                    html += `
-                        <div class="node-card ${isSelected}" id="node-block-${nodeIdx}">
-                            <div class="node-head" onclick="handleNodeClick(event, ${nodeIdx})">
-                                <div class="node-title-group">
-                                    <i class="fa-solid fa-grip-vertical" style="color: var(--accent); cursor: grab; margin-right: 5px; font-size: 1.1rem; padding: 5px;" onmousedown="initCustomDrag(event, ${nodeIdx})"></i>
-                                    <div><strong>${translationText}</strong><span class="node-summary-tag" id="summary-span-${nodeIdx}">${generateSummaryHeaderStr(node)}</span>${cmt}</div>
-                                </div>
-                                <div style="display:flex; align-items:center; gap:10px;">
-                                    <span style="font-family:var(--font-code); font-weight:bold; color:var(--accent); font-size:0.85rem; margin-right:10px;">#${nodeIdx + 1}</span>
-                                    <button class="btn-comment-node" onclick="promptComment(${nodeIdx}); event.stopPropagation();"><i class="fa-solid fa-comment"></i></button>
-                                    <button class="btn-delete-node" onclick="removeNode(${nodeIdx}); event.stopPropagation();"><i class="fa-solid fa-square-minus"></i></button>
-                                </div>
-                            </div>
-                            <div class="node-grid" id="node-grid-${nodeIdx}" style="display:none;">${buildPropertyFieldsMarkup(node, nodeIdx, activeTab)}</div>
-                        </div>`;
+                    window.Clerk.addListener(({ user }) => {
+                        // Extract identity securely without parsing emails
+                        authUser = user ? { uid: user.id, name: `User_${user.id.substring(0, 5)}` } : null;
+                        renderAccountMenu();
+                        if (document.getElementById('workshop-window').style.display === 'flex') {
+                            loadWorkshopTemplates();
+                        }
+                    });
+                } catch (err) {
+                    console.error("Clerk instance initialization crash:", err);
+                }
+            }
+        });
+
+        function toggleAccountMenu(e) {
+            if (e) e.stopPropagation();
+            document.getElementById('account-dropdown').classList.toggle('show');
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.account-menu-container')) {
+                const dropdown = document.getElementById('account-dropdown');
+                if (dropdown) dropdown.classList.remove('show');
+            }
+        });
+
+        function renderAccountMenu() {
+            const btnText = document.getElementById('account-btn-text');
+            const dropdown = document.getElementById('account-dropdown');
+            dropdown.innerHTML = '';
+
+            if (!window.Clerk || !window.Clerk.user) {
+                btnText.innerText = "Account";
+                dropdown.innerHTML = `
+                    <div class="account-item" onclick="window.Clerk.openSignIn()"><i class="fa-solid fa-right-to-bracket"></i> Sign In</div>
+                    <div class="account-item" onclick="window.Clerk.openSignUp()"><i class="fa-solid fa-user-plus"></i> Register</div>
+                `;
+                return;
+            }
+
+            btnText.innerText = "Signed In";
+            
+            // Highlight Active Session Context without email
+            dropdown.innerHTML += `
+                <div class="account-item active-session">
+                    <i class="fa-solid fa-circle-check" style="color:#00ff66;"></i> 
+                    <strong>Active: User_${window.Clerk.user.id.substring(0, 5)}</strong>
+                </div>
+            `;
+
+            // Enumerate Switchable Sub-Account Session Matrix profiles
+            const alternateSessions = window.Clerk.client.sessions.filter(s => s.id !== window.Clerk.session.id);
+            alternateSessions.forEach(session => {
+                dropdown.innerHTML += `
+                    <div class="account-item" onclick="window.Clerk.setActive({ session: '${session.id}' })">
+                        <i class="fa-solid fa-arrow-right-arrow-left"></i> Switch to User_${session.user.id.substring(0, 5)}
+                    </div>
+                `;
+            });
+
+            // Enforce account count capping limit (Max 5 profiles)
+            if (window.Clerk.client.sessions.length < 5) {
+                dropdown.innerHTML += `
+                    <div class="account-item" onclick="window.Clerk.openSignIn()"><i class="fa-solid fa-user-plus"></i> Add Account</div>
+                `;
+            }
+
+            // Termination Action
+            dropdown.innerHTML += `
+                <div class="account-item" onclick="window.Clerk.signOut()" style="color:#ff4d4d; border-top:1px solid var(--border);">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sign Out All Accounts
+                </div>
+            `;
+        }
+
+        const CORE_NODES = {
+            "CFrame": { fields: { X: "number", Y: "number", Z: "number", R_X: "number", R_Y: "number", R_Z: "number" }, defaults: { X:0, Y:0, Z:0, R_X:0, R_Y:0, R_Z:0 }, color: "#ff4d4d" },
+            "VFX": { fields: { AssetId: "string", ScaleX: "number", ScaleY: "number", ScaleZ: "number", Transparency: "number" }, defaults: { AssetId:"", ScaleX:1, ScaleY:1, ScaleZ:1, Transparency:0 }, color: "#4da6ff" },
+            "Sound": { fields: { SoundId: "string", Volume: "number", Pitch: "number" }, defaults: { SoundId:"", Volume:1, Pitch:1 }, color: "#2ecc71" },
+            "Hitbox": { fields: { SizeX: "number", SizeY: "number", SizeZ: "number", OffsetX: "number", OffsetY: "number", OffsetZ: "number", Damage: "number" }, defaults: { SizeX:2, SizeY:2, SizeZ:2, OffsetX:0, OffsetY:0, OffsetZ:0, Damage:10 }, color: "#e67e22" },
+            "Camera": { fields: { FieldOfView: "number", ShakeIntensity: "number", ShakeDuration: "number" }, defaults: { FieldOfView:70, ShakeIntensity:0, ShakeDuration:0 }, color: "#9b59b6" },
+            "CustomNode": { fields: { NodeTitle: "string", Key: "string", Value: "string" }, defaults: { NodeTitle:"Custom Action", Key:"Attribute", Value:"" }, color: "#f1c40f" }
+        };
+
+        let currentMoves = [];
+        let activeIndex = -1;
+        let activeBranch = 'Default';
+        let activeTab = 'Timeline';
+        let selectedNodes = [];
+        let ioModalMode = 'import'; 
+        let configCompression = false;
+
+        // --- CORE APPLICATION ROUTINES & STORAGE HANDLERS ---
+        window.addEventListener('DOMContentLoaded', () => {
+            const rawData = localStorage.getItem('jjs_studio_moves');
+            if (rawData) {
+                try {
+                    currentMoves = JSON.parse(rawData);
+                    if (currentMoves.length > 0) activeIndex = 0;
+                } catch(e) { currentMoves = []; }
+            }
+            const savedColor = localStorage.getItem('jjs_theme_color');
+            if (savedColor) {
+                applyCustomThemeColor(savedColor);
+                const picker = document.getElementById('setting-theme-color');
+                if (picker) picker.value = savedColor;
+            }
+            const compState = localStorage.getItem('jjs_compression_enabled');
+            if (compState !== null) {
+                configCompression = (compState === 'true');
+                const tgl = document.getElementById('setting-compression-toggle');
+                if (tgl) tgl.checked = configCompression;
+            }
+            renderSidebar();
+            loadMove(activeIndex);
+        });
+
+        function saveLocalContextState() {
+            localStorage.setItem('jjs_studio_moves', JSON.stringify(currentMoves));
+        }
+
+        function renderSidebar() {
+            const list = document.getElementById('move-list');
+            list.innerHTML = '';
+            
+            const branches = new Set(['Default']);
+            currentMoves.forEach(m => { if(m.branch) branches.add(m.branch); });
+            
+            const tagContainer = document.getElementById('branch-tags');
+            tagContainer.innerHTML = '';
+            branches.forEach(b => {
+                const tag = document.createElement('div');
+                tag.className = `branch-tag ${activeBranch === b ? 'active' : ''}`;
+                tag.onclick = () => { activeBranch = b; renderSidebar(); };
+                tag.innerHTML = `<i class="fa-solid fa-code-branch"></i> ${escapeHTML(b)}`;
+                
+                if (b !== 'Default') {
+                    const del = document.createElement('i');
+                    del.className = 'fa-solid fa-xmark branch-tag-del';
+                    del.onclick = (e) => {
+                        e.stopPropagation();
+                        customConfirm(`Purge branch reference profile [${b}]? Nodes will fall back down to Default allocation arrays.`, () => {
+                            currentMoves.forEach(m => { if(m.branch === b) m.branch = 'Default'; });
+                            if (activeBranch === b) activeBranch = 'Default';
+                            saveLocalContextState(); renderSidebar(); loadMove(activeIndex);
+                        });
+                    };
+                    tag.appendChild(del);
+                }
+                tagContainer.appendChild(tag);
+            });
+
+            const filtered = currentMoves.map((m, i) => ({ move: m, originalIndex: i })).filter(item => item.move.branch === activeBranch || (!item.move.branch && activeBranch === 'Default'));
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<div style="text-align:center; padding:30px; opacity:0.4; font-size:0.8rem;">Empty Branch Vector</div>';
+                return;
+            }
+
+            filtered.forEach(item => {
+                const m = item.move;
+                const idx = item.originalIndex;
+                const card = document.createElement('div');
+                card.className = `move-card ${activeIndex === idx ? 'active' : ''}`;
+                card.onclick = () => loadMove(idx);
+                
+                let nCount = 0;
+                if (m.frames) { Object.keys(m.frames).forEach(f => { nCount += m.frames[f].length; }); }
+
+                card.innerHTML = `
+                    <div class="move-card-title">${escapeHTML(m.name || 'Unnamed Chain')}</div>
+                    <div class="move-card-branch"><i class="fa-solid fa-clock"></i> ${m.length || 0}s | <i class="fa-solid fa-nodes-diagonal"></i> ${nCount} Nodes</div>
+                    <div class="move-card-actions">
+                        <button class="move-action-btn" onclick="cloneMoveSequence(${idx}, event)" title="Clone Matrix Sequence"><i class="fa-solid fa-clone"></i></button>
+                        <button class="move-action-btn del-btn" onclick="deleteMoveSequence(${idx}, event)" title="Purge Sequence Profile"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function createNewMove() {
+            const name = prompt("Declare identifier registry allocation tag name:");
+            if (name === null) return;
+            const cleanName = name.trim() || `Sequence_${Date.now().toString().slice(-4)}`;
+            const branchInput = prompt("Target runtime branch target identifier mapping allocation matrix:", activeBranch);
+            const cleanBranch = branchInput ? branchInput.trim() : 'Default';
+            
+            const newMove = { name: cleanName, length: 4, branch: cleanBranch, frames: { "0.0": [], "1.0": [], "2.0": [] } };
+            currentMoves.push(newMove);
+            activeIndex = currentMoves.length - 1;
+            activeBranch = cleanBranch;
+            saveLocalContextState(); renderSidebar(); loadMove(activeIndex);
+        }
+
+        function cloneMoveSequence(idx, e) {
+            e.stopPropagation();
+            const source = currentMoves[idx];
+            if (!source) return;
+            const clone = JSON.parse(JSON.stringify(source));
+            clone.name = `${clone.name} (Copy)`;
+            currentMoves.push(clone);
+            activeIndex = currentMoves.length - 1;
+            saveLocalContextState(); renderSidebar(); loadMove(activeIndex);
+        }
+
+        function deleteMoveSequence(idx, e) {
+            e.stopPropagation();
+            customConfirm("Purge sequence execution profile template map entirely?", () => {
+                currentMoves.splice(idx, 1);
+                if (activeIndex >= currentMoves.length) activeIndex = currentMoves.length - 1;
+                saveLocalContextState(); renderSidebar(); loadMove(activeIndex);
+            });
+        }
+
+        function loadMove(idx) {
+            selectedNodes = [];
+            if (idx < 0 || idx >= currentMoves.length) {
+                activeIndex = -1;
+                renderTimeline(); renderCanvas(); renderInspector(); return;
+            }
+            activeIndex = idx;
+            const move = currentMoves[activeIndex];
+            if (!move.frames) move.frames = {};
+            
+            renderSidebar(); renderTimeline(); renderCanvas(); renderInspector();
+        }
+
+        // --- INTERFACE CANVAS WORKSPACE VIEWPORT LAYER TABS ---
+        function switchWorkspaceTab(tab) {
+            activeTab = tab;
+            document.querySelectorAll('.workspace-tab').forEach(t => {
+                t.classList.toggle('active', t.getAttribute('data-tab') === tab);
+            });
+            document.querySelectorAll('.view-panel').forEach(p => {
+                p.classList.toggle('active', p.id === `${tab.toLowerCase()}-view`);
+            });
+            if (tab === 'Canvas') renderCanvas();
+            else renderTimeline();
+        }
+
+        // --- VIEWPORT ENGINE TYPE A: TIMELINE VIEW MANAGER ---
+        function renderTimeline() {
+            const container = document.getElementById('timeline-view');
+            container.innerHTML = '';
+            if (activeIndex < 0) {
+                container.innerHTML = '<div class="inspector-placeholder"><i class="fa-solid fa-folder-open"></i> Select context array registry parameters from profile stack.</div>';
+                return;
+            }
+            const move = currentMoves[activeIndex];
+            
+            const ctrlBar = document.createElement('div');
+            ctrlBar.style = 'display:flex; justify-content:space-between; align-items:center; background:var(--panel); padding:10px 15px; border:var(--thickness) solid var(--border);';
+            ctrlBar.innerHTML = `
+                <div style="font-weight:bold; color:#fff; font-size:0.85rem;"><i class="fa-solid fa-sliders"></i> Context Vector Parameters configuration profiles</div>
+                <div style="display:flex; gap:12px; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:6px; font-size:0.75rem;">
+                        <span style="opacity:0.6;">Duration Config:</span>
+                        <input type="number" step="0.5" min="0.5" value="${move.length || 4}" style="width:60px; background:var(--bg); border:1px solid var(--border); color:#fff; padding:2px 6px;" onchange="updateMoveLength(this.value)">
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px; font-size:0.75rem;">
+                        <span style="opacity:0.6;">Vector Pool Allocation Channel Branch:</span>
+                        <input type="text" value="${escapeHTML(move.branch || 'Default')}" style="width:100px; background:var(--bg); border:1px solid var(--border); color:#fff; padding:2px 6px;" onchange="updateMoveBranch(this.value)">
+                    </div>
+                    <button class="btn-jjs-action" style="padding:4px 8px; font-size:0.7rem; box-shadow:1px 1px 0 var(--border);" onclick="openPublishModal()"><i class="fa-solid fa-cloud-arrow-up"></i> Push to Cloud</button>
+                    <button class="btn-jjs-action" style="padding:4px 8px; font-size:0.7rem; box-shadow:1px 1px 0 var(--border);" onclick="openIOModal('export')"><i class="fa-solid fa-file-export"></i> Local Export</button>
+                    <button class="btn-jjs-action" style="padding:4px 8px; font-size:0.7rem; box-shadow:1px 1px 0 var(--border);" onclick="openIOModal('import')"><i class="fa-solid fa-file-import"></i> Local Import</button>
+                </div>
+            `;
+            container.appendChild(ctrlBar);
+
+            const timelineCard = document.createElement('div');
+            timelineCard.className = 'timeline-section';
+            
+            const head = document.createElement('div');
+            head.className = 'timeline-section-header';
+            head.innerHTML = `<h3>Tracking Context Matrix Configuration Array Layout Profile Layers</h3>
+                              <button class="btn-jjs-action" style="padding:4px 8px; font-size:0.7rem; box-shadow:2px 2px 0 var(--border);" onclick="addNewKeyframeNode()"><i class="fa-solid fa-plus"></i> Allocate Keyframe Node Stream</button>`;
+            timelineCard.appendChild(head);
+            
+            const rowHolder = document.createElement('div');
+            rowHolder.className = 'timeline-row-container';
+            
+            const sortedFrames = Object.keys(move.frames).sort((a,b) => parseFloat(a) - parseFloat(b));
+            if (sortedFrames.length === 0) {
+                rowHolder.innerHTML = '<div style="text-align:center; padding:4px 20px; opacity:0.4; font-size:0.75rem;">No Allocated Timeline Matrix Frame Layers Registered</div>';
+            } else {
+                sortedFrames.forEach(f => {
+                    const row = document.createElement('div');
+                    row.className = 'timeline-row';
+                    
+                    const label = document.createElement('div');
+                    label.className = 'timeline-label';
+                    label.innerHTML = `<i class="fa-solid fa-stopwatch" style="color:var(--accent);"></i> Frame ${f}s`;
+                    label.style.cursor = 'pointer';
+                    label.onclick = () => renameKeyframeTimelineTimestamp(f);
+
+                    const track = document.createElement('div');
+                    track.className = 'timeline-track';
+                    
+                    const nodes = move.frames[f] || [];
+                    nodes.forEach(node => {
+                        const nEl = document.createElement('div');
+                        const isSelected = selectedNodes.some(s => s.frame === f && s.id === node.id);
+                        nEl.className = `timeline-node ${isSelected ? 'selected' : ''}`;
+                        
+                        const typeCfg = CORE_NODES[node.type] || { color: '#7f8c8d' };
+                        nEl.style.borderLeft = `4px solid ${typeCfg.color}`;
+                        
+                        let displayLabel = node.type;
+                        if (node.type === 'CustomNode' && node.properties?.NodeTitle) displayLabel = node.properties.NodeTitle;
+                        else if (node.type === 'VFX' && node.properties?.AssetId) displayLabel = `VFX: ${node.properties.AssetId.slice(-5)}`;
+                        
+                        nEl.innerHTML = `<strong>${escapeHTML(displayLabel)}</strong><span style="opacity:0.4; font-size:0.6rem;">ID:${node.id.slice(-3)}</span>`;
+                        nEl.onclick = (e) => { e.stopPropagation(); selectNodeContextPointer(f, node.id, e.ctrlKey); };
+                        track.appendChild(nEl);
+                    });
+                    
+                    row.appendChild(label);
+                    row.appendChild(track);
+                    rowHolder.appendChild(row);
                 });
             }
-            html += `</div>`;
-        } else if (activeTab === 'Properties') {
-            if(!innerData.Prop || Array.isArray(innerData.Prop)) innerData.Prop = {};
-            html += `<div class="node-card"><div class="node-head" style="cursor:default;"><div class="node-title-group"><strong>Global Container Settings</strong></div></div><div class="node-grid" style="display:grid;">`;
-            PROPERTY_ORDER.forEach(key => {
-                let val = innerData.Prop[key] !== undefined ? innerData.Prop[key] : PROPERTY_DEFAULTS[key];
-                let inputHtml = typeof PROPERTY_DEFAULTS[key] === 'boolean' ? `<input type="checkbox" ${val === true || val === 'true' ? 'checked' : ''} onchange="alterPropValue('${key}', this.checked)">` : (typeof PROPERTY_DEFAULTS[key] === 'number' ? `<input type="number" step="0.1" value="${val}" oninput="alterPropValue('${key}', parseFloat(this.value) || 0)">` : `<input type="text" value="${val}" oninput="alterPropValue('${key}', this.value)">`);
-                html += `<div class="field"><label>${PROPERTY_LABELS[key]}</label>${inputHtml}</div>`;
-            });
-            html += `</div></div>`;
+            timelineCard.appendChild(rowHolder);
+            container.appendChild(timelineCard);
         }
-        canvas.innerHTML = html; document.getElementById('drag-indicator').style.display = 'none';
-    }
 
-    function buildPropertyFieldsMarkup(node, nodeIdx, context = 'Timeline') {
-        let fieldsHtml = ''; const schemaFields = (context === 'Conditions' ? CONDITION_TEMPLATES[node.K_NAME] : NODE_TEMPLATES[node.K_NAME]) || Object.keys(node);
-        schemaFields.forEach(fieldKey => {
-            if (fieldKey === 'K_NAME' || fieldKey === '_COMMENT') return;
+        function updateMoveLength(v) {
+            const val = parseFloat(v); if (isNaN(val) || val <= 0) return;
+            currentMoves[activeIndex].length = val; saveLocalContextState(); renderSidebar();
+        }
+        function updateMoveBranch(v) {
+            const val = v.trim() || 'Default';
+            currentMoves[activeIndex].branch = val; activeBranch = val; saveLocalContextState(); renderSidebar();
+        }
+
+        function renameKeyframeTimelineTimestamp(oldF) {
+            const n = prompt(`Reallocate Keyframe configuration registration index profile parameters tracking timestamp coordinate mapping index positions (Current: ${oldF}s):`, oldF);
+            if (n === null) return;
+            const newF = parseFloat(n).toFixed(1);
+            if (isNaN(parseFloat(n)) || parseFloat(n) < 0) { customAlert("Invalid matrix allocation parameter coordinate value profile format configuration alignment errors detected."); return; }
+            if (oldF === newF) return;
             
-            if (fieldKey === 'Animation' || fieldKey === 'ANIM_USE') {
-                let currentVal = node.ANIM_USE || [1, 1]; let matchedLabel = "Select Animation Asset";
-                for (let cat in ANIMATION_DICTIONARY) { let match = ANIMATION_DICTIONARY[cat].animations.find(a => a.val[0] === currentVal[0] && a.val[1] === currentVal[1]); if (match) { matchedLabel = match.name; break; } }
-                fieldsHtml += `<div class="field" style="grid-column: span 2;"><label>Animation Asset Lookup</label><button class="branch-tab" style="width: 100%; border: 1px solid var(--border); background: rgba(0,0,0,0.5); text-transform:none !important;" onclick="triggerAnimMenu(${nodeIdx})"><i class="fa-solid fa-clapperboard"></i> ${matchedLabel} [${currentVal.join(', ')}]</button></div>`;
-                return;
+            const move = currentMoves[activeIndex];
+            if (move.frames[newF]) {
+                customConfirm(`Timestamp profile matrix target alignment layer configurations [${newF}s] already allocation mapped. Merge arrays?`, () => {
+                    move.frames[newF] = move.frames[newF].concat(move.frames[oldF]);
+                    delete move.frames[oldF]; saveLocalContextState(); renderTimeline();
+                });
+            } else {
+                move.frames[newF] = move.frames[oldF];
+                delete move.frames[oldF]; saveLocalContextState(); renderTimeline();
             }
-
-            if (node.K_NAME === 'BRANCH' && fieldKey === 'RANDOM') {
-                const availableBranches = ["", "Default", ...(getInnerData(currentMoves[activeIndex]).Branch ? Object.keys(getInnerData(currentMoves[activeIndex]).Branch) : [])];
-                let val = node[fieldKey] !== undefined ? node[fieldKey] : "";
-                let opts = availableBranches.map(b => `<option value="${b}" ${val === b ? 'selected' : ''}>${b || 'None'}</option>`).join('');
-                fieldsHtml += `<div class="field"><label>RANDOM (Existing Target Branch)</label><select style="width:100%; color:#fff; background:transparent; border:none; border-bottom:1px solid var(--border);" onchange="alterNodeValue(${nodeIdx}, 'RANDOM', this.value)">${opts}</select></div>`;
-                return;
-            }
-
-            const currentVal = node[fieldKey] !== undefined ? node[fieldKey] : DEFAULTS_LIB[fieldKey]; let markup = '';
-            if (typeof currentVal === 'boolean' || currentVal === 'true' || currentVal === 'false') { markup = `<input type="checkbox" ${(currentVal === true || currentVal === 'true') ? 'checked' : ''} onchange="pushHistory(); alterNodeValue(${nodeIdx}, '${fieldKey}', this.checked)">`; } 
-            else if (Array.isArray(currentVal)) { markup = `<input type="text" value="${currentVal.join(', ')}" oninput="pushHistory(); alterNodeValue(${nodeIdx}, '${fieldKey}', this.value.split(',').map(n => parseFloat(n.trim()) || n.trim()))">`; } 
-            else if (typeof currentVal === 'number' || (!isNaN(currentVal) && currentVal !== '')) { markup = `<input type="number" step="0.01" value="${currentVal}" oninput="pushHistory(); alterNodeValue(${nodeIdx}, '${fieldKey}', parseFloat(this.value) || 0)">`; } 
-            else { markup = `<input type="text" value="${currentVal ?? ''}" oninput="pushHistory(); alterNodeValue(${nodeIdx}, '${fieldKey}', this.value)">`; }
-            fieldsHtml += `<div class="field"><label>${fieldKey}</label>${markup}</div>`;
-        });
-        return fieldsHtml;
-    }
-
-    function triggerAnimMenu(nodeIdx) {
-        activeAnimPickNodeIdx = nodeIdx; const body = document.getElementById('anim-modal-body'); body.innerHTML = '';
-        Object.keys(ANIMATION_DICTIONARY).forEach(catName => {
-            const catData = ANIMATION_DICTIONARY[catName];
-            const header = document.createElement('div'); header.className = 'anim-cat-header'; header.style.color = catData.color; header.style.borderColor = catData.color;
-            header.innerHTML = `<span class="uppercase-force">${catName}</span> <i class="fa-solid fa-chevron-down"></i>`;
-            const contentBlock = document.createElement('div'); contentBlock.className = 'anim-cat-content'; contentBlock.style.borderColor = catData.color;
-
-            header.onclick = () => { const isOpen = contentBlock.style.display === 'flex'; contentBlock.style.display = isOpen ? 'none' : 'flex'; header.querySelector('i').className = isOpen ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-up'; };
-
-            catData.animations.forEach(anim => {
-                const row = document.createElement('div'); row.className = 'anim-item-row';
-                row.innerHTML = `<span>${anim.name}</span> <span style="font-family:var(--font-code); font-size:0.7rem; opacity:0.5;">[${anim.val.join(',')}]</span>`;
-                row.onclick = () => { pushHistory(); alterNodeValue(activeAnimPickNodeIdx, 'ANIM_USE', anim.val); closeAnimModal(null); loadMove(activeIndex); };
-                contentBlock.appendChild(row);
-            });
-            body.appendChild(header); body.appendChild(contentBlock);
-        });
-        document.getElementById('jjs-anim-modal').style.display = 'flex';
-    }
-
-    function closeAnimModal(e) { if (!e || e.target === document.getElementById('jjs-anim-modal')) document.getElementById('jjs-anim-modal').style.display = 'none'; }
-
-    function applyThemeFromStorage() {
-        const t = localStorage.getItem('jjs-theme-pref') || 'default';
-        if(t === 'custom') {
-            const c = JSON.parse(localStorage.getItem('jjs-custom-colors'));
-            if(c) { document.body.className = ''; document.getElementById('custom-theme-style').innerHTML = `body { --bg: ${c.bg}; --panel: ${c.panel}; --node-card: ${c.card}; --accent: ${c.accent}; --text: ${c.text}; --border: ${c.border}; --bg-image: url('${c.bgimg}'); --bg-opacity: ${c.bgop}; }`; }
-        } else { previewTheme(t); }
-    }
-    function previewTheme(styleName) { document.body.className = ''; document.getElementById('custom-theme-style').innerHTML = ''; if (styleName !== 'default' && styleName !== 'custom') document.body.classList.add('theme-' + styleName); localStorage.setItem('jjs-theme-pref', styleName); }
-    
-    function openThemesUI() {
-        const content = document.getElementById('themes-modal-content'); const savedThemes = JSON.parse(localStorage.getItem('jjs-saved-themes') || '[]');
-        let savedHtml = savedThemes.map((t, i) => `<button class="btn-jjs-action" onclick="applySavedTheme(${i})">${t.name}</button>`).join('');
-        if(!savedHtml) savedHtml = `<div style="opacity:0.5; font-size:0.8rem; text-align:center;">No saved themes yet.</div>`;
-
-        content.innerHTML = `
-            <div style="display:flex; flex-direction:column; gap:8px; border-bottom:2px solid var(--border); padding-bottom:15px; margin-bottom:5px;"><strong style="color:var(--accent); font-size:0.8rem;" class="uppercase-force">Pre-Made Themes</strong><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"><button class="btn-jjs-action" onclick="previewTheme('default')">Default Dark</button><button class="btn-jjs-action" onclick="previewTheme('super-dark')">Super Dark</button><button class="btn-jjs-action" onclick="previewTheme('retro')">Retro</button><button class="btn-jjs-action" onclick="previewTheme('matrix')">Matrix</button><button class="btn-jjs-action" onclick="previewTheme('nova')">Nova</button><button class="btn-jjs-action" onclick="previewTheme('cyber')">Cyber</button><button class="btn-jjs-action" onclick="previewTheme('crimson')">Crimson</button></div></div>
-            <div style="display:flex; flex-direction:column; gap:8px; border-bottom:2px solid var(--border); padding-bottom:15px; margin-bottom:5px;"><strong style="color:var(--accent); font-size:0.8rem;" class="uppercase-force">Saved Themes</strong><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">${savedHtml}</div></div>
-            <div style="padding:10px 0;"><button class="btn-jjs-action" style="width:100%; border-color:#00ff66; color:#00ff66;" onclick="renderThemeMaker()"><i class="fa-solid fa-paintbrush"></i> Create New Theme</button></div>
-        `;
-        document.getElementById('jjs-themes-modal').style.display = 'flex';
-    }
-
-    function renderThemeMaker() {
-        const content = document.getElementById('themes-modal-content'); const s = JSON.parse(localStorage.getItem('jjs-custom-colors')) || { name:"My Theme", bg:"#121317", panel:"#1a1c23", card:"#222530", accent:"#ffcc33", text:"#e2e8f0", border:"#2d313f", bgimg:"", bgop:1 };
-        content.innerHTML = `
-            <button class="btn-jjs-action" style="margin-bottom:15px; background:transparent;" onclick="openThemesUI()"><i class="fa-solid fa-arrow-left"></i> Back</button><strong style="color:var(--accent); font-size:0.8rem; margin-bottom:10px;" class="uppercase-force">Theme Editor</strong>
-            <div style="display:flex; flex-direction:column; gap:10px;">
-                <div class="tooltip-field" style="display:flex; align-items:center; justify-content:space-between;"><label>Theme Name</label><input type="text" id="ct-name" value="${s.name||'Custom'}" style="width:60%; text-align:right;"></div>
-                <div class="tooltip-field" style="display:flex; align-items:center; justify-content:space-between;"><label>BG Image URL</label><input type="text" id="ct-bgimg" value="${s.bgimg||''}" style="width:60%; text-align:right;"></div>
-                <div class="tooltip-field" style="display:flex; align-items:center; justify-content:space-between;"><label>BG Opacity</label><input type="range" id="ct-bgop" min="0" max="1" step="0.05" value="${s.bgop||1}" style="width:60%;"></div>
-                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Background</label><input type="color" id="ct-bg" value="${s.bg}"></div>
-                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Panel</label><input type="color" id="ct-panel" value="${s.panel}"></div>
-                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Node Card</label><input type="color" id="ct-card" value="${s.card}"></div>
-                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Accent</label><input type="color" id="ct-accent" value="${s.accent}"></div>
-                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Text</label><input type="color" id="ct-text" value="${s.text}"></div>
-                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Border</label><input type="color" id="ct-border" value="${s.border}"></div>
-            </div>
-            <button class="btn-modal-confirm" style="margin-top:20px; width:100%;" onclick="saveCustomTheme()">Save & Apply</button>
-        `;
-    }
-
-    function saveCustomTheme() {
-        const c = { name: document.getElementById('ct-name').value, bg: document.getElementById('ct-bg').value, panel: document.getElementById('ct-panel').value, card: document.getElementById('ct-card').value, accent: document.getElementById('ct-accent').value, text: document.getElementById('ct-text').value, border: document.getElementById('ct-border').value, bgimg: document.getElementById('ct-bgimg').value, bgop: document.getElementById('ct-bgop').value };
-        localStorage.setItem('jjs-custom-colors', JSON.stringify(c)); let saved = JSON.parse(localStorage.getItem('jjs-saved-themes') || '[]'); const idx = saved.findIndex(t => t.name === c.name); if(idx !== -1) saved[idx] = c; else saved.push(c);
-        localStorage.setItem('jjs-saved-themes', JSON.stringify(saved)); localStorage.setItem('jjs-theme-pref', 'custom'); applyThemeFromStorage(); customAlert(`Theme '${c.name}' saved and applied!`); openThemesUI();
-    }
-    
-    function applySavedTheme(idx) { const saved = JSON.parse(localStorage.getItem('jjs-saved-themes') || '[]'); localStorage.setItem('jjs-custom-colors', JSON.stringify(saved[idx])); localStorage.setItem('jjs-theme-pref', 'custom'); applyThemeFromStorage(); }
-    function closeThemesModal(e) { if (!e || e.target === document.getElementById('jjs-themes-modal')) document.getElementById('jjs-themes-modal').style.display = 'none'; }
-
-
-    // --- Supabase Workshop System ---
-    async function Auth() {
-        const { data, error } = await supabaseclient.auth.signInAnonymously();
-        if (error) { customAlert("Auth failed. Please ensure 'Anonymous Sign-ins' is enabled in your Supabase Auth Providers settings."); return; }
-        authUser = { name: "Creator_" + data.user.id.substring(0, 6), uid: data.user.id };
-        document.getElementById('auth-status').innerHTML = `<span style="color:#00ff66;">Authenticated</span>`;
-        customAlert("Successfully authenticated with Supabase.");
-    }
-
-    function initWorkshopDragger() {
-        const win = document.getElementById('workshop-window'); const header = document.getElementById('workshop-drag-header');
-        let isDraggingWin = false; let offsetX, offsetY;
-        header.addEventListener('mousedown', e => { if(e.target.tagName === 'BUTTON' || e.target.tagName === 'I') return; isDraggingWin = true; offsetX = e.clientX - win.getBoundingClientRect().left; offsetY = e.clientY - win.getBoundingClientRect().top; });
-        document.addEventListener('mousemove', e => { if(isDraggingWin) { win.style.left = (e.clientX - offsetX) + 'px'; win.style.top = (e.clientY - offsetY) + 'px'; } });
-        document.addEventListener('mouseup', () => isDraggingWin = false );
-    }
-
-    function openWorkshop() { document.getElementById('workshop-window').style.display = 'flex'; setWorkshopTab(currentWorkshopTab); }
-    
-    async function setWorkshopTab(tab) {
-        currentWorkshopTab = tab; document.querySelectorAll('.workshop-tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.workshop-tab').forEach(t => { if (t.innerText.trim() === tab) t.classList.add('active'); });
-
-        let content = `<div style="display:flex; justify-content:space-between; margin-bottom:15px;"><strong style="color:var(--accent);" class="uppercase-force">${tab} Hub</strong><button class="btn-jjs-action" style="width:auto; padding:5px 15px;" onclick="startWorkshopUpload()"><i class="fa-solid fa-cloud-arrow-up"></i> Upload to ${tab}</button></div>`;
-
-        if (tab === 'TEMPLATES') {
-            content += `<div style="text-align:center; padding:50px; opacity:0.5;">Loading templates from Supabase...</div>`;
-            document.getElementById('workshop-content').innerHTML = content;
-            await loadWorkshopTemplates(); return;
         }
 
-        const items = JSON.parse(localStorage.getItem(`ws_${tab}`) || '[]');
-        if(items.length === 0) content += `<div style="text-align:center; padding:50px; opacity:0.5;">Placeholder [${tab} is Empty]</div>`;
-        else {
-            content += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">`;
-            items.forEach((item, i) => {
-                content += `<div style="background:rgba(0,0,0,0.4); border:1px solid var(--border); padding:15px;"><div style="font-weight:bold; color:#fff; font-size:1.1rem; margin-bottom:5px;">${item.title}</div><div style="font-size:0.75rem; opacity:0.7; margin-bottom:10px;">By: ${item.author}</div><div style="font-size:0.85rem; margin-bottom:15px; color:#aaa;">${item.desc}</div><button class="btn-modal-confirm" style="width:100%; font-size:0.7rem;" onclick="importFromWorkshop('${tab}', ${i})"><i class="fa-solid fa-download"></i> Get</button></div>`;
-            });
-            content += `</div>`;
-        }
-        document.getElementById('workshop-content').innerHTML = content;
-    }
-
-    function renderTemplateList(official, community) {
-        const all = [...official, ...community];
-        if (!all.length) { document.getElementById('workshop-content').innerHTML = `<div style="text-align:center; padding:50px; opacity:0.5;">No templates yet.</div>`; return; }
-        
-        let html = `<div style="display:flex; justify-content:space-between; margin-bottom:15px;"><strong style="color:var(--accent);" class="uppercase-force">TEMPLATES Hub</strong><span style="font-size:0.75rem; opacity:0.6;">Official + Community</span></div>`;
-        html += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">`;
-        all.forEach((item) => {
-            const isOwner = authUser && authUser.uid === item.user_id;
-            const delBtn = isOwner ? `<button style="background:transparent; border:none; color:#ff4d4d; cursor:pointer;" onclick="deleteTemplate('${item.id}', event)"><i class="fa-solid fa-trash"></i></button>` : '';
+        function addNewKeyframeNode() {
+            const fInput = prompt("Declare context coordinate data mapping tracking frame snapshot allocation placement timestamps:", "0.0");
+            if (fInput === null) return;
+            const f = parseFloat(fInput).toFixed(1);
+            if (isNaN(parseFloat(fInput)) || parseFloat(fInput) < 0) { customAlert("Allocation mapping fault parameters parsing mismatch profiles alignment failure layers."); return; }
             
-            html += `<div style="background:rgba(0,0,0,0.4); border:1px solid var(--border); padding:15px;">
-                <div style="display:flex; justify-content:space-between;">
-                    <div style="font-weight:bold; color:#fff; font-size:1.1rem; margin-bottom:5px;">${item.title || 'Untitled'} ${item.is_official ? '(OFFICIAL)' : ''}</div>
-                    ${delBtn}
-                </div>
-                <div style="font-size:0.75rem; opacity:0.7; margin-bottom:10px;">By: ${item.author || 'Anonymous'}</div>
-                <div style="font-size:0.85rem; margin-bottom:15px; color:#aaa;">${item.description || ''}</div>
-                <button class="btn-modal-confirm" style="width:100%; font-size:0.7rem;" onclick="importTemplateToWorkspace('${item.id}', ${item.is_official ? 'true' : 'false'})"><i class="fa-solid fa-download"></i> Get</button>
-            </div>`;
-        });
-        html += `</div>`;
-        document.getElementById('workshop-content').innerHTML = html;
-    }
-
-    async function loadWorkshopTemplates() {
-        try {
-            const { data, error } = await supabase.from('templates').select('*').order('created_at', { ascending: false });
-            if (error) throw error;
-            const templates = Array.isArray(data) ? data : [];
-            const official = templates.filter(t => t.is_official === true);
-            const community = templates.filter(t => !t.is_official);
-            renderTemplateList(official, community);
-        } catch (e) {
-            console.error(e);
-            document.getElementById('workshop-content').innerHTML = `<div style="text-align:center; padding:50px; opacity:0.5;">Failed to load templates. Are Supabase keys set?</div>`;
+            const move = currentMoves[activeIndex];
+            if (!move.frames[f]) move.frames[f] = [];
+            
+            const typeStr = prompt(`Select execution element matrix primitive tracking layout types profiles:\n(${Object.keys(CORE_NODES).join(', ')})`, "CFrame");
+            if (!typeStr) return;
+            let matchedType = Object.keys(CORE_NODES).find(k => k.toLowerCase() === typeStr.trim().toLowerCase());
+            if (!matchedType) { customAlert("Declared layout array profile primitive element definition mismatch configurations."); return; }
+            
+            const cfg = CORE_NODES[matchedType];
+            const newNode = {
+                id: 'node-' + Math.random().toString(36).substr(2, 9),
+                type: matchedType,
+                properties: JSON.parse(JSON.stringify(cfg.defaults)),
+                canvasPosition: { x: 100 + Math.random() * 150, y: 100 + Math.random() * 150 }
+            };
+            
+            move.frames[f].push(newNode);
+            saveLocalContextState(); renderTimeline();
+            selectNodeContextPointer(f, newNode.id, false);
         }
-    }
 
-    async function saveCustomTemplate(title, description, dataPayload) {
-        try {
-            if (!Array.isArray(dataPayload)) dataPayload = [dataPayload];
-            const row = { title, description: description || null, author: authUser?.name || 'Anonymous', is_official: false, data: dataPayload };
-            const { error } = await supabase.from('templates').insert(row);
-            if (error) throw error;
-            customAlert("Successfully uploaded template to Supabase!");
-            await loadWorkshopTemplates();
-        } catch (e) { console.error(e); customAlert("Failed to upload template to Supabase."); }
-    }
+        // --- VIEWPORT ENGINE TYPE B: NODE GRAPH CANVAS VISUAL ENGINE LAYER ---
+        function renderCanvas() {
+            const container = document.getElementById('canvas-container');
+            container.innerHTML = '';
+            if (activeIndex < 0) return;
+            const move = currentMoves[activeIndex];
+            
+            Object.keys(move.frames).forEach(f => {
+                const nodes = move.frames[f] || [];
+                nodes.forEach(node => {
+                    const card = document.createElement('div');
+                    const isSelected = selectedNodes.some(s => s.frame === f && s.id === node.id);
+                    card.className = `canvas-node-card ${isSelected ? 'selected' : ''}`;
+                    
+                    if (!node.canvasPosition) node.canvasPosition = { x: 50 + Math.random() * 300, y: 50 + Math.random() * 300 };
+                    card.style.left = `${node.canvasPosition.x}px`;
+                    card.style.top = `${node.canvasPosition.y}px`;
+                    
+                    const typeCfg = CORE_NODES[node.type] || { color: '#7f8c8d' };
+                    card.style.borderTop = `${varThickness = '4px'} solid ${typeCfg.color}`;
+                    
+                    let titleText = node.type;
+                    if (node.type === 'CustomNode' && node.properties?.NodeTitle) titleText = node.properties.NodeTitle;
 
-    async function importTemplateToWorkspace(id, isOfficial) {
-        try {
-            const { data, error } = await supabase.from('templates').select('data').eq('id', id).single();
-            if (error) throw error;
-            currentMoves = JSON.parse(JSON.stringify(data?.data || []));
-            activeIndex = currentMoves.length > 0 ? 0 : -1; activeBranch = 'Default'; activeTab = 'Timeline'; selectedNodes = [];
-            document.getElementById('workshop-window').style.display = 'none';
-            renderSidebar(); loadMove(activeIndex);
-        } catch (e) { console.error(e); customAlert("Failed to import template from Supabase."); }
-    }
-
-    async function deleteTemplate(id, event) {
-        if (event) event.stopPropagation();
-        customConfirm("Delete this template from the cloud?", async () => {
-            try {
-                const { error } = await supabase.from('templates').delete().eq('id', id);
-                if (error) throw error;
-                customAlert("Template deleted.");
-                await loadWorkshopTemplates();
-            } catch (e) { console.error(e); customAlert("Failed to delete template."); }
-        });
-    }
-
-    function startWorkshopUpload() {
-        if(!authUser) { customAlert("You must authenticate with Roblox (Login) first to upload."); return; }
-        document.getElementById('workshop-window').style.display = 'none';
-        
-        if (currentWorkshopTab === 'TEMPLATES') {
-            openInputPrompt("Upload Template", "Paste ZSTD string or JSON here...", async (val) => {
-                let payloadToStore = [];
-                try {
-                    if (typeof val === 'string' && (val.trim().startsWith('[') || val.trim().startsWith('{'))) {
-                        payloadToStore = JSON.parse(val);
-                        if (!Array.isArray(payloadToStore)) payloadToStore = [payloadToStore];
-                    } else {
-                        if (!zstd) { customAlert("ZSTD Engine is still loading. Wait a moment."); return; }
-                        const rawBuffer = Uint8Array.from(atob(val), c => c.charCodeAt(0));
-                        payloadToStore = JSON.parse(new TextDecoder().decode(zstd.decompress(rawBuffer)));
-                        if (!Array.isArray(payloadToStore)) payloadToStore = [payloadToStore];
+                    card.innerHTML = `
+                        <div class="node-head">
+                            <strong>${escapeHTML(titleText)}</strong>
+                            <span style="opacity:0.5; font-size:0.6rem;">${f}s</span>
+                        </div>
+                    `;
+                    
+                    const body = document.createElement('div');
+                    body.className = 'node-body';
+                    
+                    // Display compact subset variables inside graph node panels
+                    const props = node.properties || {};
+                    const keys = Object.keys(props).slice(0, 3);
+                    keys.forEach(k => {
+                        const row = document.createElement('div');
+                        row.className = 'node-body-row';
+                        let vStr = String(props[k]);
+                        if (vStr.length > 12) vStr = vStr.slice(0,10) + '..';
+                        row.innerHTML = `<span>${k}:</span><span>${escapeHTML(vStr)}</span>`;
+                        body.appendChild(row);
+                    });
+                    if (Object.keys(props).length > 3) {
+                        body.innerHTML += `<div style="text-align:center; opacity:0.3; font-size:0.6rem; padding-top:2px;">+ ${Object.keys(props).length - 3} Parameters</div>`;
                     }
-                } catch (e) { customAlert("Invalid string format. Could not decode."); return; }
+                    
+                    card.appendChild(body);
+                    
+                    // Bind canvas object vector transforms and movement pointer tracks
+                    card.addEventListener('mousedown', (e) => {
+                        if (e.target.closest('.node-head') || e.target.closest('.node-body')) {
+                            e.stopPropagation();
+                            selectNodeContextPointer(f, node.id, e.ctrlKey);
+                            
+                            const startX = e.clientX; const startY = e.clientY;
+                            const origX = node.canvasPosition.x; const origY = node.canvasPosition.y;
+                            
+                            function doDrag(moveEvent) {
+                                node.canvasPosition.x = origX + (moveEvent.clientX - startX);
+                                node.canvasPosition.y = origY + (moveEvent.clientY - startY);
+                                card.style.left = `${node.canvasPosition.x}px`;
+                                card.style.top = `${node.canvasPosition.y}px`;
+                            }
+                            function stopDrag() {
+                                window.removeEventListener('mousemove', doDrag);
+                                window.removeEventListener('mouseup', stopDrag);
+                                saveLocalContextState();
+                            }
+                            window.addEventListener('mousemove', doDrag);
+                            window.addEventListener('mouseup', stopDrag);
+                        }
+                    });
+                    
+                    container.appendChild(card);
+                });
+            });
+        }
 
-                openInputPrompt("Template Title", "Enter title...", async (title) => {
-                    openInputPrompt("Description", "Enter short description...", async (desc) => {
-                        await saveCustomTemplate(title, desc, payloadToStore);
-                        openWorkshop();
+        // --- CONTEXT REGISTRY MANAGEMENT PARAMETER SPECIFICATION ENGINE LOOPS ---
+        function selectNodeContextPointer(frame, id, appendMode) {
+            if (!appendMode) { selectedNodes = [{ frame, id }]; }
+            else {
+                const idx = selectedNodes.findIndex(s => s.frame === frame && s.id === id);
+                if (idx >= 0) selectedNodes.splice(idx, 1);
+                else selectedNodes.push({ frame, id });
+            }
+            if (activeTab === 'Timeline') renderTimeline();
+            else renderCanvas();
+            renderInspector();
+        }
+
+        function renderInspector() {
+            const root = document.getElementById('inspector-root');
+            root.innerHTML = '';
+            
+            if (selectedNodes.length === 0) {
+                root.innerHTML = `
+                    <div class="inspector-placeholder">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <div class="uppercase-force" style="font-weight:bold; font-size:0.8rem; letter-spacing:0.5px;">Inspector Properties</div>
+                        <span style="font-size:0.75rem; max-width:200px; line-height:1.4;">Select layout node frames inside viewport tracking channels to alter properties configuration.</span>
+                    </div>`;
+                return;
+            }
+
+            if (selectedNodes.length > 1) {
+                root.innerHTML = `
+                    <div class="inspector-placeholder">
+                        <i class="fa-solid fa-layer-group"></i>
+                        <div class="uppercase-force" style="font-weight:bold; font-size:0.8rem; letter-spacing:0.5px;">Bulk Operations</div>
+                        <span style="font-size:0.75rem; max-width:200px; line-height:1.4; margin-bottom:10px;">[${selectedNodes.length}] Vector Nodes targeted. Bulk attributes updates disabled.</span>
+                        <button class="btn-jjs-action" style="font-size:0.7rem; padding:6px 12px; color:#ff4d4d;" onclick="purgeSelectedNodesMatrix()"><i class="fa-solid fa-trash"></i> Delete Selected Array [${selectedNodes.length}]</button>
+                    </div>`;
+                return;
+            }
+
+            const activeTarget = selectedNodes[0];
+            const move = currentMoves[activeIndex];
+            if (!move || !move.frames[activeTarget.frame]) return;
+            const node = move.frames[activeTarget.frame].find(n => n.id === activeTarget.id);
+            if (!node) return;
+
+            const panel = document.createElement('div');
+            panel.className = 'inspector-content';
+
+            // Segment Alpha Header Details Profile
+            const hGroup = document.createElement('div');
+            hGroup.className = 'inspector-group';
+            hGroup.style.background = 'rgba(0,0,0,0.1)';
+            hGroup.innerHTML = `
+                <div class="inspector-group-title">Target Node Definition Layer Mapping</div>
+                <div style="font-weight:bold; font-size:1.05rem; color:#fff;">${node.type}</div>
+                <div style="font-size:0.7rem; opacity:0.5; display:flex; flex-direction:column; gap:2px; margin-top:4px;">
+                    <span>Object Reference UUID: ${node.id}</span>
+                    <span>Tracking Core Timeline Offset: Frame ${activeTarget.frame}s</span>
+                </div>
+                <div style="display:flex; gap:10px; margin-top:5px;">
+                    <button class="btn-jjs-action" style="padding:4px 8px; font-size:0.7rem; flex:1; box-shadow:1px 1px 0 var(--border); color:#ff4d4d;" onclick="purgeSelectedNodesMatrix()"><i class="fa-solid fa-trash"></i> Purge Object</button>
+                    <button class="btn-jjs-action" style="padding:4px 8px; font-size:0.7rem; flex:1; box-shadow:1px 1px 0 var(--border);" onclick="shiftNodeFrameTimestamp()"><i class="fa-solid fa-clock"></i> Shift Frame</button>
+                </div>
+            `;
+            panel.appendChild(hGroup);
+
+            // Segment Beta Fields Variable Transformation Matrix Setup
+            const fGroup = document.createElement('div');
+            fGroup.className = 'inspector-group';
+            fGroup.innerHTML = '<div class="inspector-group-title">Attribute Profiles Parameter Vectors</div>';
+            
+            const schema = CORE_NODES[node.type] || { fields: {} };
+            const props = node.properties || {};
+
+            Object.keys(schema.fields).forEach(key => {
+                const type = schema.fields[key];
+                const row = document.createElement('div');
+                row.className = 'field-row';
+                row.style.marginBottom = '8px';
+                
+                row.innerHTML = `<label>${key} (${type})</label>`;
+                
+                const val = props[key] !== undefined ? props[key] : '';
+                const input = document.createElement('input');
+                input.className = 'field-input';
+                
+                if (type === 'number') {
+                    input.type = 'number'; input.step = 'any'; input.value = val;
+                    input.onchange = () => { node.properties[key] = parseFloat(input.value) || 0; saveLocalContextState(); updateLiveViewports(); };
+                } else if (type === 'bool' || typeof schema.defaults[key] === 'boolean') {
+                    input.type = 'checkbox'; input.checked = !!val;
+                    input.onchange = () => { node.properties[key] = input.checked; saveLocalContextState(); updateLiveViewports(); };
+                } else {
+                    input.type = 'text'; input.value = val;
+                    input.onchange = () => { node.properties[key] = input.value; saveLocalContextState(); updateLiveViewports(); };
+                }
+                
+                row.appendChild(input);
+                fGroup.appendChild(row);
+            });
+            panel.appendChild(fGroup);
+            root.appendChild(panel);
+        }
+
+        function updateLiveViewports() {
+            if (activeTab === 'Timeline') renderTimeline();
+            else renderCanvas();
+        }
+
+        function shiftNodeFrameTimestamp() {
+            if (selectedNodes.length !== 1) return;
+            const target = selectedNodes[0];
+            const move = currentMoves[activeIndex];
+            const nodeIdx = move.frames[target.frame].findIndex(n => n.id === target.id);
+            if (nodeIdx < 0) return;
+            
+            const dest = prompt("Declare parameters alignment destination coordinate timestamp values mapping profiles:", target.frame);
+            if (dest === null) return;
+            const newF = parseFloat(dest).toFixed(1);
+            if (isNaN(parseFloat(dest)) || parseFloat(dest) < 0) { customAlert("Invalid floating precision configuration placement coordinates index targets alignment errors."); return; }
+            if (target.frame === newF) return;
+
+            const nodeObj = move.frames[target.frame].splice(nodeIdx, 1)[0];
+            if (move.frames[target.frame].length === 0) delete move.frames[target.frame];
+            
+            if (!move.frames[newF]) move.frames[newF] = [];
+            move.frames[newF].push(nodeObj);
+            
+            selectedNodes = [{ frame: newF, id: nodeObj.id }];
+            saveLocalContextState(); updateLiveViewports(); renderInspector();
+        }
+
+        function purgeSelectedNodesMatrix() {
+            if (selectedNodes.length === 0) return;
+            customConfirm(`Purge selected parameters processing graph execution object stack [Size: ${selectedNodes.length}]?`, () => {
+                const move = currentMoves[activeIndex];
+                selectedNodes.forEach(target => {
+                    if (move.frames[target.frame]) {
+                        move.frames[target.frame] = move.frames[target.frame].filter(n => n.id !== target.id);
+                        if (move.frames[target.frame].length === 0) delete move.frames[target.frame];
+                    }
+                });
+                selectedNodes = [];
+                saveLocalContextState(); updateLiveViewports(); renderInspector();
+            });
+        }
+
+        // --- CONTEXT SYSTEM IO PORT ENGINE LAYER TERMINAL SYSTEMS ---
+        function generateCleanExportData() {
+            const current = currentMoves[activeIndex];
+            if (!current) return [];
+            
+            const outArr = [];
+            const sorted = Object.keys(current.frames).sort((a,b) => parseFloat(a) - parseFloat(b));
+            
+            sorted.forEach(f => {
+                const nodes = current.frames[f] || [];
+                nodes.forEach(n => {
+                    const nodeDump = { Time: parseFloat(f), Type: n.type, Properties: {} };
+                    
+                    if (n.type === 'CustomNode') {
+                        const k = n.properties?.Key || "Param";
+                        nodeDump.Properties[k] = n.properties?.Value || "";
+                    } else {
+                        nodeDump.Properties = JSON.parse(JSON.stringify(n.properties || {}));
+                    }
+                    outArr.push(nodeDump);
+                });
+            });
+            return outArr;
+        }
+
+        function openIOModal(mode) {
+            ioModalMode = mode;
+            const overlay = document.getElementById('jjs-io-modal');
+            const title = document.getElementById('io-modal-title-text');
+            const tx = document.getElementById('io-terminal-textarea');
+            const btn = document.getElementById('io-action-button');
+            
+            tx.value = ''; overlay.style.display = 'flex';
+            
+            if (mode === 'import') {
+                title.innerHTML = "<i class='fa-solid fa-file-import'></i> Import Data Matrix Profiles Stream";
+                tx.readOnly = false; btn.innerText = "Execute Load Matrix Pipeline";
+            } else {
+                title.innerHTML = "<i class='fa-solid fa-file-export'></i> Export Structured Data Matrix Output Stream";
+                tx.readOnly = true; btn.innerText = "Copy Stream Output Logs";
+                
+                if (currentMoves.length === 0 || activeIndex < 0) { tx.value = "[]"; return; }
+                try {
+                    const exportBlob = generateCleanExportData();
+                    if (!configCompression || typeof zstd === 'undefined') {
+                        tx.value = JSON.stringify(exportBlob, null, 2);
+                    } else {
+                        const bin = window.zstd.compress(new TextEncoder().encode(JSON.stringify(exportBlob)), 3);
+                        let b64 = ""; for (let i = 0; i < bin.length; i++) b64 += String.fromCharCode(bin[i]);
+                        tx.value = btoa(b64);
+                    }
+                } catch (err) { tx.value = "/* Pipeline export encoding compression fault layers exception block triggered */\n[]"; }
+            }
+        }
+
+        function closeIOModal(e) {
+            if (!e || e.target === document.getElementById('jjs-io-modal')) document.getElementById('jjs-io-modal').style.display = 'none';
+        }
+
+        function executeIOAction() {
+            const tx = document.getElementById('io-terminal-textarea');
+            if (ioModalMode === 'export') {
+                tx.select(); navigator.clipboard.writeText(tx.value); customAlert("Copied clipboard data allocation streams."); return;
+            }
+            
+            // Handle parsing import data
+            const raw = tx.value.trim(); if (!raw) return;
+            try {
+                let parsed = null;
+                if (raw.startsWith('[') || raw.startsWith('{')) { parsed = JSON.parse(raw); }
+                else if (typeof zstd !== 'undefined') {
+                    const bString = atob(raw); const bArr = new Uint8Array(bString.length);
+                    for (let i = 0; i < bString.length; i++) bArr[i] = bString.charCodeAt(i);
+                    parsed = JSON.parse(new TextDecoder().decode(window.zstd.decompress(bArr)));
+                }
+                
+                if (!Array.isArray(parsed)) throw new Error("Root configuration entity parsing array layer signature validation mismatches.");
+                
+                const moveName = prompt("Declare imported identifier sequence lookup pointer name string definition profile maps:", `Imported_${Date.now().toString().slice(-4)}`);
+                const targetBranch = prompt("Declare destination branch allocation vector matrix container tracking scope:", activeBranch);
+                
+                const newMove = { name: moveName || "Imported Sequence Array", length: 4, branch: targetBranch || 'Default', frames: {} };
+                
+                parsed.forEach(item => {
+                    const timeKey = parseFloat(item.Time || 0).toFixed(1);
+                    if (!newMove.frames[timeKey]) newMove.frames[timeKey] = [];
+                    
+                    let normType = item.Type || "CFrame";
+                    let matchedType = Object.keys(CORE_NODES).find(k => k.toLowerCase() === normType.toLowerCase()) || "CustomNode";
+                    const schema = CORE_NODES[matchedType];
+                    
+                    let props = {};
+                    if (matchedType === 'CustomNode') {
+                        const firstKey = Object.keys(item.Properties || {})[0] || "Attribute";
+                        props = { NodeTitle: item.Type || "Custom Action", Key: firstKey, Value: String(item.Properties?.[firstKey] || "") };
+                    } else {
+                        props = JSON.parse(JSON.stringify(schema.defaults));
+                        if (item.Properties) { Object.keys(item.Properties).forEach(pk => { if(props[pk] !== undefined) props[pk] = item.Properties[pk]; }); }
+                    }
+
+                    newMove.frames[timeKey].push({
+                        id: 'node-' + Math.random().toString(36).substr(2, 9),
+                        type: matchedType,
+                        properties: props,
+                        canvasPosition: { x: 80 + Math.random() * 350, y: 80 + Math.random() * 350 }
                     });
                 });
-            });
-            return;
-        }
-
-        uploadSelectMode = true; selectedNodes = []; document.getElementById('selection-banner').style.display = 'flex'; loadMove(activeIndex);
-    }
-
-    function confirmSelectionMode() {
-        if(!selectedNodes.length) { customAlert("No nodes selected."); return; }
-        const list = getActiveList();
-        
-        for(let idx of selectedNodes) {
-            let node = list[idx];
-            if(currentWorkshopTab === 'SFX' && node.K_NAME !== 'SFX') { customAlert("SFX category only accepts Sound nodes."); return; }
-            if(currentWorkshopTab === 'VFX' && (node.K_NAME !== 'VISUAL' || node.EFFECT === 'Mesh')) { customAlert("VFX accepts non-mesh visual nodes only."); return; }
-            if(currentWorkshopTab === 'Mesh VFX' && (node.K_NAME !== 'VISUAL' || node.EFFECT !== 'Mesh')) { customAlert("Mesh VFX requires visual nodes with the 'Mesh' effect."); return; }
-            if(currentWorkshopTab === 'Mixed VFX' && node.K_NAME !== 'VISUAL') { customAlert("Mixed VFX accepts any Visual nodes only."); return; }
-        }
-
-        const dataToUpload = selectedNodes.sort((a,b)=>a-b).map(i => list[i]);
-        cancelSelectionMode();
-        
-        openInputPrompt("Upload Title", "Enter title...", (title) => {
-            openInputPrompt("Description", "Enter short description...", (desc) => {
-                let items = JSON.parse(localStorage.getItem(`ws_${currentWorkshopTab}`) || '[]');
-                items.push({ title, desc, author: authUser.name, payload: dataToUpload });
-                localStorage.setItem(`ws_${currentWorkshopTab}`, JSON.stringify(items));
-                customAlert("Successfully uploaded to local workshop memory!");
-                openWorkshop();
-            });
-        });
-    }
-
-    function cancelSelectionMode() { uploadSelectMode = false; document.getElementById('selection-banner').style.display = 'none'; selectedNodes=[]; loadMove(activeIndex); }
-
-    function importFromWorkshop(tab, idx) {
-        if (tab === 'TEMPLATES') return;
-        const item = JSON.parse(localStorage.getItem(`ws_${tab}`))[idx];
-        document.getElementById('workshop-window').style.display = 'none';
-        importPlaceMode = true; importPayload = item.payload;
-        document.getElementById('selection-banner-text').innerText = "Click between nodes to place download...";
-        document.getElementById('selection-banner').style.display = 'flex';
-        document.getElementById('selection-banner').querySelector('button:last-child').style.display = 'none';
-    }
-
-    function openCustomNodeBuilder() { customAlert("Custom Node Builder: Use Shift+A to spawn 'CUSTOM NODE', configuring it as a logical boundary marker for export loops."); }
-    
-    function generateCleanExportData() {
-        let clean = JSON.parse(JSON.stringify(currentMoves));
-        clean.forEach(move => {
-            let inner = getInnerData(move);
-            const processList = (list) => {
-                if(!list) return;
-                for(let i = list.length - 1; i >= 0; i--) {
-                    delete list[i]._COMMENT;
-                    if(list[i].K_NAME === 'CUSTOM_NODE') {
-                        let node = list[i];
-                        let expansion = [ { "K_NAME": "TAG", "ADD/REMOVE": false, "CHECK": false, "SET": false, "VALUE": `Start [${node.NODE_ID}]` }, { "K_NAME": "TAG", "ADD/REMOVE": false, "CHECK": false, "SET": false, "VALUE": `End [MacroReconstruct]` } ];
-                        list.splice(i, 1, ...expansion);
-                    }
-                }
-            };
-            processList(inner.Line); processList(inner.Req);
-            for(let b in inner.Branch) { processList(inner.Branch[b].Line); processList(inner.Branch[b].Req); }
-            move.DATA = JSON.stringify(inner);
-        });
-        return clean;
-    }
-
-    // --- IO Center Logic ---
-    function executeIOAction() {
-        const tx = document.getElementById('io-terminal-textarea');
-        if (ioModalMode === 'export') {
-            tx.select(); document.execCommand('copy'); customAlert("Data copied to clipboard!"); closeIOModal(null);
-        } else if (ioModalMode === 'import') {
-            const rawVal = tx.value.trim(); if (!rawVal) return;
-            let pData = [];
-            try {
-                if (rawVal.startsWith('[') || rawVal.startsWith('{')) pData = JSON.parse(rawVal);
-                else {
-                    if (!zstd) { document.getElementById('manual-redirect-container').style.display='block'; customAlert("Engine standby. Use manual tool."); return; }
-                    pData = JSON.parse(new TextDecoder().decode(zstd.decompress(Uint8Array.from(atob(rawVal), c => c.charCodeAt(0)))));
-                }
-                if (!Array.isArray(pData)) pData = [pData];
                 
-                if (currentMoves.length > 0) {
-                    importPayload = pData;
-                    showCustomPrompt("Conflict", "Workspace not empty. Import method?", [
-                        { text: "Merge", color: "#00ff66", action: () => { pushHistory(); currentMoves = currentMoves.concat(importPayload); finalizeImport(); } },
-                        { text: "Overwrite", color: "#ff4d4d", action: () => { pushHistory(); currentMoves = importPayload; finalizeImport(); } },
-                        { text: "Cancel", color: "#e2e8f0", action: () => importPayload = null }
-                    ]);
-                } else { currentMoves = pData; finalizeImport(); }
-            } catch(e) { document.getElementById('manual-redirect-container').style.display='block'; customAlert("Import failed. Check formatting."); }
+                // Track max length metrics
+                const keys = Object.keys(newMove.frames).map(parseFloat);
+                if (keys.length > 0) { newMove.length = Math.max(...keys) + 1.0; }
+                
+                currentMoves.push(newMove);
+                activeIndex = currentMoves.length - 1;
+                activeBranch = newMove.branch;
+                saveLocalContextState(); closeIOModal(null); renderSidebar(); loadMove(activeIndex);
+                customAlert("Data pipeline load execution mapping profile stream array loading succeeded.");
+            } catch(err) { console.error(err); customAlert("Pipeline tracking load parse validation error mapping context data matrices: " + err.message); }
         }
-    }
-    
-    function finalizeImport() { activeIndex = currentMoves.length > 0 ? 0 : -1; activeBranch = 'Default'; activeTab = 'Timeline'; selectedNodes=[]; renderSidebar(); loadMove(activeIndex); closeIOModal(null); }
-    
-    function openIOModal(mode) {
-        ioModalMode = mode; const overlay = document.getElementById('jjs-io-modal'); const title = document.getElementById('io-modal-title-text'); const tx = document.getElementById('io-terminal-textarea'); const btn = document.getElementById('io-action-button');
-        tx.value = ''; overlay.style.display = 'flex';
-        if (mode === 'import') { title.innerHTML = "<i class='fa-solid fa-file-import'></i> Import Data"; tx.readOnly = false; btn.innerText = "Import"; } 
-        else {
-            title.innerHTML = "<i class='fa-solid fa-file-export'></i> Export Data"; tx.readOnly = true; btn.innerText = "Copy to Clipboard";
-            if (currentMoves.length === 0) { tx.value = "[]"; return; }
+
+        // --- CLOUD WORKSHOP REPOSITORY CRUD SYNC CONTROLLER ---
+        let workshopTabState = 'official'; 
+
+        function openWorkshopWindow() {
+            document.getElementById('workshop-window').style.display = 'flex';
+            switchWorkshopCategory('official');
+        }
+
+        function closeWorkshopWindow(e) {
+            if (e.target === document.getElementById('workshop-window')) document.getElementById('workshop-window').style.display = 'none';
+        }
+
+        function switchWorkshopCategory(cat) {
+            workshopTabState = cat;
+            document.querySelectorAll('.workshop-tab').forEach(t => {
+                t.classList.toggle('active', t.getAttribute('data-tab') === cat);
+            });
+            loadWorkshopTemplates();
+        }
+
+        async function loadWorkshopTemplates() {
+            const content = document.getElementById('workshop-content');
+            content.innerHTML = '<div style="text-align:center; padding:50px; font-size:1.1rem; opacity:0.6;"><i class="fa-solid fa-spinner fa-spin"></i> Reading cloud matrix vectors repository arrays...</div>';
+            
             try {
-                const expData = generateCleanExportData();
-                if (!zstd) tx.value = JSON.stringify(expData, null, 2); 
-                else {
-                    const eBin = zstd.compress(new TextEncoder().encode(JSON.stringify(expData)), 3);
-                    let b64 = ""; for (let i = 0; i < eBin.length; i++) b64 += String.fromCharCode(eBin[i]);
-                    tx.value = btoa(b64);
-                }
-            } catch (err) { tx.value = "[]"; }
+                // Read operations: Allowed for unauthenticated & authenticated users alike
+                const { data, error } = await supabaseclient
+                    .from('workshop_templates')
+                    .select('id, title, category, description, author, is_official, data, created_at, owner_id')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                const templates = Array.isArray(data) ? data : [];
+                const officialList = templates.filter(t => t.is_official === true || t.is_official === 'true');
+                const communityList = templates.filter(t => !t.is_official || t.is_official === 'false');
+
+                const activeList = workshopTabState === 'official' ? officialList : communityList;
+                renderCloudGrid(activeList);
+            } catch (err) {
+                console.error("Cloud backend pipeline reading failure code execution route block:", err);
+                content.innerHTML = `<div style="text-align:center; padding:50px; color:#ff4d4d;"><i class="fa-solid fa-triangle-exclamation"></i> Sync read fault parameters database pipeline tracking connection failure: ${escapeHTML(err.message || err)}</div>`;
+            }
         }
-    }
 
-    function closeIOModal(e) { if (!e || e.target === document.getElementById('jjs-io-modal')) document.getElementById('jjs-io-modal').style.display = 'none'; }
+        function renderCloudGrid(list) {
+            const content = document.getElementById('workshop-content');
+            content.innerHTML = '';
 
-    window.addEventListener('DOMContentLoaded', initEngine);
-</script>
+            if (list.length === 0) {
+                content.innerHTML = '<div style="text-align:center; padding:60px; opacity:0.4;"><i class="fa-solid fa-folder-open" style="font-size:2rem; margin-bottom:10px;"></i><br>Empty Cloud Registry Workspace Layer</div>';
+                return;
+            }
+
+            const grid = document.createElement('div');
+            grid.className = 'workshop-grid';
+
+            list.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'workshop-card';
+                card.onclick = () => importTemplateToWorkspace(item.id);
+
+                let totalNodesCount = 0;
+                try {
+                    const payload = typeof item.data === 'string' ? JSON.parse(item.data) : item.data;
+                    if (Array.isArray(payload)) totalNodesCount = payload.length;
+                } catch (e) {}
+
+                // Delete Capabilities: Client filter (backend RLS applies absolute verification gates)
+                let deleteButtonHTML = '';
+                if (!item.is_official && authUser && item.owner_id === authUser.uid) {
+                    deleteButtonHTML = `<button class="workshop-delete-btn" onclick="deleteTemplate('${item.id}', event)" title="Purge Cloud Profile"><i class="fa-solid fa-trash"></i></button>`;
+                }
+
+                card.innerHTML = `
+                    <div class="workshop-card-title">${escapeHTML(item.title || 'Untitled Cloud Data Array')}</div>
+                    <div style="font-size:0.65rem; color:var(--accent); margin-top:-4px; opacity:0.7;">Category: ${escapeHTML(item.category || 'General')}</div>
+                    <div class="workshop-card-desc">${escapeHTML(item.description || 'No descriptive summary configuration variables trace profiling logs recorded.')}</div>
+                    <div class="workshop-card-meta">
+                        <span><i class="fa-solid fa-square-user"></i> ${escapeHTML(item.author || 'Anonymous')}</span>
+                        <span><i class="fa-solid fa-cubes-stacked"></i> ${totalNodesCount} Elements</span>
+                    </div>
+                    ${deleteButtonHTML}
+                `;
+                grid.appendChild(card);
+            });
+            content.appendChild(grid);
+        }
+
+        function openPublishModal() {
+            if (activeIndex < 0 || currentMoves.length === 0) { customAlert("Cannot allocate publish vectors execution from blank working maps."); return; }
+            document.getElementById('publish-title-input').value = currentMoves[activeIndex].name || '';
+            document.getElementById('publish-category-input').value = currentMoves[activeIndex].branch || 'Community';
+            document.getElementById('publish-desc-input').value = '';
+            document.getElementById('publish-modal').style.display = 'flex';
+        }
+
+        function closePublishModal(e) {
+            if (!e || e.target === document.getElementById('publish-modal')) document.getElementById('publish-modal').style.display = 'none';
+        }
+
+        async function submitPublishTemplate() {
+            if (!authUser) { customAlert("Authentication Token Requirement Fault. Access your dropdown menu tracking link accounts portfolio workspace layers to proceed."); return; }
+            
+            const title = document.getElementById('publish-title-input').value.trim();
+            const category = document.getElementById('publish-category-input').value.trim() || 'Community';
+            const desc = document.getElementById('publish-desc-input').value.trim();
+            if (!title) { customAlert("Validation failed: Identification profile label name string values arrays cannot map empty."); return; }
+
+            const submitBtn = document.getElementById('publish-submit-btn');
+            const cachedTxt = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Transmitting stream payloads...';
+            submitBtn.disabled = true;
+
+            try {
+                const matrixPayload = generateCleanExportData();
+                
+                // Construct Row mapping directly to your explicitly specified schema columns
+                const insertRow = {
+                    title: title,
+                    category: category,
+                    description: desc || null,
+                    author: authUser.name,
+                    is_official: false,
+                    data: matrixPayload,
+                    owner_id: authUser.uid // Automatically verified on backend by Supabase RLS policies via Clerk sub claims
+                };
+
+                const { error } = await supabaseclient.from('workshop_templates').insert(insertRow);
+                if (error) throw error;
+
+                closePublishModal();
+                customAlert("Successfully pushed cloud matrix template array tracking records pipeline registry entries!");
+                if (document.getElementById('workshop-window').style.display === 'flex') {
+                    workshopTabState = 'community';
+                    await loadWorkshopTemplates();
+                }
+            } catch (err) {
+                console.error("Cloud insert trace write violation fault execution exceptions payload details:", err);
+                customAlert("Supabase repository transaction upload fault validation failure exceptions: " + (err.message || err));
+            } finally {
+                submitBtn.innerHTML = cachedTxt;
+                submitBtn.disabled = false;
+            }
+        }
+
+        async function deleteTemplate(id, event) {
+            if (event) event.stopPropagation();
+            if (!authUser) { customAlert("Authentication scope evaluation failure. Operations denied profiles allocation layers access verification."); return; }
+
+            customConfirm("Purge sequence data matrix compilation template array logs matching this ID tracking point permanently from cloud records?", async () => {
+                try {
+                    // Backend RLS policy ensures users can only delete matching owner_id tracking maps
+                    const { error } = await supabaseclient
+                        .from('workshop_templates')
+                        .delete()
+                        .eq('id', id)
+                        .eq('owner_id', authUser.uid);
+
+                    if (error) throw error;
+                    customAlert("Cloud templates database sequence index dropped successfully.");
+                    await loadWorkshopTemplates();
+                } catch (err) {
+                    console.error("Cloud repository delete pipeline routine crash exceptions parameters layout:", err);
+                    customAlert("Database deletion request tracking route transaction failed execution logic pipelines: " + (err.message || err));
+                }
+            });
+        }
+
+        async function importTemplateToWorkspace(id) {
+            try {
+                const { data, error } = await supabaseclient
+                    .from('workshop_templates')
+                    .select('title, category, data')
+                    .eq('id', id)
+                    .single();
+
+                if (error) throw error;
+                if (!data) throw new Error("Target matrix allocation sequence entity record reference query profiling results unlocated mapping layers.");
+
+                let parsedElements = [];
+                if (data.data) {
+                    parsedElements = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
+                }
+                if (!Array.isArray(parsedElements)) parsedElements = [];
+
+                const reconstructedMove = {
+                    name: `${data.title || 'Cloud Imported'}`,
+                    branch: data.category || 'Default',
+                    length: 4,
+                    frames: {}
+                };
+
+                parsedElements.forEach(item => {
+                    const tKey = parseFloat(item.Time || 0).toFixed(1);
+                    if (!reconstructedMove.frames[tKey]) reconstructedMove.frames[tKey] = [];
+
+                    let normType = item.Type || "CFrame";
+                    let matchedType = Object.keys(CORE_NODES).find(k => k.toLowerCase() === normType.toLowerCase()) || "CustomNode";
+                    const schema = CORE_NODES[matchedType];
+
+                    let props = {};
+                    if (matchedType === 'CustomNode') {
+                        const firstKey = Object.keys(item.Properties || {})[0] || "Attribute";
+                        props = { NodeTitle: item.Type || "Custom Action", Key: firstKey, Value: String(item.Properties?.[firstKey] || "") };
+                    } else {
+                        props = JSON.parse(JSON.stringify(schema.defaults));
+                        if (item.Properties) { Object.keys(item.Properties).forEach(pk => { if (props[pk] !== undefined) props[pk] = item.Properties[pk]; }); }
+                    }
+
+                    reconstructedMove.frames[tKey].push({
+                        id: 'node-' + Math.random().toString(36).substr(2, 9),
+                        type: matchedType,
+                        properties: props,
+                        canvasPosition: { x: 100 + Math.random() * 300, y: 100 + Math.random() * 300 }
+                    });
+                });
+
+                const tKeys = Object.keys(reconstructedMove.frames).map(parseFloat);
+                if (tKeys.length > 0) reconstructedMove.length = Math.max(...tKeys) + 1.0;
+
+                currentMoves.push(reconstructedMove);
+                activeIndex = currentMoves.length - 1;
+                activeBranch = reconstructedMove.branch;
+
+                saveLocalContextState();
+                document.getElementById('workshop-window').style.display = 'none';
+                renderSidebar();
+                loadMove(activeIndex);
+                customAlert(`Sequence [${reconstructedMove.name}] unpacked down to working workspace cache tracks layout models.`);
+            } catch (err) {
+                console.error("Cloud data download import routine failure tracing matrix details logs:", err);
+                customAlert("Failed translation compiling operations trace sequences mapping layers arrays components: " + (err.message || err));
+            }
+        }
+
+        // --- PREFERENCES APP CONFIG WINDOW MODALS LOGIC LAYERS ---
+        function openSettingsWindow() { document.getElementById('settings-window').style.display = 'flex'; }
+        function closeSettingsWindow(e) { if (e.target === document.getElementById('settings-window')) document.getElementById('settings-window').style.display = 'none'; }
+        function toggleSettingCompression() { configCompression = document.getElementById('setting-compression-toggle').checked; localStorage.setItem('jjs_compression_enabled', configCompression); }
+        
+        function applyCustomThemeColor(hex) {
+            localStorage.setItem('jjs_theme_color', hex);
+            document.getElementById('custom-theme-style').innerHTML = `:root { --accent: ${hex} !important; } .account-item:hover { color:#fff !important; }`;
+        }
+
+        // --- SYSTEM AUXILIARY UTILITIES AND INTERFACE PROTECTION CODES ---
+        function escapeHTML(str) {
+            if(!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function customAlert(msg) {
+            const overlay = document.createElement('div'); overlay.className = 'jjs-prompt-overlay';
+            const box = document.createElement('div'); box.className = 'jjs-prompt-box';
+            box.innerHTML = `
+                <div class="prompt-title uppercase-force"><i class="fa-solid fa-bell"></i> Broadcast Notification Log Notice</div>
+                <div style="font-size:0.8rem; opacity:0.85; line-height:1.4; word-break:break-word;">${escapeHTML(msg)}</div>
+                <div class="prompt-buttons"><button class="btn-jjs-action" style="padding:4px 12px; font-size:0.75rem;">Acknowledge Pipeline Trace</button></div>
+            `;
+            box.querySelector('button').onclick = () => overlay.remove();
+            overlay.appendChild(box); document.body.appendChild(overlay);
+        }
+
+        function customConfirm(msg, callback) {
+            const overlay = document.createElement('div'); overlay.className = 'jjs-prompt-overlay';
+            const box = document.createElement('div'); box.className = 'jjs-prompt-box';
+            box.innerHTML = `
+                <div class="prompt-title uppercase-force"><i class="fa-solid fa-circle-question"></i> System Authorization Acknowledge Challenge</div>
+                <div style="font-size:0.8rem; opacity:0.85; line-height:1.4; word-break:break-word;">${escapeHTML(msg)}</div>
+                <div class="prompt-buttons">
+                    <button class="btn-jjs-action cancel-btn" style="padding:4px 12px; font-size:0.75rem; background:var(--node-card);">Abort Trace</button>
+                    <button class="btn-jjs-action confirm-btn" style="padding:4px 12px; font-size:0.75rem;">Authorize Operations Execution</button>
+                </div>
+            `;
+            box.querySelector('.cancel-btn').onclick = () => overlay.remove();
+            box.querySelector('.confirm-btn').onclick = () => { overlay.remove(); callback(); };
+            overlay.appendChild(box); document.body.appendChild(overlay);
+        }
+    </script>
 </body>
 </html>
