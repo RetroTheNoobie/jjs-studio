@@ -829,7 +829,7 @@
 
     // --- Supabase Workshop System ---
     async function Auth() {
-        const { data, error } = await supabase.auth.signInAnonymously();
+        const { data, error } = await supabaseclient.auth.signInAnonymously();
         if (error) { customAlert("Auth failed. Please ensure 'Anonymous Sign-ins' is enabled in your Supabase Auth Providers settings."); return; }
         authUser = { name: "Creator_" + data.user.id.substring(0, 6), uid: data.user.id };
         document.getElementById('auth-status').innerHTML = `<span style="color:#00ff66;">Authenticated</span>`;
