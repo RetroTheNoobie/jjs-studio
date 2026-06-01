@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JJS Studio - V1.3.0</title>
+    <title>JJS Studio - V1.3.0 (Supabase Edition)</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <script src="./zstd-bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style id="custom-theme-style"></style>
     <style>
@@ -283,7 +285,12 @@
 </div>
 
 <script>
-    // --- Data & Dictionaries ---
+    // --- SETUP SUPABASE HERE ---
+    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // ---------------------------
+
     const TRANSLATIONS = {
         "ULTGIB": "ADD AWAKENING", "HPGIB": "ADD HEALTH", "EVGIB": "ADD EVASION", "HITCNCL": "HIT CANCEL", "ATK": "ATTACK", "ANIM": "ANIMATION",
         "VELO": "VELOCITY", "PROJ": "PROJECTILE", "SFX": "SOUND", "WAIT": "WAIT", "SKILL": "SKILL", "SPECIAL": "SPECIAL", "CONNECT": "CONNECT", 
@@ -361,14 +368,12 @@
     let historyStack = []; let redoStack = [];
     let clipboard = [];
 
-    // Workshop & Selection State
     let authUser = null;
     let currentWorkshopTab = 'SFX';
     let uploadSelectMode = false;
     let importPlaceMode = false;
     let importPayload = null;
     
-    // Drag State
     let isDraggingNode = false;
     let draggedNodeIdx = -1;
     let dragClone = null;
@@ -378,28 +383,16 @@
     // --- Core Engine Helpers ---
     function getInnerData(move) {
         if (!move || !move.DATA) return { Line: [], Req: [], Branch: {}, Prop: {} };
-        try {
-            return typeof move.DATA === 'string' ? JSON.parse(move.DATA) : move.DATA;
-        } catch(e) {
-            return { Line: [], Req: [], Branch: {}, Prop: {} };
-        }
+        try { return typeof move.DATA === 'string' ? JSON.parse(move.DATA) : move.DATA; } 
+        catch(e) { return { Line: [], Req: [], Branch: {}, Prop: {} }; }
     }
+    function saveInnerData(move, inner) { if (move) move.DATA = typeof inner === 'string' ? inner : JSON.stringify(inner); }
 
-    function saveInnerData(move, inner) {
-        if (!move) return;
-        move.DATA = typeof inner === 'string' ? inner : JSON.stringify(inner);
-    }
-
-    // --- Core Engine Initialization ---
+    // --- Init ---
     async function initEngine() {
         const engine = window.ZstdWeb || window.zstd || window.Zstd;
-        if (engine?.init) { 
-            await engine.init(); 
-            zstd = engine; 
-            document.getElementById('engine-status-box').innerHTML = "ZSTD Engine: <span style='color:#00ffcc;'>Active</span>"; 
-        } else { 
-            document.getElementById('engine-status-box').innerHTML = "ZSTD Engine: <span style='color:#ff9900;'>Standby</span>"; 
-        }
+        if (engine?.init) { await engine.init(); zstd = engine; document.getElementById('engine-status-box').innerHTML = "ZSTD Engine: <span style='color:#00ffcc;'>Active</span>"; } 
+        else { document.getElementById('engine-status-box').innerHTML = "ZSTD Engine: <span style='color:#ff9900;'>Standby</span>"; }
         
         setTimeout(() => { if (!zstd) document.getElementById('manual-redirect-container').style.display = 'block'; }, 10000);
 
@@ -407,9 +400,15 @@
         buildContextMenuNodes();
         renderWorkspaceEmpty();
         initWorkshopDragger();
+        
+        // Check if user is logged into Supabase on reload
+        const { data: { session } } = await supabase.auth.getSession();
+        if(session) {
+            authUser = { name: "Creator_" + session.user.id.substring(0,6), uid: session.user.id };
+            document.getElementById('auth-status').innerHTML = `<span style="color:#00ff66;">Authenticated</span>`;
+        }
     }
 
-    // --- General Modals & Prompts ---
     function showCustomPrompt(title, message, buttons) {
         document.getElementById('prompt-title').innerText = title;
         document.getElementById('prompt-message').innerText = message;
@@ -438,228 +437,25 @@
         input.focus();
     }
 
-    // --- History Control ---
     function pushHistory() {
-        redoStack = [];
-        historyStack.push(JSON.stringify(currentMoves));
+        redoStack = []; historyStack.push(JSON.stringify(currentMoves));
         if(historyStack.length > 30) historyStack.shift();
     }
     function performUndo() {
         if(!historyStack.length) return;
         redoStack.push(JSON.stringify(currentMoves));
-        currentMoves = JSON.parse(historyStack.pop());
-        selectedNodes = []; loadMove(activeIndex);
+        currentMoves = JSON.parse(historyStack.pop()); selectedNodes = []; loadMove(activeIndex);
     }
     function performRedo() {
         if(!redoStack.length) return;
         historyStack.push(JSON.stringify(currentMoves));
-        currentMoves = JSON.parse(redoStack.pop());
-        selectedNodes = []; loadMove(activeIndex);
+        currentMoves = JSON.parse(redoStack.pop()); selectedNodes = []; loadMove(activeIndex);
     }
 
-    // --- Container & Node Core Control Loops ---
-    function instantiateContainer(type) {
-        pushHistory();
-        const newMove = {
-            K_NAME: type.toUpperCase(),
-            NAME: "New " + type,
-            DATA: JSON.stringify({ Line: [], Req: [], Branch: {}, Prop: {} })
-        };
-        currentMoves.push(newMove);
-        activeIndex = currentMoves.length - 1;
-        activeBranch = 'Default';
-        activeTab = 'Timeline';
-        selectedNodes = [];
-        renderSidebar();
-        loadMove(activeIndex);
-        document.getElementById('shift-a-context-menu').style.display = 'none';
-    }
-
-    function buildContextMenuNodes() {
-        const target = document.getElementById('context-menu-nodes-target');
-        if (!target) return;
-        target.innerHTML = '';
-        Object.keys(NODE_TEMPLATES).forEach(k => {
-            const item = document.createElement('div');
-            item.className = 'menu-item';
-            item.innerHTML = `${TRANSLATIONS[k] || k} <i class="fa-solid fa-plus" style="font-size:0.65rem; opacity:0.5;"></i>`;
-            item.onclick = () => {
-                appendNodeToActiveList(k);
-                document.getElementById('shift-a-context-menu').style.display = 'none';
-            };
-            target.appendChild(item);
-        });
-    }
-
-    function appendNodeToActiveList(type) {
-        if (activeIndex === -1 || activeTab === 'Properties') return;
-        pushHistory();
-        const inner = getInnerData(currentMoves[activeIndex]);
-        const nodeTemplate = { K_NAME: type };
-        
-        const fields = (activeTab === 'Conditions' ? CONDITION_TEMPLATES[type] : NODE_TEMPLATES[type]) || [];
-        fields.forEach(f => {
-            nodeTemplate[f] = TYPE_OVERRIDES[type]?.[f] !== undefined ? TYPE_OVERRIDES[type][f] : DEFAULTS_LIB[f];
-        });
-        
-        const list = (activeTab === 'Conditions') ? 
-            (activeBranch === 'Default' ? inner.Req : inner.Branch[activeBranch].Req) : 
-            (activeBranch === 'Default' ? inner.Line : inner.Branch[activeBranch].Line);
-        
-        list.push(nodeTemplate);
-        saveInnerData(currentMoves[activeIndex], inner);
-        loadMove(activeIndex);
-    }
-
-    function renderSidebar() {
-        const target = document.getElementById('sidebar-render-target');
-        if (!target) return;
-        target.innerHTML = '';
-        if (currentMoves.length === 0) {
-            target.innerHTML = `<div style="text-align:center; padding:20px; opacity:0.5; font-size:0.8rem;">No containers</div>`;
-            return;
-        }
-        currentMoves.forEach((move, idx) => {
-            const el = document.createElement('div');
-            el.className = `item ${idx === activeIndex ? 'active' : ''}`;
-            el.id = `btn-${idx}`;
-            el.onclick = () => { activeBranch = 'Default'; activeTab = 'Timeline'; selectedNodes = []; loadMove(idx); };
-            
-            let displayKName = move.K_NAME ? move.K_NAME : 'SKILL';
-            el.innerHTML = `<span class="type-tag">${displayKName}</span><span class="move-name">${move.NAME || 'Unnamed'}</span>`;
-            target.appendChild(el);
-        });
-    }
-
-    function generateSummaryHeaderStr(node) {
-        if (node.K_NAME === 'WAIT') return ` (${node.TIME ?? 1}s)`;
-        if (node.K_NAME === 'ANIM') return ` (Asset: ${node.ANIM_USE ? node.ANIM_USE.join(',') : '1,1'})`;
-        if (node.K_NAME === 'SFX') return ` (ID: ${node.ID ?? ''})`;
-        if (node.K_NAME === 'HITBOX') return ` (Size: ${node.SIZE ?? ''})`;
-        if (node.K_NAME === 'TELEPORT') return ` (Pos: ${node.POSITION ?? ''})`;
-        if (node.K_NAME === 'CUSTOM_NODE') return ` [${node.NODE_ID ?? 'Custom'}]`;
-        return '';
-    }
-
-    function toggleNodeBody(idx) {
-        const grid = document.getElementById(`node-grid-${idx}`);
-        if (!grid) return;
-        const isHidden = grid.style.display === 'none';
-        grid.style.display = isHidden ? 'grid' : 'none';
-    }
-
-    function alterContainerCoreName(idx, val) {
-        currentMoves[idx].NAME = val;
-        const sidebarItem = document.getElementById(`btn-${idx}`);
-        if (sidebarItem) {
-            sidebarItem.querySelector('.move-name').innerText = val || 'Unnamed';
-        }
-    }
-
-    function deleteActiveContainer(idx) {
-        customConfirm("Are you sure you want to delete this entire container?", () => {
-            pushHistory();
-            currentMoves.splice(idx, 1);
-            activeIndex = currentMoves.length > 0 ? 0 : -1;
-            activeBranch = 'Default';
-            activeTab = 'Timeline';
-            selectedNodes = [];
-            renderSidebar();
-            loadMove(activeIndex);
-        });
-    }
-
-    function switchBranch(b) { activeBranch = b; selectedNodes = []; loadMove(activeIndex); }
-
-    function openBranchModal(mode, currentName = '') {
-        branchModalMode = mode; editingBranchName = currentName;
-        const title = mode === 'create' ? "Create Branch" : "Rename Branch";
-        openInputPrompt(title, "Enter branch name...", (val) => {
-            const inner = getInnerData(currentMoves[activeIndex]);
-            if (!inner.Branch) inner.Branch = {};
-            
-            if (mode === 'create') {
-                if (inner.Branch[val] || val === 'Default') { customAlert("Branch name already exists!"); return; }
-                pushHistory();
-                inner.Branch[val] = { Line: [], Req: [] };
-                activeBranch = val;
-            } else {
-                if (val === 'Default' || (inner.Branch[val] && val !== currentName)) { customAlert("Invalid branch name!"); return; }
-                pushHistory();
-                inner.Branch[val] = inner.Branch[currentName];
-                delete inner.Branch[currentName];
-                if (activeBranch === currentName) activeBranch = val;
-            }
-            saveInnerData(currentMoves[activeIndex], inner);
-            loadMove(activeIndex);
-        });
-    }
-
-    function deleteBranch(b) {
-        customConfirm(`Are you sure you want to delete the branch '${b}'?`, () => {
-            pushHistory();
-            const inner = getInnerData(currentMoves[activeIndex]);
-            delete inner.Branch[b];
-            if (activeBranch === b) activeBranch = 'Default';
-            saveInnerData(currentMoves[activeIndex], inner);
-            loadMove(activeIndex);
-        });
-    }
-
-    function switchTab(t) { activeTab = t; selectedNodes = []; loadMove(activeIndex); }
-
-    function changeGuiScale(v) {
-        currentGuiScale = parseFloat(v);
-        document.getElementById('gui-scale-value-text').innerText = Math.round(currentGuiScale * 100) + '%';
-        const el = document.getElementById('nodes-scale-container-target');
-        if (el) {
-            el.style.transform = `scale(${currentGuiScale})`;
-            el.style.width = `${100 / currentGuiScale}%`;
-        }
-    }
-
-    function removeNode(idx) {
-        pushHistory();
-        const list = getActiveList();
-        list.splice(idx, 1);
-        saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
-        selectedNodes = selectedNodes.filter(i => i !== idx).map(i => i > idx ? i - 1 : i);
-        loadMove(activeIndex);
-    }
-
-    function alterNodeValue(nodeIdx, fieldKey, val) {
-        const list = getActiveList();
-        if (!list || !list[nodeIdx]) return;
-        list[nodeIdx][fieldKey] = val;
-        saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
-        const summarySpan = document.getElementById(`summary-span-${nodeIdx}`);
-        if (summarySpan) summarySpan.innerText = generateSummaryHeaderStr(list[nodeIdx]);
-    }
-
-    function alterPropValue(key, val) {
-        pushHistory();
-        const inner = getInnerData(currentMoves[activeIndex]);
-        if (!inner.Prop || Array.isArray(inner.Prop)) inner.Prop = {};
-        inner.Prop[key] = val;
-        saveInnerData(currentMoves[activeIndex], inner);
-    }
-
-    function renderWorkspaceEmpty() {
-        const canvas = document.getElementById('workspace-canvas-timeline');
-        if (canvas) {
-            canvas.innerHTML = `<div class="empty-state"><div><i class="fa-solid fa-folder-open" style="font-size: 3rem; color: var(--border); margin-bottom: 15px; display: block;"></i>No container open.<br><span style="font-size:0.9rem; opacity:0.6;">Select a container from the sidebar or press Shift + A to build a new one.</span></div></div>`;
-        }
-        renderSidebar();
-    }
-
-    // --- Shortcuts System ---
-    function showShortcuts() {
-        customAlert("SHORTCUTS:\n\nShift + Click: Multi-select nodes\nShift + A: Add Node/Container Menu\nShift + C: Copy selected nodes\nShift + V: Paste nodes\nShift + X: Cut selected nodes\nShift + Delete: Delete selected nodes\nShift + Z: Undo\nShift + Y: Redo");
-    }
+    function showShortcuts() { customAlert("SHORTCUTS:\n\nShift + Click: Multi-select nodes\nShift + A: Add Node/Menu\nShift + C: Copy\nShift + V: Paste\nShift + X: Cut\nShift + Delete: Delete\nShift + Z: Undo\nShift + Y: Redo"); }
 
     document.addEventListener('keydown', e => {
         if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
-        
         if (e.shiftKey) {
             const key = e.key.toLowerCase();
             if(key === 'a') {
@@ -694,8 +490,7 @@
     }
     function cutSelected() { copySelected(); deleteSelected(); }
     function pasteCopied() {
-        if(!clipboard.length) return;
-        pushHistory();
+        if(!clipboard.length) return; pushHistory();
         const list = getActiveList(); if(!list) return;
         const insertIdx = selectedNodes.length ? Math.max(...selectedNodes) + 1 : list.length;
         clipboard.forEach((node, i) => list.splice(insertIdx + i, 0, JSON.parse(JSON.stringify(node))));
@@ -703,8 +498,7 @@
         selectedNodes = []; loadMove(activeIndex);
     }
     function deleteSelected() {
-        if(!selectedNodes.length) return;
-        pushHistory();
+        if(!selectedNodes.length) return; pushHistory();
         const list = getActiveList(); if(!list) return;
         const toDelete = selectedNodes.sort((a,b)=>b-a);
         toDelete.forEach(idx => list.splice(idx, 1));
@@ -712,243 +506,105 @@
         selectedNodes = []; loadMove(activeIndex);
     }
 
-    // --- Theme Control Engine ---
-    function applyThemeFromStorage() {
-        const t = localStorage.getItem('jjs-theme-pref') || 'default';
-        if(t === 'custom') {
-            const c = JSON.parse(localStorage.getItem('jjs-custom-colors'));
-            if(c) {
-                document.body.className = '';
-                document.getElementById('custom-theme-style').innerHTML = `body { --bg: ${c.bg}; --panel: ${c.panel}; --node-card: ${c.card}; --accent: ${c.accent}; --text: ${c.text}; --border: ${c.border}; --bg-image: url('${c.bgimg}'); --bg-opacity: ${c.bgop}; }`;
+    // --- Container/Node Engine ---
+    function instantiateContainer(type) {
+        pushHistory();
+        currentMoves.push({ K_NAME: type.toUpperCase(), NAME: "New " + type, DATA: JSON.stringify({ Line: [], Req: [], Branch: {}, Prop: {} }) });
+        activeIndex = currentMoves.length - 1; activeBranch = 'Default'; activeTab = 'Timeline'; selectedNodes = [];
+        renderSidebar(); loadMove(activeIndex); document.getElementById('shift-a-context-menu').style.display = 'none';
+    }
+
+    function buildContextMenuNodes() {
+        const target = document.getElementById('context-menu-nodes-target'); if (!target) return;
+        target.innerHTML = '';
+        Object.keys(NODE_TEMPLATES).forEach(k => {
+            const item = document.createElement('div'); item.className = 'menu-item';
+            item.innerHTML = `${TRANSLATIONS[k] || k} <i class="fa-solid fa-plus" style="font-size:0.65rem; opacity:0.5;"></i>`;
+            item.onclick = () => { appendNodeToActiveList(k); document.getElementById('shift-a-context-menu').style.display = 'none'; };
+            target.appendChild(item);
+        });
+    }
+
+    function appendNodeToActiveList(type) {
+        if (activeIndex === -1 || activeTab === 'Properties') return;
+        pushHistory();
+        const inner = getInnerData(currentMoves[activeIndex]);
+        const nodeTemplate = { K_NAME: type };
+        const fields = (activeTab === 'Conditions' ? CONDITION_TEMPLATES[type] : NODE_TEMPLATES[type]) || [];
+        fields.forEach(f => {
+            if(f === "Animation") nodeTemplate["ANIM_USE"] = [1,1];
+            else nodeTemplate[f] = TYPE_OVERRIDES[type]?.[f] !== undefined ? TYPE_OVERRIDES[type][f] : DEFAULTS_LIB[f];
+        });
+        const list = (activeTab === 'Conditions') ? (activeBranch === 'Default' ? inner.Req : inner.Branch[activeBranch].Req) : (activeBranch === 'Default' ? inner.Line : inner.Branch[activeBranch].Line);
+        list.push(nodeTemplate); saveInnerData(currentMoves[activeIndex], inner); loadMove(activeIndex);
+    }
+
+    function renderSidebar() {
+        const target = document.getElementById('sidebar-render-target'); if (!target) return;
+        target.innerHTML = '';
+        if (currentMoves.length === 0) { target.innerHTML = `<div style="text-align:center; padding:20px; opacity:0.5; font-size:0.8rem;">No containers</div>`; return; }
+        currentMoves.forEach((move, idx) => {
+            const el = document.createElement('div'); el.className = `item ${idx === activeIndex ? 'active' : ''}`; el.id = `btn-${idx}`;
+            el.onclick = () => { activeBranch = 'Default'; activeTab = 'Timeline'; selectedNodes = []; loadMove(idx); };
+            el.innerHTML = `<span class="type-tag">${move.K_NAME || 'SKILL'}</span><span class="move-name">${move.NAME || 'Unnamed'}</span>`;
+            target.appendChild(el);
+        });
+    }
+
+    function generateSummaryHeaderStr(node) {
+        if (node.K_NAME === 'WAIT') return ` (${node.TIME ?? 1}s)`; if (node.K_NAME === 'ANIM') return ` (Asset: ${node.ANIM_USE ? node.ANIM_USE.join(',') : '1,1'})`;
+        if (node.K_NAME === 'SFX') return ` (ID: ${node.ID ?? ''})`; if (node.K_NAME === 'HITBOX') return ` (Size: ${node.SIZE ?? ''})`;
+        if (node.K_NAME === 'TELEPORT') return ` (Pos: ${node.POSITION ?? ''})`; if (node.K_NAME === 'CUSTOM_NODE') return ` [${node.NODE_ID ?? 'Custom'}]`;
+        return '';
+    }
+
+    function toggleNodeBody(idx) { const grid = document.getElementById(`node-grid-${idx}`); if (grid) grid.style.display = grid.style.display === 'none' ? 'grid' : 'none'; }
+    function alterContainerCoreName(idx, val) { currentMoves[idx].NAME = val; const sidebarItem = document.getElementById(`btn-${idx}`); if (sidebarItem) sidebarItem.querySelector('.move-name').innerText = val || 'Unnamed'; }
+    
+    function deleteActiveContainer(idx) {
+        customConfirm("Delete this entire container?", () => { pushHistory(); currentMoves.splice(idx, 1); activeIndex = currentMoves.length > 0 ? 0 : -1; activeBranch = 'Default'; activeTab = 'Timeline'; selectedNodes = []; renderSidebar(); loadMove(activeIndex); });
+    }
+
+    function switchBranch(b) { activeBranch = b; selectedNodes = []; loadMove(activeIndex); }
+    function openBranchModal(mode, currentName = '') {
+        branchModalMode = mode; editingBranchName = currentName;
+        openInputPrompt(mode === 'create' ? "Create Branch" : "Rename Branch", "Enter branch name...", (val) => {
+            const inner = getInnerData(currentMoves[activeIndex]); if (!inner.Branch) inner.Branch = {};
+            if (mode === 'create') {
+                if (inner.Branch[val] || val === 'Default') { customAlert("Branch already exists!"); return; }
+                pushHistory(); inner.Branch[val] = { Line: [], Req: [] }; activeBranch = val;
+            } else {
+                if (val === 'Default' || (inner.Branch[val] && val !== currentName)) { customAlert("Invalid branch name!"); return; }
+                pushHistory(); inner.Branch[val] = inner.Branch[currentName]; delete inner.Branch[currentName];
+                if (activeBranch === currentName) activeBranch = val;
             }
-        } else {
-            previewTheme(t);
-        }
-    }
-
-    function previewTheme(styleName) {
-        document.body.className = ''; document.getElementById('custom-theme-style').innerHTML = '';
-        if (styleName !== 'default' && styleName !== 'custom') document.body.classList.add('theme-' + styleName);
-        localStorage.setItem('jjs-theme-pref', styleName);
-    }
-
-    function openThemesUI() {
-        const content = document.getElementById('themes-modal-content');
-        const savedThemes = JSON.parse(localStorage.getItem('jjs-saved-themes') || '[]');
-        
-        let savedHtml = savedThemes.map((t, i) => `<button class="btn-jjs-action" onclick="applySavedTheme(${i})">${t.name}</button>`).join('');
-        if(!savedHtml) savedHtml = `<div style="opacity:0.5; font-size:0.8rem; text-align:center;">No saved themes yet.</div>`;
-
-        content.innerHTML = `
-            <div style="display:flex; flex-direction:column; gap:8px; border-bottom:2px solid var(--border); padding-bottom:15px; margin-bottom:5px;">
-                <strong style="color:var(--accent); font-size:0.8rem;" class="uppercase-force">Pre-Made Themes</strong>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                    <button class="btn-jjs-action" onclick="previewTheme('default')">Default Dark</button>
-                    <button class="btn-jjs-action" onclick="previewTheme('super-dark')">Super Dark</button>
-                    <button class="btn-jjs-action" onclick="previewTheme('retro')">Retro</button>
-                    <button class="btn-jjs-action" onclick="previewTheme('matrix')">Matrix</button>
-                    <button class="btn-jjs-action" onclick="previewTheme('nova')">Nova</button>
-                    <button class="btn-jjs-action" onclick="previewTheme('cyber')">Cyber</button>
-                    <button class="btn-jjs-action" onclick="previewTheme('crimson')">Crimson</button>
-                </div>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:8px; border-bottom:2px solid var(--border); padding-bottom:15px; margin-bottom:5px;">
-                <strong style="color:var(--accent); font-size:0.8rem;" class="uppercase-force">Saved Themes</strong>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">${savedHtml}</div>
-            </div>
-            <div style="padding:10px 0;">
-                <button class="btn-jjs-action" style="width:100%; border-color:#00ff66; color:#00ff66;" onclick="renderThemeMaker()"><i class="fa-solid fa-paintbrush"></i> Create New Theme</button>
-            </div>
-        `;
-        document.getElementById('jjs-themes-modal').style.display = 'flex';
-    }
-
-    function renderThemeMaker() {
-        const content = document.getElementById('themes-modal-content');
-        const s = JSON.parse(localStorage.getItem('jjs-custom-colors')) || { name:"My Theme", bg:"#121317", panel:"#1a1c23", card:"#222530", accent:"#ffcc33", text:"#e2e8f0", border:"#2d313f", bgimg:"", bgop:1 };
-        content.innerHTML = `
-            <button class="btn-jjs-action" style="margin-bottom:15px; background:transparent;" onclick="openThemesUI()"><i class="fa-solid fa-arrow-left"></i> Back</button>
-            <strong style="color:var(--accent); font-size:0.8rem; margin-bottom:10px;" class="uppercase-force">Theme Editor</strong>
-            <div style="display:flex; flex-direction:column; gap:10px;">
-                <div class="tooltip-field" style="display:flex; align-items:center; justify-content:space-between;"><label>Theme Name</label><input type="text" id="ct-name" value="${s.name||'Custom'}" style="width:60%; text-align:right;"></div>
-                <div class="tooltip-field" style="display:flex; align-items:center; justify-content:space-between;"><label>BG Image URL</label><input type="text" id="ct-bgimg" value="${s.bgimg||''}" style="width:60%; text-align:right;"></div>
-                <div class="tooltip-field" style="display:flex; align-items:center; justify-content:space-between;"><label>BG Opacity</label><input type="range" id="ct-bgop" min="0" max="1" step="0.05" value="${s.bgop||1}" style="width:60%;"></div>
-                
-                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Background</label><input type="color" id="ct-bg" value="${s.bg}"></div>
-                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Panel</label><input type="color" id="ct-panel" value="${s.panel}"></div>
-                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Node Card</label><input type="color" id="ct-card" value="${s.card}"></div>
-                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Accent</label><input type="color" id="ct-accent" value="${s.accent}"></div>
-                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Text</label><input type="color" id="ct-text" value="${s.text}"></div>
-                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Border</label><input type="color" id="ct-border" value="${s.border}"></div>
-            </div>
-            <button class="btn-modal-confirm" style="margin-top:20px; width:100%;" onclick="saveCustomTheme()">Save & Apply</button>
-        `;
-    }
-
-    function saveCustomTheme() {
-        const c = { name: document.getElementById('ct-name').value, bg: document.getElementById('ct-bg').value, panel: document.getElementById('ct-panel').value, card: document.getElementById('ct-card').value, accent: document.getElementById('ct-accent').value, text: document.getElementById('ct-text').value, border: document.getElementById('ct-border').value, bgimg: document.getElementById('ct-bgimg').value, bgop: document.getElementById('ct-bgop').value };
-        localStorage.setItem('jjs-custom-colors', JSON.stringify(c));
-        
-        let saved = JSON.parse(localStorage.getItem('jjs-saved-themes') || '[]');
-        const idx = saved.findIndex(t => t.name === c.name);
-        if(idx !== -1) saved[idx] = c; else saved.push(c);
-        localStorage.setItem('jjs-saved-themes', JSON.stringify(saved));
-        
-        localStorage.setItem('jjs-theme-pref', 'custom'); applyThemeFromStorage();
-        customAlert(`Theme '${c.name}' saved and applied!`); openThemesUI();
-    }
-    
-    function applySavedTheme(idx) {
-        const saved = JSON.parse(localStorage.getItem('jjs-saved-themes') || '[]');
-        localStorage.setItem('jjs-custom-colors', JSON.stringify(saved[idx]));
-        localStorage.setItem('jjs-theme-pref', 'custom'); applyThemeFromStorage();
-    }
-    function closeThemesModal(e) { if (!e || e.target === document.getElementById('jjs-themes-modal')) document.getElementById('jjs-themes-modal').style.display = 'none'; }
-
-    // --- Workshop Core Logic ---
-    function mockRobloxAuth() {
-        authUser = { name: "JJS_Creator_" + Math.floor(Math.random()*1000) };
-        document.getElementById('auth-status').innerHTML = `<span style="color:#00ff66;">Authenticated as ${authUser.name}</span>`;
-        customAlert("Successfully authenticated with Roblox API (Mocked).");
-    }
-
-    function initWorkshopDragger() {
-        const win = document.getElementById('workshop-window'); const header = document.getElementById('workshop-drag-header');
-        let isDraggingWin = false; let offsetX, offsetY;
-        header.addEventListener('mousedown', e => { if(e.target.tagName === 'BUTTON' || e.target.tagName === 'I') return; isDraggingWin = true; offsetX = e.clientX - win.getBoundingClientRect().left; offsetY = e.clientY - win.getBoundingClientRect().top; });
-        document.addEventListener('mousemove', e => { if(isDraggingWin) { win.style.left = (e.clientX - offsetX) + 'px'; win.style.top = (e.clientY - offsetY) + 'px'; } });
-        document.addEventListener('mouseup', () => isDraggingWin = false );
-    }
-
-    function openWorkshop() { document.getElementById('workshop-window').style.display = 'flex'; setWorkshopTab(currentWorkshopTab); }
-    
-    function setWorkshopTab(tab) {
-        currentWorkshopTab = tab;
-        document.querySelectorAll('.workshop-tab').forEach(t => t.classList.remove('active'));
-        
-        let content = `<div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-            <strong style="color:var(--accent);" class="uppercase-force">${tab} Hub</strong>
-            <button class="btn-jjs-action" style="width:auto; padding:5px 15px;" onclick="startWorkshopUpload()"><i class="fa-solid fa-cloud-arrow-up"></i> Upload to ${tab}</button>
-        </div>`;
-
-        const items = JSON.parse(localStorage.getItem(`ws_${tab}`) || '[]');
-        if(items.length === 0) {
-            content += `<div style="text-align:center; padding:50px; opacity:0.5;">Placeholder [${tab} is Empty]</div>`;
-        } else {
-            content += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">`;
-            items.forEach((item, i) => {
-                content += `<div style="background:rgba(0,0,0,0.4); border:1px solid var(--border); padding:15px;">
-                    <div style="font-weight:bold; color:#fff; font-size:1.1rem; margin-bottom:5px;">${item.title}</div>
-                    <div style="font-size:0.75rem; opacity:0.7; margin-bottom:10px;">By: ${item.author}</div>
-                    <div style="font-size:0.85rem; margin-bottom:15px; color:#aaa;">${item.desc}</div>
-                    <button class="btn-modal-confirm" style="width:100%; font-size:0.7rem;" onclick="importFromWorkshop('${tab}', ${i})"><i class="fa-solid fa-download"></i> Get</button>
-                </div>`;
-            });
-            content += `</div>`;
-        }
-        document.getElementById('workshop-content').innerHTML = content;
-    }
-
-    function startWorkshopUpload() {
-        if(!authUser) { customAlert("You must authenticate with Roblox first to upload."); return; }
-        document.getElementById('workshop-window').style.display = 'none';
-        
-        if(currentWorkshopTab === 'TEMPLATES') {
-            openInputPrompt("Upload Template", "Paste encrypted string here...", (val) => {
-                processWorkshopUpload(val);
-            });
-            return;
-        }
-
-        uploadSelectMode = true; selectedNodes = [];
-        document.getElementById('selection-banner').style.display = 'flex';
-        loadMove(activeIndex);
-    }
-
-    function cancelSelectionMode() { uploadSelectMode = false; document.getElementById('selection-banner').style.display = 'none'; selectedNodes=[]; loadMove(activeIndex); }
-    
-    function confirmSelectionMode() {
-        if(!selectedNodes.length) { customAlert("No nodes selected."); return; }
-        const list = getActiveList();
-        
-        for(let idx of selectedNodes) {
-            let node = list[idx];
-            if(currentWorkshopTab === 'SFX' && node.K_NAME !== 'SFX') { customAlert("SFX category only accepts Sound nodes."); return; }
-            if(currentWorkshopTab === 'VFX' && (node.K_NAME !== 'VISUAL' || node.EFFECT === 'Mesh')) { customAlert("VFX accepts non-mesh visual nodes only."); return; }
-            if(currentWorkshopTab === 'Mesh VFX' && (node.K_NAME !== 'VISUAL' || node.EFFECT !== 'Mesh')) { customAlert("Mesh VFX requires visual nodes with the 'Mesh' effect."); return; }
-            if(currentWorkshopTab === 'Mixed VFX' && node.K_NAME !== 'VISUAL') { customAlert("Mixed VFX accepts any Visual nodes only."); return; }
-        }
-
-        const dataToUpload = selectedNodes.sort((a,b)=>a-b).map(i => list[i]);
-        cancelSelectionMode();
-        processWorkshopUpload(dataToUpload);
-    }
-
-    function processWorkshopUpload(data) {
-        openInputPrompt("Upload Title", "Enter title...", (title) => {
-            openInputPrompt("Description", "Enter short description...", (desc) => {
-                let items = JSON.parse(localStorage.getItem(`ws_${currentWorkshopTab}`) || '[]');
-                items.push({ title, desc, author: authUser.name, payload: data });
-                localStorage.setItem(`ws_${currentWorkshopTab}`, JSON.stringify(items));
-                customAlert("Successfully uploaded to workshop!");
-                openWorkshop();
-            });
+            saveInnerData(currentMoves[activeIndex], inner); loadMove(activeIndex);
         });
     }
 
-    function importFromWorkshop(tab, idx) {
-        const item = JSON.parse(localStorage.getItem(`ws_${tab}`))[idx];
-        document.getElementById('workshop-window').style.display = 'none';
-
-        if(tab === 'TEMPLATES') {
-            document.getElementById('io-terminal-textarea').value = item.payload;
-            ioModalMode = 'import'; executeIOAction();
-        } else {
-            importPlaceMode = true; importPayload = item.payload;
-            document.getElementById('selection-banner-text').innerText = "Click between nodes to place download...";
-            document.getElementById('selection-banner').style.display = 'flex';
-            document.getElementById('selection-banner').querySelector('button:last-child').style.display = 'none';
-        }
+    function deleteBranch(b) {
+        customConfirm(`Delete branch '${b}'?`, () => { pushHistory(); const inner = getInnerData(currentMoves[activeIndex]); delete inner.Branch[b]; if (activeBranch === b) activeBranch = 'Default'; saveInnerData(currentMoves[activeIndex], inner); loadMove(activeIndex); });
     }
 
-    function openCustomNodeBuilder() {
-        customAlert("Custom Node Builder: Select your nodes, use Shift+A, and use Custom Node macro structure to wrap functionality block outputs.");
-    }
-    
-    function generateCleanExportData() {
-        let clean = JSON.parse(JSON.stringify(currentMoves));
-        clean.forEach(move => {
-            let inner = getInnerData(move);
-            const processList = (list) => {
-                if(!list) return;
-                for(let i = list.length - 1; i >= 0; i--) {
-                    delete list[i]._COMMENT;
-                    if(list[i].K_NAME === 'CUSTOM_NODE') {
-                        let node = list[i];
-                        let expansion = [
-                            { "K_NAME": "TAG", "ADD/REMOVE": false, "CHECK": false, "SET": false, "VALUE": `Start [${node.NODE_ID}]` },
-                            { "K_NAME": "TAG", "ADD/REMOVE": false, "CHECK": false, "SET": false, "VALUE": `End [MacroReconstruct]` }
-                        ];
-                        list.splice(i, 1, ...expansion);
-                    }
-                }
-            };
-            processList(inner.Line); processList(inner.Req);
-            for(let b in inner.Branch) { processList(inner.Branch[b].Line); processList(inner.Branch[b].Req); }
-            move.DATA = JSON.stringify(inner);
-        });
-        return clean;
+    function switchTab(t) { activeTab = t; selectedNodes = []; loadMove(activeIndex); }
+    function changeGuiScale(v) { currentGuiScale = parseFloat(v); document.getElementById('gui-scale-value-text').innerText = Math.round(currentGuiScale * 100) + '%'; const el = document.getElementById('nodes-scale-container-target'); if (el) { el.style.transform = `scale(${currentGuiScale})`; el.style.width = `${100 / currentGuiScale}%`; } }
+
+    function removeNode(idx) { pushHistory(); const list = getActiveList(); list.splice(idx, 1); saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex])); selectedNodes = selectedNodes.filter(i => i !== idx).map(i => i > idx ? i - 1 : i); loadMove(activeIndex); }
+    function alterNodeValue(nodeIdx, fieldKey, val) { const list = getActiveList(); if (!list || !list[nodeIdx]) return; list[nodeIdx][fieldKey] = val; saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex])); const summarySpan = document.getElementById(`summary-span-${nodeIdx}`); if (summarySpan) summarySpan.innerText = generateSummaryHeaderStr(list[nodeIdx]); }
+    function alterPropValue(key, val) { pushHistory(); const inner = getInnerData(currentMoves[activeIndex]); if (!inner.Prop || Array.isArray(inner.Prop)) inner.Prop = {}; inner.Prop[key] = val; saveInnerData(currentMoves[activeIndex], inner); }
+
+    function renderWorkspaceEmpty() {
+        const canvas = document.getElementById('workspace-canvas-timeline');
+        if (canvas) canvas.innerHTML = `<div class="empty-state"><div><i class="fa-solid fa-folder-open" style="font-size: 3rem; color: var(--border); margin-bottom: 15px; display: block;"></i>No container open.<br><span style="font-size:0.9rem; opacity:0.6;">Select a container from the sidebar or press Shift + A to build a new one.</span></div></div>`;
+        renderSidebar();
     }
 
-    // --- Custom Interactivity & Drag Mechanics ---
+    // --- Drag Mechanics ---
     document.addEventListener('mousemove', e => { 
         mouseX = e.clientX; mouseY = e.clientY; 
-        
         if((isDraggingNode || importPlaceMode) && activeTab !== 'Properties') {
             if(isDraggingNode && dragClone) { dragClone.style.left = (e.clientX + 10) + 'px'; dragClone.style.top = (e.clientY + 10) + 'px'; }
-            
-            const container = document.getElementById('nodes-scale-container-target');
-            if(!container) return;
+            const container = document.getElementById('nodes-scale-container-target'); if(!container) return;
             const nodes = Array.from(container.querySelectorAll('.node-card:not(.drag-ghost)'));
             
             let closestIdx = nodes.length;
@@ -962,110 +618,59 @@
                 let ind = document.getElementById('drag-indicator');
                 let refRect = closestIdx < nodes.length ? nodes[closestIdx].getBoundingClientRect() : nodes[nodes.length-1].getBoundingClientRect();
                 let indicatorY = closestIdx < nodes.length ? refRect.top - 10 : refRect.bottom + 10;
-                ind.style.width = refRect.width + 'px';
-                ind.style.left = refRect.left + 'px';
-                ind.style.top = indicatorY + 'px';
-                ind.style.display = 'block';
+                ind.style.width = refRect.width + 'px'; ind.style.left = refRect.left + 'px'; ind.style.top = indicatorY + 'px'; ind.style.display = 'block';
             }
         }
     });
 
     document.addEventListener('mouseup', e => {
         if(importPlaceMode && currentDropIdx !== -1) {
-            pushHistory();
-            const list = getActiveList();
-            list.splice(currentDropIdx, 0, ...importPayload);
-            saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
-            
-            importPlaceMode = false; importPayload = null;
-            document.getElementById('selection-banner').style.display = 'none';
-            document.getElementById('selection-banner').querySelector('button:last-child').style.display = 'inline-block';
-            document.getElementById('drag-indicator').style.display = 'none';
-            loadMove(activeIndex);
-            return;
+            pushHistory(); const list = getActiveList(); list.splice(currentDropIdx, 0, ...importPayload); saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
+            importPlaceMode = false; importPayload = null; document.getElementById('selection-banner').style.display = 'none'; document.getElementById('selection-banner').querySelector('button:last-child').style.display = 'inline-block'; document.getElementById('drag-indicator').style.display = 'none'; loadMove(activeIndex); return;
         }
 
         if(!isDraggingNode) return;
-        isDraggingNode = false;
-        if(dragClone && dragClone.parentNode) document.body.removeChild(dragClone);
-        dragClone = null; document.getElementById('drag-indicator').style.display = 'none';
+        isDraggingNode = false; if(dragClone && dragClone.parentNode) document.body.removeChild(dragClone); dragClone = null; document.getElementById('drag-indicator').style.display = 'none';
         
         if(currentDropIdx !== -1 && currentDropIdx !== draggedNodeIdx && currentDropIdx !== draggedNodeIdx + 1) {
-            pushHistory();
-            const list = getActiveList();
-            const movingNode = list.splice(draggedNodeIdx, 1)[0];
+            pushHistory(); const list = getActiveList(); const movingNode = list.splice(draggedNodeIdx, 1)[0];
             let adjustedDropIdx = currentDropIdx > draggedNodeIdx ? currentDropIdx - 1 : currentDropIdx;
-            list.splice(adjustedDropIdx, 0, movingNode);
-            saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
+            list.splice(adjustedDropIdx, 0, movingNode); saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
             selectedNodes = []; loadMove(activeIndex);
         }
         draggedNodeIdx = -1; currentDropIdx = -1;
     });
 
-    function initCustomDrag(e, idx) {
-        e.preventDefault(); e.stopPropagation();
-        if(activeTab === 'Properties') return;
-        isDraggingNode = true; draggedNodeIdx = idx;
-        const nodeEl = document.getElementById(`node-block-${idx}`);
-        dragClone = nodeEl.cloneNode(true); dragClone.classList.add('drag-ghost');
-        dragClone.style.width = nodeEl.offsetWidth + 'px';
-        document.body.appendChild(dragClone);
-    }
+    function initCustomDrag(e, idx) { e.preventDefault(); e.stopPropagation(); if(activeTab === 'Properties') return; isDraggingNode = true; draggedNodeIdx = idx; const nodeEl = document.getElementById(`node-block-${idx}`); dragClone = nodeEl.cloneNode(true); dragClone.classList.add('drag-ghost'); dragClone.style.width = nodeEl.offsetWidth + 'px'; document.body.appendChild(dragClone); }
 
     function handleNodeClick(e, idx) {
         if(uploadSelectMode) {
-            if(selectedNodes.includes(idx)) selectedNodes = selectedNodes.filter(i => i !== idx);
-            else selectedNodes.push(idx);
-            loadMove(activeIndex);
-            return;
+            if(selectedNodes.includes(idx)) selectedNodes = selectedNodes.filter(i => i !== idx); else selectedNodes.push(idx);
+            loadMove(activeIndex); return;
         }
-        
         if(e.shiftKey) {
-            if(selectedNodes.includes(idx)) selectedNodes = selectedNodes.filter(i => i !== idx);
-            else selectedNodes.push(idx);
+            if(selectedNodes.includes(idx)) selectedNodes = selectedNodes.filter(i => i !== idx); else selectedNodes.push(idx);
             loadMove(activeIndex);
         } else {
-            if(selectedNodes.length === 1 && selectedNodes[0] === idx) {
-                toggleNodeBody(idx);
-            } else {
-                selectedNodes = [idx];
-                loadMove(activeIndex);
-            }
+            if(selectedNodes.length === 1 && selectedNodes[0] === idx) toggleNodeBody(idx);
+            else { selectedNodes = [idx]; loadMove(activeIndex); }
         }
     }
     
     function promptComment(idx) {
         const list = getActiveList();
-        openInputPrompt("Set Comment", "Type comment...", (val) => {
-            pushHistory(); list[idx]._COMMENT = val;
-            saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
-            loadMove(activeIndex);
-        });
+        openInputPrompt("Set Comment", "Type comment...", (val) => { pushHistory(); list[idx]._COMMENT = val; saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex])); loadMove(activeIndex); });
     }
 
-    // --- Core Architecture Load Engine ---
+    // --- Loading Routine ---
     function loadMove(idx) {
         if (currentMoves.length === 0) { renderWorkspaceEmpty(); return; }
-        activeIndex = idx;
-        document.querySelectorAll('.container-list .item').forEach(el => el.classList.remove('active'));
-        const tb = document.getElementById(`btn-${idx}`); if (tb) tb.classList.add('active');
+        activeIndex = idx; document.querySelectorAll('.container-list .item').forEach(el => el.classList.remove('active')); const tb = document.getElementById(`btn-${idx}`); if (tb) tb.classList.add('active');
 
-        const move = currentMoves[idx]; const innerData = getInnerData(move);
-        const branchNames = innerData.Branch ? Object.keys(innerData.Branch).sort() : [];
-        const canvas = document.getElementById('workspace-canvas-timeline');
-
+        const move = currentMoves[idx]; const innerData = getInnerData(move); const branchNames = innerData.Branch ? Object.keys(innerData.Branch).sort() : []; const canvas = document.getElementById('workspace-canvas-timeline');
         let displayKName = move.K_NAME ? (move.K_NAME.charAt(0).toUpperCase() + move.K_NAME.slice(1).toLowerCase()) : 'UNNAMED';
 
-        let html = `
-            <div class="editor-header">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h1 style="margin:0; font-size:2.2rem; letter-spacing:1px; color:var(--accent);">${displayKName}</h1>
-                    <button class="btn-delete-container" onclick="deleteActiveContainer(${idx})"><i class="fa-solid fa-trash-can"></i> Delete Container</button>
-                </div>
-                <div class="container-fields-row">
-                    <div class="tooltip-field"><label>Name</label><input type="text" value="${move.NAME || ''}" oninput="alterContainerCoreName(${idx}, this.value)"></div>
-                </div>
-            </div>`;
+        let html = `<div class="editor-header"><div style="display:flex; justify-content:space-between; align-items:center;"><h1 style="margin:0; font-size:2.2rem; letter-spacing:1px; color:var(--accent);">${displayKName}</h1><button class="btn-delete-container" onclick="deleteActiveContainer(${idx})"><i class="fa-solid fa-trash-can"></i> Delete Container</button></div><div class="container-fields-row"><div class="tooltip-field"><label>Name</label><input type="text" value="${move.NAME || ''}" oninput="alterContainerCoreName(${idx}, this.value)"></div></div></div>`;
 
         if (activeTab === 'Timeline' || activeTab === 'Conditions') {
             html += `<div class="branch-bar"><button class="branch-tab ${activeBranch === 'Default' ? 'active' : ''}" onclick="switchBranch('Default')">Default</button>`;
@@ -1076,8 +681,7 @@
         html += `<div class="workspace-tabs"><button class="workspace-tab ${activeTab === 'Timeline' ? 'active' : ''}" onclick="switchTab('Timeline')">Timeline</button><button class="workspace-tab ${activeTab === 'Conditions' ? 'active' : ''}" onclick="switchTab('Conditions')">Conditions</button><button class="workspace-tab ${activeTab === 'Properties' ? 'active' : ''}" onclick="switchTab('Properties')">Properties</button></div>`;
 
         if (activeTab === 'Timeline' || activeTab === 'Conditions') {
-            html += `<div class="gui-scale-bar"><label style="color: var(--accent); font-weight: bold;">GUI SCALE:</label><input type="range" min="0.6" max="1.1" step="0.05" value="${currentGuiScale}" oninput="changeGuiScale(this.value)"><span id="gui-scale-value-text" style="font-weight: bold; width: 45px; text-align: right;">${Math.round(currentGuiScale *100)}%</span></div>
-                <div id="nodes-scale-container-target" style="transform: scale(${currentGuiScale}); transform-origin: top left; width: ${100 / currentGuiScale}%; position:relative;">`;
+            html += `<div class="gui-scale-bar"><label style="color: var(--accent); font-weight: bold;">GUI SCALE:</label><input type="range" min="0.6" max="1.1" step="0.05" value="${currentGuiScale}" oninput="changeGuiScale(this.value)"><span id="gui-scale-value-text" style="font-weight: bold; width: 45px; text-align: right;">${Math.round(currentGuiScale *100)}%</span></div><div id="nodes-scale-container-target" style="transform: scale(${currentGuiScale}); transform-origin: top left; width: ${100 / currentGuiScale}%; position:relative;">`;
             
             const currentNodesList = (activeTab === 'Timeline') ? ((activeBranch === 'Default') ? innerData.Line : innerData.Branch[activeBranch]?.Line) : ((activeBranch === 'Default') ? innerData.Req : innerData.Branch[activeBranch]?.Req);
             
@@ -1094,11 +698,7 @@
                             <div class="node-head" onclick="handleNodeClick(event, ${nodeIdx})">
                                 <div class="node-title-group">
                                     <i class="fa-solid fa-grip-vertical" style="color: var(--accent); cursor: grab; margin-right: 5px; font-size: 1.1rem; padding: 5px;" onmousedown="initCustomDrag(event, ${nodeIdx})"></i>
-                                    <div>
-                                        <strong>${translationText}</strong>
-                                        <span class="node-summary-tag" id="summary-span-${nodeIdx}">${generateSummaryHeaderStr(node)}</span>
-                                        ${cmt}
-                                    </div>
+                                    <div><strong>${translationText}</strong><span class="node-summary-tag" id="summary-span-${nodeIdx}">${generateSummaryHeaderStr(node)}</span>${cmt}</div>
                                 </div>
                                 <div style="display:flex; align-items:center; gap:10px;">
                                     <span style="font-family:var(--font-code); font-weight:bold; color:var(--accent); font-size:0.85rem; margin-right:10px;">#${nodeIdx + 1}</span>
@@ -1106,9 +706,7 @@
                                     <button class="btn-delete-node" onclick="removeNode(${nodeIdx}); event.stopPropagation();"><i class="fa-solid fa-square-minus"></i></button>
                                 </div>
                             </div>
-                            <div class="node-grid" id="node-grid-${nodeIdx}" style="display:none;">
-                                ${buildPropertyFieldsMarkup(node, nodeIdx, activeTab)}
-                            </div>
+                            <div class="node-grid" id="node-grid-${nodeIdx}" style="display:none;">${buildPropertyFieldsMarkup(node, nodeIdx, activeTab)}</div>
                         </div>`;
                 });
             }
@@ -1123,47 +721,34 @@
             });
             html += `</div></div>`;
         }
-        canvas.innerHTML = html;
-        document.getElementById('drag-indicator').style.display = 'none';
+        canvas.innerHTML = html; document.getElementById('drag-indicator').style.display = 'none';
     }
 
     function buildPropertyFieldsMarkup(node, nodeIdx, context = 'Timeline') {
-        let fieldsHtml = '';
-        const schemaFields = (context === 'Conditions' ? CONDITION_TEMPLATES[node.K_NAME] : NODE_TEMPLATES[node.K_NAME]) || Object.keys(node);
-
+        let fieldsHtml = ''; const schemaFields = (context === 'Conditions' ? CONDITION_TEMPLATES[node.K_NAME] : NODE_TEMPLATES[node.K_NAME]) || Object.keys(node);
         schemaFields.forEach(fieldKey => {
             if (fieldKey === 'K_NAME' || fieldKey === '_COMMENT') return;
             
             if (fieldKey === 'Animation' || fieldKey === 'ANIM_USE') {
                 let currentVal = node.ANIM_USE || [1, 1]; let matchedLabel = "Select Animation Asset";
-                for (let cat in ANIMATION_DICTIONARY) {
-                    let match = ANIMATION_DICTIONARY[cat].animations.find(a => a.val[0] === currentVal[0] && a.val[1] === currentVal[1]);
-                    if (match) { matchedLabel = match.name; break; }
-                }
+                for (let cat in ANIMATION_DICTIONARY) { let match = ANIMATION_DICTIONARY[cat].animations.find(a => a.val[0] === currentVal[0] && a.val[1] === currentVal[1]); if (match) { matchedLabel = match.name; break; } }
                 fieldsHtml += `<div class="field" style="grid-column: span 2;"><label>Animation Asset Lookup</label><button class="branch-tab" style="width: 100%; border: 1px solid var(--border); background: rgba(0,0,0,0.5); text-transform:none !important;" onclick="triggerAnimMenu(${nodeIdx})"><i class="fa-solid fa-clapperboard"></i> ${matchedLabel} [${currentVal.join(', ')}]</button></div>`;
                 return;
             }
 
             if (node.K_NAME === 'BRANCH' && fieldKey === 'RANDOM') {
-                const innerData = getInnerData(currentMoves[activeIndex]);
-                const availableBranches = ["", "Default", ...(innerData.Branch ? Object.keys(innerData.Branch) : [])];
+                const availableBranches = ["", "Default", ...(getInnerData(currentMoves[activeIndex]).Branch ? Object.keys(getInnerData(currentMoves[activeIndex]).Branch) : [])];
                 let val = node[fieldKey] !== undefined ? node[fieldKey] : "";
                 let opts = availableBranches.map(b => `<option value="${b}" ${val === b ? 'selected' : ''}>${b || 'None'}</option>`).join('');
                 fieldsHtml += `<div class="field"><label>RANDOM (Existing Target Branch)</label><select style="width:100%; color:#fff; background:transparent; border:none; border-bottom:1px solid var(--border);" onchange="alterNodeValue(${nodeIdx}, 'RANDOM', this.value)">${opts}</select></div>`;
                 return;
             }
 
-            const currentVal = node[fieldKey] !== undefined ? node[fieldKey] : DEFAULTS_LIB[fieldKey];
-            let markup = '';
-            if (typeof currentVal === 'boolean' || currentVal === 'true' || currentVal === 'false') {
-                markup = `<input type="checkbox" ${(currentVal === true || currentVal === 'true') ? 'checked' : ''} onchange="alterNodeValue(${nodeIdx}, '${fieldKey}', this.checked)">`;
-            } else if (Array.isArray(currentVal)) {
-                markup = `<input type="text" value="${currentVal.join(', ')}" oninput="alterNodeValue(${nodeIdx}, '${fieldKey}', this.value.split(',').map(n => parseFloat(n.trim()) || n.trim()))">`;
-            } else if (typeof currentVal === 'number' || (!isNaN(currentVal) && currentVal !== '')) {
-                markup = `<input type="number" step="0.01" value="${currentVal}" oninput="alterNodeValue(${nodeIdx}, '${fieldKey}', parseFloat(this.value) || 0)">`;
-            } else {
-                markup = `<input type="text" value="${currentVal ?? ''}" oninput="alterNodeValue(${nodeIdx}, '${fieldKey}', this.value)">`;
-            }
+            const currentVal = node[fieldKey] !== undefined ? node[fieldKey] : DEFAULTS_LIB[fieldKey]; let markup = '';
+            if (typeof currentVal === 'boolean' || currentVal === 'true' || currentVal === 'false') { markup = `<input type="checkbox" ${(currentVal === true || currentVal === 'true') ? 'checked' : ''} onchange="pushHistory(); alterNodeValue(${nodeIdx}, '${fieldKey}', this.checked)">`; } 
+            else if (Array.isArray(currentVal)) { markup = `<input type="text" value="${currentVal.join(', ')}" oninput="pushHistory(); alterNodeValue(${nodeIdx}, '${fieldKey}', this.value.split(',').map(n => parseFloat(n.trim()) || n.trim()))">`; } 
+            else if (typeof currentVal === 'number' || (!isNaN(currentVal) && currentVal !== '')) { markup = `<input type="number" step="0.01" value="${currentVal}" oninput="pushHistory(); alterNodeValue(${nodeIdx}, '${fieldKey}', parseFloat(this.value) || 0)">`; } 
+            else { markup = `<input type="text" value="${currentVal ?? ''}" oninput="pushHistory(); alterNodeValue(${nodeIdx}, '${fieldKey}', this.value)">`; }
             fieldsHtml += `<div class="field"><label>${fieldKey}</label>${markup}</div>`;
         });
         return fieldsHtml;
@@ -1177,15 +762,12 @@
             header.innerHTML = `<span class="uppercase-force">${catName}</span> <i class="fa-solid fa-chevron-down"></i>`;
             const contentBlock = document.createElement('div'); contentBlock.className = 'anim-cat-content'; contentBlock.style.borderColor = catData.color;
 
-            header.onclick = () => {
-                const isOpen = contentBlock.style.display === 'flex'; contentBlock.style.display = isOpen ? 'none' : 'flex';
-                header.querySelector('i').className = isOpen ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-up';
-            };
+            header.onclick = () => { const isOpen = contentBlock.style.display === 'flex'; contentBlock.style.display = isOpen ? 'none' : 'flex'; header.querySelector('i').className = isOpen ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-up'; };
 
             catData.animations.forEach(anim => {
                 const row = document.createElement('div'); row.className = 'anim-item-row';
                 row.innerHTML = `<span>${anim.name}</span> <span style="font-family:var(--font-code); font-size:0.7rem; opacity:0.5;">[${anim.val.join(',')}]</span>`;
-                row.onclick = () => { alterNodeValue(activeAnimPickNodeIdx, 'ANIM_USE', anim.val); closeAnimModal(null); loadMove(activeIndex); };
+                row.onclick = () => { pushHistory(); alterNodeValue(activeAnimPickNodeIdx, 'ANIM_USE', anim.val); closeAnimModal(null); loadMove(activeIndex); };
                 contentBlock.appendChild(row);
             });
             body.appendChild(header); body.appendChild(contentBlock);
@@ -1194,6 +776,266 @@
     }
 
     function closeAnimModal(e) { if (!e || e.target === document.getElementById('jjs-anim-modal')) document.getElementById('jjs-anim-modal').style.display = 'none'; }
+
+    function applyThemeFromStorage() {
+        const t = localStorage.getItem('jjs-theme-pref') || 'default';
+        if(t === 'custom') {
+            const c = JSON.parse(localStorage.getItem('jjs-custom-colors'));
+            if(c) { document.body.className = ''; document.getElementById('custom-theme-style').innerHTML = `body { --bg: ${c.bg}; --panel: ${c.panel}; --node-card: ${c.card}; --accent: ${c.accent}; --text: ${c.text}; --border: ${c.border}; --bg-image: url('${c.bgimg}'); --bg-opacity: ${c.bgop}; }`; }
+        } else { previewTheme(t); }
+    }
+    function previewTheme(styleName) { document.body.className = ''; document.getElementById('custom-theme-style').innerHTML = ''; if (styleName !== 'default' && styleName !== 'custom') document.body.classList.add('theme-' + styleName); localStorage.setItem('jjs-theme-pref', styleName); }
+    
+    function openThemesUI() {
+        const content = document.getElementById('themes-modal-content'); const savedThemes = JSON.parse(localStorage.getItem('jjs-saved-themes') || '[]');
+        let savedHtml = savedThemes.map((t, i) => `<button class="btn-jjs-action" onclick="applySavedTheme(${i})">${t.name}</button>`).join('');
+        if(!savedHtml) savedHtml = `<div style="opacity:0.5; font-size:0.8rem; text-align:center;">No saved themes yet.</div>`;
+
+        content.innerHTML = `
+            <div style="display:flex; flex-direction:column; gap:8px; border-bottom:2px solid var(--border); padding-bottom:15px; margin-bottom:5px;"><strong style="color:var(--accent); font-size:0.8rem;" class="uppercase-force">Pre-Made Themes</strong><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"><button class="btn-jjs-action" onclick="previewTheme('default')">Default Dark</button><button class="btn-jjs-action" onclick="previewTheme('super-dark')">Super Dark</button><button class="btn-jjs-action" onclick="previewTheme('retro')">Retro</button><button class="btn-jjs-action" onclick="previewTheme('matrix')">Matrix</button><button class="btn-jjs-action" onclick="previewTheme('nova')">Nova</button><button class="btn-jjs-action" onclick="previewTheme('cyber')">Cyber</button><button class="btn-jjs-action" onclick="previewTheme('crimson')">Crimson</button></div></div>
+            <div style="display:flex; flex-direction:column; gap:8px; border-bottom:2px solid var(--border); padding-bottom:15px; margin-bottom:5px;"><strong style="color:var(--accent); font-size:0.8rem;" class="uppercase-force">Saved Themes</strong><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">${savedHtml}</div></div>
+            <div style="padding:10px 0;"><button class="btn-jjs-action" style="width:100%; border-color:#00ff66; color:#00ff66;" onclick="renderThemeMaker()"><i class="fa-solid fa-paintbrush"></i> Create New Theme</button></div>
+        `;
+        document.getElementById('jjs-themes-modal').style.display = 'flex';
+    }
+
+    function renderThemeMaker() {
+        const content = document.getElementById('themes-modal-content'); const s = JSON.parse(localStorage.getItem('jjs-custom-colors')) || { name:"My Theme", bg:"#121317", panel:"#1a1c23", card:"#222530", accent:"#ffcc33", text:"#e2e8f0", border:"#2d313f", bgimg:"", bgop:1 };
+        content.innerHTML = `
+            <button class="btn-jjs-action" style="margin-bottom:15px; background:transparent;" onclick="openThemesUI()"><i class="fa-solid fa-arrow-left"></i> Back</button><strong style="color:var(--accent); font-size:0.8rem; margin-bottom:10px;" class="uppercase-force">Theme Editor</strong>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <div class="tooltip-field" style="display:flex; align-items:center; justify-content:space-between;"><label>Theme Name</label><input type="text" id="ct-name" value="${s.name||'Custom'}" style="width:60%; text-align:right;"></div>
+                <div class="tooltip-field" style="display:flex; align-items:center; justify-content:space-between;"><label>BG Image URL</label><input type="text" id="ct-bgimg" value="${s.bgimg||''}" style="width:60%; text-align:right;"></div>
+                <div class="tooltip-field" style="display:flex; align-items:center; justify-content:space-between;"><label>BG Opacity</label><input type="range" id="ct-bgop" min="0" max="1" step="0.05" value="${s.bgop||1}" style="width:60%;"></div>
+                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Background</label><input type="color" id="ct-bg" value="${s.bg}"></div>
+                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Panel</label><input type="color" id="ct-panel" value="${s.panel}"></div>
+                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Node Card</label><input type="color" id="ct-card" value="${s.card}"></div>
+                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Accent</label><input type="color" id="ct-accent" value="${s.accent}"></div>
+                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Text</label><input type="color" id="ct-text" value="${s.text}"></div>
+                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Border</label><input type="color" id="ct-border" value="${s.border}"></div>
+            </div>
+            <button class="btn-modal-confirm" style="margin-top:20px; width:100%;" onclick="saveCustomTheme()">Save & Apply</button>
+        `;
+    }
+
+    function saveCustomTheme() {
+        const c = { name: document.getElementById('ct-name').value, bg: document.getElementById('ct-bg').value, panel: document.getElementById('ct-panel').value, card: document.getElementById('ct-card').value, accent: document.getElementById('ct-accent').value, text: document.getElementById('ct-text').value, border: document.getElementById('ct-border').value, bgimg: document.getElementById('ct-bgimg').value, bgop: document.getElementById('ct-bgop').value };
+        localStorage.setItem('jjs-custom-colors', JSON.stringify(c)); let saved = JSON.parse(localStorage.getItem('jjs-saved-themes') || '[]'); const idx = saved.findIndex(t => t.name === c.name); if(idx !== -1) saved[idx] = c; else saved.push(c);
+        localStorage.setItem('jjs-saved-themes', JSON.stringify(saved)); localStorage.setItem('jjs-theme-pref', 'custom'); applyThemeFromStorage(); customAlert(`Theme '${c.name}' saved and applied!`); openThemesUI();
+    }
+    
+    function applySavedTheme(idx) { const saved = JSON.parse(localStorage.getItem('jjs-saved-themes') || '[]'); localStorage.setItem('jjs-custom-colors', JSON.stringify(saved[idx])); localStorage.setItem('jjs-theme-pref', 'custom'); applyThemeFromStorage(); }
+    function closeThemesModal(e) { if (!e || e.target === document.getElementById('jjs-themes-modal')) document.getElementById('jjs-themes-modal').style.display = 'none'; }
+
+
+    // --- Supabase Workshop System ---
+    async function mockRobloxAuth() {
+        const { data, error } = await supabase.auth.signInAnonymously();
+        if (error) { customAlert("Auth failed. Please ensure 'Anonymous Sign-ins' is enabled in your Supabase Auth Providers settings."); return; }
+        authUser = { name: "Creator_" + data.user.id.substring(0, 6), uid: data.user.id };
+        document.getElementById('auth-status').innerHTML = `<span style="color:#00ff66;">Authenticated</span>`;
+        customAlert("Successfully authenticated with Supabase.");
+    }
+
+    function initWorkshopDragger() {
+        const win = document.getElementById('workshop-window'); const header = document.getElementById('workshop-drag-header');
+        let isDraggingWin = false; let offsetX, offsetY;
+        header.addEventListener('mousedown', e => { if(e.target.tagName === 'BUTTON' || e.target.tagName === 'I') return; isDraggingWin = true; offsetX = e.clientX - win.getBoundingClientRect().left; offsetY = e.clientY - win.getBoundingClientRect().top; });
+        document.addEventListener('mousemove', e => { if(isDraggingWin) { win.style.left = (e.clientX - offsetX) + 'px'; win.style.top = (e.clientY - offsetY) + 'px'; } });
+        document.addEventListener('mouseup', () => isDraggingWin = false );
+    }
+
+    function openWorkshop() { document.getElementById('workshop-window').style.display = 'flex'; setWorkshopTab(currentWorkshopTab); }
+    
+    async function setWorkshopTab(tab) {
+        currentWorkshopTab = tab; document.querySelectorAll('.workshop-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.workshop-tab').forEach(t => { if (t.innerText.trim() === tab) t.classList.add('active'); });
+
+        let content = `<div style="display:flex; justify-content:space-between; margin-bottom:15px;"><strong style="color:var(--accent);" class="uppercase-force">${tab} Hub</strong><button class="btn-jjs-action" style="width:auto; padding:5px 15px;" onclick="startWorkshopUpload()"><i class="fa-solid fa-cloud-arrow-up"></i> Upload to ${tab}</button></div>`;
+
+        if (tab === 'TEMPLATES') {
+            content += `<div style="text-align:center; padding:50px; opacity:0.5;">Loading templates from Supabase...</div>`;
+            document.getElementById('workshop-content').innerHTML = content;
+            await loadWorkshopTemplates(); return;
+        }
+
+        const items = JSON.parse(localStorage.getItem(`ws_${tab}`) || '[]');
+        if(items.length === 0) content += `<div style="text-align:center; padding:50px; opacity:0.5;">Placeholder [${tab} is Empty]</div>`;
+        else {
+            content += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">`;
+            items.forEach((item, i) => {
+                content += `<div style="background:rgba(0,0,0,0.4); border:1px solid var(--border); padding:15px;"><div style="font-weight:bold; color:#fff; font-size:1.1rem; margin-bottom:5px;">${item.title}</div><div style="font-size:0.75rem; opacity:0.7; margin-bottom:10px;">By: ${item.author}</div><div style="font-size:0.85rem; margin-bottom:15px; color:#aaa;">${item.desc}</div><button class="btn-modal-confirm" style="width:100%; font-size:0.7rem;" onclick="importFromWorkshop('${tab}', ${i})"><i class="fa-solid fa-download"></i> Get</button></div>`;
+            });
+            content += `</div>`;
+        }
+        document.getElementById('workshop-content').innerHTML = content;
+    }
+
+    function renderTemplateList(official, community) {
+        const all = [...official, ...community];
+        if (!all.length) { document.getElementById('workshop-content').innerHTML = `<div style="text-align:center; padding:50px; opacity:0.5;">No templates yet.</div>`; return; }
+        
+        let html = `<div style="display:flex; justify-content:space-between; margin-bottom:15px;"><strong style="color:var(--accent);" class="uppercase-force">TEMPLATES Hub</strong><span style="font-size:0.75rem; opacity:0.6;">Official + Community</span></div>`;
+        html += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">`;
+        all.forEach((item) => {
+            const isOwner = authUser && authUser.uid === item.user_id;
+            const delBtn = isOwner ? `<button style="background:transparent; border:none; color:#ff4d4d; cursor:pointer;" onclick="deleteTemplate('${item.id}', event)"><i class="fa-solid fa-trash"></i></button>` : '';
+            
+            html += `<div style="background:rgba(0,0,0,0.4); border:1px solid var(--border); padding:15px;">
+                <div style="display:flex; justify-content:space-between;">
+                    <div style="font-weight:bold; color:#fff; font-size:1.1rem; margin-bottom:5px;">${item.title || 'Untitled'} ${item.is_official ? '(OFFICIAL)' : ''}</div>
+                    ${delBtn}
+                </div>
+                <div style="font-size:0.75rem; opacity:0.7; margin-bottom:10px;">By: ${item.author || 'Anonymous'}</div>
+                <div style="font-size:0.85rem; margin-bottom:15px; color:#aaa;">${item.description || ''}</div>
+                <button class="btn-modal-confirm" style="width:100%; font-size:0.7rem;" onclick="importTemplateToWorkspace('${item.id}', ${item.is_official ? 'true' : 'false'})"><i class="fa-solid fa-download"></i> Get</button>
+            </div>`;
+        });
+        html += `</div>`;
+        document.getElementById('workshop-content').innerHTML = html;
+    }
+
+    async function loadWorkshopTemplates() {
+        try {
+            const { data, error } = await supabase.from('templates').select('*').order('created_at', { ascending: false });
+            if (error) throw error;
+            const templates = Array.isArray(data) ? data : [];
+            const official = templates.filter(t => t.is_official === true);
+            const community = templates.filter(t => !t.is_official);
+            renderTemplateList(official, community);
+        } catch (e) {
+            console.error(e);
+            document.getElementById('workshop-content').innerHTML = `<div style="text-align:center; padding:50px; opacity:0.5;">Failed to load templates. Are Supabase keys set?</div>`;
+        }
+    }
+
+    async function saveCustomTemplate(title, description, dataPayload) {
+        try {
+            if (!Array.isArray(dataPayload)) dataPayload = [dataPayload];
+            const row = { title, description: description || null, author: authUser?.name || 'Anonymous', is_official: false, data: dataPayload };
+            const { error } = await supabase.from('templates').insert(row);
+            if (error) throw error;
+            customAlert("Successfully uploaded template to Supabase!");
+            await loadWorkshopTemplates();
+        } catch (e) { console.error(e); customAlert("Failed to upload template to Supabase."); }
+    }
+
+    async function importTemplateToWorkspace(id, isOfficial) {
+        try {
+            const { data, error } = await supabase.from('templates').select('data').eq('id', id).single();
+            if (error) throw error;
+            currentMoves = JSON.parse(JSON.stringify(data?.data || []));
+            activeIndex = currentMoves.length > 0 ? 0 : -1; activeBranch = 'Default'; activeTab = 'Timeline'; selectedNodes = [];
+            document.getElementById('workshop-window').style.display = 'none';
+            renderSidebar(); loadMove(activeIndex);
+        } catch (e) { console.error(e); customAlert("Failed to import template from Supabase."); }
+    }
+
+    async function deleteTemplate(id, event) {
+        if (event) event.stopPropagation();
+        customConfirm("Delete this template from the cloud?", async () => {
+            try {
+                const { error } = await supabase.from('templates').delete().eq('id', id);
+                if (error) throw error;
+                customAlert("Template deleted.");
+                await loadWorkshopTemplates();
+            } catch (e) { console.error(e); customAlert("Failed to delete template."); }
+        });
+    }
+
+    function startWorkshopUpload() {
+        if(!authUser) { customAlert("You must authenticate with Roblox (Login) first to upload."); return; }
+        document.getElementById('workshop-window').style.display = 'none';
+        
+        if (currentWorkshopTab === 'TEMPLATES') {
+            openInputPrompt("Upload Template", "Paste ZSTD string or JSON here...", async (val) => {
+                let payloadToStore = [];
+                try {
+                    if (typeof val === 'string' && (val.trim().startsWith('[') || val.trim().startsWith('{'))) {
+                        payloadToStore = JSON.parse(val);
+                        if (!Array.isArray(payloadToStore)) payloadToStore = [payloadToStore];
+                    } else {
+                        if (!zstd) { customAlert("ZSTD Engine is still loading. Wait a moment."); return; }
+                        const rawBuffer = Uint8Array.from(atob(val), c => c.charCodeAt(0));
+                        payloadToStore = JSON.parse(new TextDecoder().decode(zstd.decompress(rawBuffer)));
+                        if (!Array.isArray(payloadToStore)) payloadToStore = [payloadToStore];
+                    }
+                } catch (e) { customAlert("Invalid string format. Could not decode."); return; }
+
+                openInputPrompt("Template Title", "Enter title...", async (title) => {
+                    openInputPrompt("Description", "Enter short description...", async (desc) => {
+                        await saveCustomTemplate(title, desc, payloadToStore);
+                        openWorkshop();
+                    });
+                });
+            });
+            return;
+        }
+
+        uploadSelectMode = true; selectedNodes = []; document.getElementById('selection-banner').style.display = 'flex'; loadMove(activeIndex);
+    }
+
+    function confirmSelectionMode() {
+        if(!selectedNodes.length) { customAlert("No nodes selected."); return; }
+        const list = getActiveList();
+        
+        for(let idx of selectedNodes) {
+            let node = list[idx];
+            if(currentWorkshopTab === 'SFX' && node.K_NAME !== 'SFX') { customAlert("SFX category only accepts Sound nodes."); return; }
+            if(currentWorkshopTab === 'VFX' && (node.K_NAME !== 'VISUAL' || node.EFFECT === 'Mesh')) { customAlert("VFX accepts non-mesh visual nodes only."); return; }
+            if(currentWorkshopTab === 'Mesh VFX' && (node.K_NAME !== 'VISUAL' || node.EFFECT !== 'Mesh')) { customAlert("Mesh VFX requires visual nodes with the 'Mesh' effect."); return; }
+            if(currentWorkshopTab === 'Mixed VFX' && node.K_NAME !== 'VISUAL') { customAlert("Mixed VFX accepts any Visual nodes only."); return; }
+        }
+
+        const dataToUpload = selectedNodes.sort((a,b)=>a-b).map(i => list[i]);
+        cancelSelectionMode();
+        
+        openInputPrompt("Upload Title", "Enter title...", (title) => {
+            openInputPrompt("Description", "Enter short description...", (desc) => {
+                let items = JSON.parse(localStorage.getItem(`ws_${currentWorkshopTab}`) || '[]');
+                items.push({ title, desc, author: authUser.name, payload: dataToUpload });
+                localStorage.setItem(`ws_${currentWorkshopTab}`, JSON.stringify(items));
+                customAlert("Successfully uploaded to local workshop memory!");
+                openWorkshop();
+            });
+        });
+    }
+
+    function cancelSelectionMode() { uploadSelectMode = false; document.getElementById('selection-banner').style.display = 'none'; selectedNodes=[]; loadMove(activeIndex); }
+
+    function importFromWorkshop(tab, idx) {
+        if (tab === 'TEMPLATES') return;
+        const item = JSON.parse(localStorage.getItem(`ws_${tab}`))[idx];
+        document.getElementById('workshop-window').style.display = 'none';
+        importPlaceMode = true; importPayload = item.payload;
+        document.getElementById('selection-banner-text').innerText = "Click between nodes to place download...";
+        document.getElementById('selection-banner').style.display = 'flex';
+        document.getElementById('selection-banner').querySelector('button:last-child').style.display = 'none';
+    }
+
+    function openCustomNodeBuilder() { customAlert("Custom Node Builder: Use Shift+A to spawn 'CUSTOM NODE', configuring it as a logical boundary marker for export loops."); }
+    
+    function generateCleanExportData() {
+        let clean = JSON.parse(JSON.stringify(currentMoves));
+        clean.forEach(move => {
+            let inner = getInnerData(move);
+            const processList = (list) => {
+                if(!list) return;
+                for(let i = list.length - 1; i >= 0; i--) {
+                    delete list[i]._COMMENT;
+                    if(list[i].K_NAME === 'CUSTOM_NODE') {
+                        let node = list[i];
+                        let expansion = [ { "K_NAME": "TAG", "ADD/REMOVE": false, "CHECK": false, "SET": false, "VALUE": `Start [${node.NODE_ID}]` }, { "K_NAME": "TAG", "ADD/REMOVE": false, "CHECK": false, "SET": false, "VALUE": `End [MacroReconstruct]` } ];
+                        list.splice(i, 1, ...expansion);
+                    }
+                }
+            };
+            processList(inner.Line); processList(inner.Req);
+            for(let b in inner.Branch) { processList(inner.Branch[b].Line); processList(inner.Branch[b].Req); }
+            move.DATA = JSON.stringify(inner);
+        });
+        return clean;
+    }
 
     // --- IO Center Logic ---
     function executeIOAction() {
