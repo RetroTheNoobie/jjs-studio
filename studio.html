@@ -157,7 +157,7 @@
     <button class="topbar-btn" onclick="showShortcuts()"><i class="fa-solid fa-keyboard" style="margin-right:5px;"></i> Shortcuts</button>
     <div style="flex-grow:1;"></div>
     <span id="auth-status" style="font-size:0.75rem; opacity:0.6; margin-right:15px;">Unauthenticated</span>
-    <button class="btn-jjs-action" style="padding: 6px 12px; height:auto; width:auto;" onclick="mockRobloxAuth()"><i class="fa-solid fa-user-lock"></i> Roblox Login</button>
+    <button class="btn-jjs-action" style="padding: 6px 12px; height:auto; width:auto;" onclick="Auth()"><i class="fa-solid fa-user-lock"></i>Register</button>
 </div>
 
 <div class="app-body">
@@ -829,7 +829,7 @@
 
 
     // --- Supabase Workshop System ---
-    async function mockRobloxAuth() {
+    async function Auth() {
         const { data, error } = await supabase.auth.signInAnonymously();
         if (error) { customAlert("Auth failed. Please ensure 'Anonymous Sign-ins' is enabled in your Supabase Auth Providers settings."); return; }
         authUser = { name: "Creator_" + data.user.id.substring(0, 6), uid: data.user.id };
