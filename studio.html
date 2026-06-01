@@ -401,7 +401,7 @@
         initWorkshopDragger();
         
         // Check if user is logged into Supabase on reload
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await supabaseclient.auth.getSession();
         if(session) {
             authUser = { name: "Creator_" + session.user.id.substring(0,6), uid: session.user.id };
             document.getElementById('auth-status').innerHTML = `<span style="color:#00ff66;">Authenticated</span>`;
