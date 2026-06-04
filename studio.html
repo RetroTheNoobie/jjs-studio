@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JJS Studio - V1.3.0</title>
+    <title>JJS Studio - V1.3.1 (Read-Only Workshop)</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="./zstd-bundle.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script async crossorigin="anonymous" data-clerk-publishable-key="pk_live_Z3JhdGVmdWwtc3BvbmdlLTI5LmNsZXJrLmFjY291bnRzLmRldiQ" src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
 
     <style id="custom-theme-style"></style>
     <style>
@@ -147,15 +146,6 @@
         .workshop-content { padding: 20px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
 
         #selection-banner { position: fixed; top: 50px; left: 380px; right: 0; height: 50px; background: rgba(255, 204, 51, 0.9); color: #000; display: none; align-items: center; justify-content: space-between; padding: 0 30px; z-index: 80; font-weight: bold; text-transform: uppercase; font-size: 1.1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-
-        /* Custom Account Dropdown */
-        .account-menu-container { position: relative; display: inline-block; }
-        .account-dropdown { display: none; position: absolute; right: 0; top: 100%; background: var(--panel); border: var(--thickness) solid var(--border); min-width: 200px; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.5); flex-direction: column; }
-        .account-dropdown.show { display: flex; }
-        .account-item { padding: 12px 15px; border-bottom: 1px solid var(--border); font-size: 0.8rem; cursor: pointer; color: var(--text); transition: 0.15s; }
-        .account-item:hover { background: var(--accent); color: #000; }
-        .account-item.active-session { background: rgba(0,255,102,0.1); border-left: 3px solid #00ff66; cursor: default; }
-        .account-item.active-session:hover { background: rgba(0,255,102,0.1); color: var(--text); }
     </style>
 </head>
 <body>
@@ -166,13 +156,6 @@
     <button class="topbar-btn" onclick="openThemesUI()">Themes <i class="fa-solid fa-palette" style="margin-left:5px;"></i></button>
     <button class="topbar-btn" onclick="showShortcuts()"><i class="fa-solid fa-keyboard" style="margin-right:5px;"></i> Shortcuts</button>
     <div style="flex-grow:1;"></div>
-    
-    <div class="account-menu-container">
-        <button class="btn-jjs-action" style="padding: 6px 12px; height:auto; width:auto;" onclick="toggleAccountMenu()">
-            <i class="fa-solid fa-user"></i> <span id="account-btn-text">Account</span>
-        </button>
-        <div id="account-dropdown" class="account-dropdown"></div>
-    </div>
 </div>
 
 <div class="app-body">
@@ -203,10 +186,9 @@
 
 <div id="drag-indicator"></div>
 <div id="selection-banner">
-    <span id="selection-banner-text">Select nodes to upload...</span>
+    <span id="selection-banner-text">Click between nodes to place download...</span>
     <div>
-        <button class="btn-modal-confirm" style="background: #e2e8f0; margin-right: 10px;" onclick="cancelSelectionMode()">Cancel</button>
-        <button class="btn-modal-confirm" onclick="confirmSelectionMode()">Confirm</button>
+        <button class="btn-modal-confirm" style="background: #e2e8f0; margin-right: 10px;" onclick="cancelPlaceMode()">Cancel</button>
     </div>
 </div>
 
@@ -300,80 +282,12 @@
 </div>
 
 <script>
-    // --- SETUP SUPABASE & CLERK HERE ---
+    // --- SETUP SUPABASE HERE ---
     const SUPABASE_URL = 'https://uhcxuhlghuntphodbevk.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_2qxVQqhPZZy0Xw-3DSHaQA_AVfWamC6';
+    const supabaseclient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // ---------------------------
     
-    const supabaseclient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        global: {
-            fetch: async (url, options = {}) => {
-                const clerkToken = window.Clerk?.session ? await window.Clerk.session.getToken({ template: 'supabase' }) : null;
-                const headers = new Headers(options?.headers);
-                if (clerkToken) {
-                    headers.set('Authorization', `Bearer ${clerkToken}`);
-                }
-                return fetch(url, { ...options, headers });
-            }
-        }
-    });
-
-    let authUser = null;
-
-    window.addEventListener('load', async () => {
-        if (window.Clerk) {
-            await window.Clerk.load({ multiSessionSingleSignOut: true });
-            
-            window.Clerk.addListener(({ user }) => {
-                authUser = user ? { uid: user.id, name: `User_${user.id.substring(0, 5)}` } : null;
-                renderAccountMenu();
-            });
-        }
-    });
-
-    function toggleAccountMenu() {
-        document.getElementById('account-dropdown').classList.toggle('show');
-    }
-
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.account-menu-container')) {
-            const dropdown = document.getElementById('account-dropdown');
-            if (dropdown) dropdown.classList.remove('show');
-        }
-    });
-
-    function renderAccountMenu() {
-        const btnText = document.getElementById('account-btn-text');
-        const dropdown = document.getElementById('account-dropdown');
-        dropdown.innerHTML = '';
-
-        if (!window.Clerk || !window.Clerk.user) {
-            btnText.innerText = "Account";
-            dropdown.innerHTML = `
-                <div class="account-item" onclick="window.Clerk.openSignIn()"><i class="fa-solid fa-right-to-bracket"></i> Sign In</div>
-                <div class="account-item" onclick="window.Clerk.openSignUp()"><i class="fa-solid fa-user-plus"></i> Register</div>
-            `;
-            return;
-        }
-
-        btnText.innerText = "Signed In";
-        
-        dropdown.innerHTML += `<div class="account-item active-session"><i class="fa-solid fa-circle-check" style="color:#00ff66;"></i> Active: User_${window.Clerk.user.id.substring(0, 5)}</div>`;
-
-        const inactiveSessions = window.Clerk.client.sessions.filter(s => s.id !== window.Clerk.session.id);
-        inactiveSessions.forEach(session => {
-            dropdown.innerHTML += `
-                <div class="account-item" onclick="window.Clerk.setActive({ session: '${session.id}' })">
-                    <i class="fa-solid fa-users"></i> Switch to User_${session.user.id.substring(0, 5)}
-                </div>`;
-        });
-
-        if (window.Clerk.client.sessions.length < 5) {
-            dropdown.innerHTML += `<div class="account-item" onclick="window.Clerk.openSignIn()"><i class="fa-solid fa-plus"></i> Add Account</div>`;
-        }
-
-        dropdown.innerHTML += `<div class="account-item" onclick="window.Clerk.signOut()" style="color:#ff4d4d;"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</div>`;
-    }
-
     const TRANSLATIONS = {
         "ULTGIB": "ADD AWAKENING", "HPGIB": "ADD HEALTH", "EVGIB": "ADD EVASION", "HITCNCL": "HIT CANCEL", "ATK": "ATTACK", "ANIM": "ANIMATION",
         "VELO": "VELOCITY", "PROJ": "PROJECTILE", "SFX": "SOUND", "WAIT": "WAIT", "SKILL": "SKILL", "SPECIAL": "SPECIAL", "CONNECT": "CONNECT", 
@@ -435,6 +349,7 @@
         "EMOTES": { color: "white", animations: [{name: "Coming soon", val: [23, 1]}] }
     };
 
+    // --- State Variables ---
     let currentMoves = [];
     let activeIndex = -1;
     let zstd = null;
@@ -451,7 +366,6 @@
     let clipboard = [];
 
     let currentWorkshopTab = 'SFX';
-    let uploadSelectMode = false;
     let importPlaceMode = false;
     let importPayload = null;
     
@@ -696,7 +610,7 @@
     document.addEventListener('mouseup', e => {
         if(importPlaceMode && currentDropIdx !== -1) {
             pushHistory(); const list = getActiveList(); list.splice(currentDropIdx, 0, ...importPayload); saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
-            importPlaceMode = false; importPayload = null; document.getElementById('selection-banner').style.display = 'none'; document.getElementById('selection-banner').querySelector('button:last-child').style.display = 'inline-block'; document.getElementById('drag-indicator').style.display = 'none'; loadMove(activeIndex); return;
+            cancelPlaceMode(); loadMove(activeIndex); return;
         }
 
         if(!isDraggingNode) return;
@@ -714,10 +628,6 @@
     function initCustomDrag(e, idx) { e.preventDefault(); e.stopPropagation(); if(activeTab === 'Properties') return; isDraggingNode = true; draggedNodeIdx = idx; const nodeEl = document.getElementById(`node-block-${idx}`); dragClone = nodeEl.cloneNode(true); dragClone.classList.add('drag-ghost'); dragClone.style.width = nodeEl.offsetWidth + 'px'; document.body.appendChild(dragClone); }
 
     function handleNodeClick(e, idx) {
-        if(uploadSelectMode) {
-            if(selectedNodes.includes(idx)) selectedNodes = selectedNodes.filter(i => i !== idx); else selectedNodes.push(idx);
-            loadMove(activeIndex); return;
-        }
         if(e.shiftKey) {
             if(selectedNodes.includes(idx)) selectedNodes = selectedNodes.filter(i => i !== idx); else selectedNodes.push(idx);
             loadMove(activeIndex);
@@ -897,72 +807,87 @@
     function closeThemesModal(e) { if (!e || e.target === document.getElementById('jjs-themes-modal')) document.getElementById('jjs-themes-modal').style.display = 'none'; }
 
 
-    // --- Workshop Cloud Integration ---
-    function openWorkshop() { document.getElementById('workshop-window').style.display = 'flex'; setWorkshopTab(currentWorkshopTab); }
+    // --- Supabase Workshop System (Read-Only) ---
+    function initWorkshopDragger() {
+        const win = document.getElementById('workshop-window'); const header = document.getElementById('workshop-drag-header');
+        let isDraggingWin = false; let offsetX, offsetY;
+        header.addEventListener('mousedown', e => { if(e.target.tagName === 'BUTTON' || e.target.tagName === 'I') return; isDraggingWin = true; offsetX = e.clientX - win.getBoundingClientRect().left; offsetY = e.clientY - win.getBoundingClientRect().top; });
+        document.addEventListener('mousemove', e => { if(isDraggingWin) { win.style.left = (e.clientX - offsetX) + 'px'; win.style.top = (e.clientY - offsetY) + 'px'; } });
+        document.addEventListener('mouseup', () => isDraggingWin = false );
+    }
 
+    function openWorkshop() { document.getElementById('workshop-window').style.display = 'flex'; setWorkshopTab(currentWorkshopTab); }
+    
     async function setWorkshopTab(tab) {
         currentWorkshopTab = tab; document.querySelectorAll('.workshop-tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.workshop-tab').forEach(t => { if (t.innerText.trim() === tab) t.classList.add('active'); });
 
-        let content = `<div style="display:flex; justify-content:space-between; margin-bottom:15px;"><strong style="color:var(--accent);" class="uppercase-force">${tab} Hub</strong><button class="btn-jjs-action" style="width:auto; padding:5px 15px;" onclick="startWorkshopUpload()"><i class="fa-solid fa-cloud-arrow-up"></i> Upload to ${tab}</button></div>`;
+        let content = `<div style="display:flex; justify-content:space-between; margin-bottom:15px;"><strong style="color:var(--accent);" class="uppercase-force">${tab} Hub</strong></div>`;
+
+        if (tab === 'TEMPLATES') {
+            content += `<div style="text-align:center; padding:50px; opacity:0.5;">Loading templates from Supabase...</div>`;
+            document.getElementById('workshop-content').innerHTML = content;
+            await loadWorkshopTemplates(tab); return;
+        }
+
         content += `<div id="ws-dynamic-content" style="text-align:center; padding:50px; opacity:0.5;">Loading from Supabase...</div>`;
         document.getElementById('workshop-content').innerHTML = content;
-        
         await loadWorkshopTemplates(tab);
     }
 
-    async function loadWorkshopTemplates(tab) {
-        try {
-            const { data, error } = await supabaseclient
-                .from('workshop_templates')
-                .select('id, title, category, description, author, is_official, owner_id, created_at')
-                .eq('category', tab)
-                .order('created_at', { ascending: false });
+    function renderTemplateList(templates, tab) {
+        const container = tab === 'TEMPLATES' ? document.getElementById('workshop-content') : document.getElementById('ws-dynamic-content');
+        if (!container) return;
 
-            if (error) throw error;
-            const templates = Array.isArray(data) ? data : [];
-            const official = templates.filter(t => t.is_official === true);
-            const community = templates.filter(t => !t.is_official);
-            renderTemplateList(official, community, tab);
-        } catch (e) {
-            console.error("Supabase load error:", e);
-            const dyn = document.getElementById('ws-dynamic-content');
-            if(dyn) dyn.innerHTML = `<div style="text-align:center; padding:50px; opacity:0.5;">Failed to load templates. Are Supabase credentials correct?</div>`;
-        }
-    }
-
-    function renderTemplateList(official, community, tab) {
-        const all = [...official, ...community];
-        const dyn = document.getElementById('ws-dynamic-content');
-        if (!dyn) return;
-
-        if (!all.length) { dyn.innerHTML = `<div style="text-align:center; padding:50px; opacity:0.5;">No templates yet in ${tab}.</div>`; return; }
+        if (!templates.length) { container.innerHTML = `<div style="text-align:center; padding:50px; opacity:0.5;">No templates yet in ${tab}.</div>`; return; }
         
-        let html = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">`;
-        all.forEach((item) => {
-            const isOwner = authUser && authUser.uid === item.owner_id;
-            const delBtn = isOwner ? `<button style="background:transparent; border:none; color:#ff4d4d; cursor:pointer;" onclick="deleteTemplate('${item.id}', event)"><i class="fa-solid fa-trash"></i></button>` : '';
-            
+        let html = tab === 'TEMPLATES' ? `<div style="display:flex; justify-content:space-between; margin-bottom:15px;"><strong style="color:var(--accent);" class="uppercase-force">TEMPLATES Hub</strong></div>` : '';
+        html += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">`;
+        templates.forEach((item) => {
             html += `<div style="background:rgba(0,0,0,0.4); border:1px solid var(--border); padding:15px;">
-                <div style="display:flex; justify-content:space-between;">
-                    <div style="font-weight:bold; color:#fff; font-size:1.1rem; margin-bottom:5px;">${item.title || 'Untitled'} ${item.is_official ? '(OFFICIAL)' : ''}</div>
-                    ${delBtn}
-                </div>
+                <div style="font-weight:bold; color:#fff; font-size:1.1rem; margin-bottom:5px;">${item.title || 'Untitled'}</div>
                 <div style="font-size:0.75rem; opacity:0.7; margin-bottom:10px;">By: ${item.author || 'Anonymous'}</div>
                 <div style="font-size:0.85rem; margin-bottom:15px; color:#aaa;">${item.description || ''}</div>
                 <button class="btn-modal-confirm" style="width:100%; font-size:0.7rem;" onclick="importTemplateToWorkspace('${item.id}', '${tab}')"><i class="fa-solid fa-download"></i> Get</button>
             </div>`;
         });
         html += `</div>`;
-        dyn.outerHTML = html; 
+
+        if (tab === 'TEMPLATES') {
+            container.innerHTML = html;
+        } else {
+            container.outerHTML = html; 
+        }
+    }
+
+    async function loadWorkshopTemplates(tab) {
+        try {
+            const { data, error } = await supabaseclient
+                .from('workshop_templates')
+                .select('id, title, category, description, author, code, created_at')
+                .eq('category', tab)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            const templates = Array.isArray(data) ? data : [];
+            renderTemplateList(templates, tab);
+        } catch (e) {
+            console.error("Supabase load error:", e);
+            const dyn = document.getElementById('ws-dynamic-content') || document.getElementById('workshop-content');
+            if(dyn) dyn.innerHTML = `<div style="text-align:center; padding:50px; opacity:0.5;">Failed to load templates. Are Supabase credentials correct?</div>`;
+        }
     }
 
     async function importTemplateToWorkspace(id, tab) {
         try {
-            const { data, error } = await supabaseclient.from('workshop_templates').select('data').eq('id', id).single();
+            const { data, error } = await supabaseclient.from('workshop_templates').select('code').eq('id', id).single();
             if (error) throw error;
             
-            const payload = data?.data || [];
+            let payload = data?.code || [];
+            if (typeof payload === 'string') {
+                try { payload = JSON.parse(payload); } catch(e) {}
+            }
+            
             document.getElementById('workshop-window').style.display = 'none';
 
             if (tab === 'TEMPLATES') {
@@ -973,107 +898,16 @@
                 importPlaceMode = true; importPayload = payload;
                 document.getElementById('selection-banner-text').innerText = "Click between nodes to place download...";
                 document.getElementById('selection-banner').style.display = 'flex';
-                document.getElementById('selection-banner').querySelector('button:last-child').style.display = 'none';
+                document.getElementById('selection-banner').querySelector('button:last-child')?.style.setProperty('display', 'none');
             }
         } catch (e) { console.error(e); customAlert("Failed to import."); }
     }
 
-    async function deleteTemplate(id, event) {
-        if (event) event.stopPropagation();
-        if (!authUser) return customAlert("You must sign in to delete templates.");
-
-        customConfirm("Delete this template from the cloud?", async () => {
-            try {
-                const { error } = await supabaseclient
-                    .from('workshop_templates')
-                    .delete()
-                    .eq('id', id)
-                    .eq('owner_id', authUser.uid); 
-                
-                if (error) throw error;
-                customAlert("Template deleted.");
-                await loadWorkshopTemplates(currentWorkshopTab);
-            } catch (e) { console.error(e); customAlert("Failed to delete template."); }
-        });
-    }
-
-    function startWorkshopUpload() {
-        if(!authUser) { customAlert("You must sign in via Account to upload."); return; }
-        document.getElementById('workshop-window').style.display = 'none';
-        
-        if (currentWorkshopTab === 'TEMPLATES') {
-            openInputPrompt("Upload Template", "Paste ZSTD string or JSON here...", async (val) => {
-                let payloadToStore = [];
-                try {
-                    if (typeof val === 'string' && (val.trim().startsWith('[') || val.trim().startsWith('{'))) {
-                        payloadToStore = JSON.parse(val);
-                        if (!Array.isArray(payloadToStore)) payloadToStore = [payloadToStore];
-                    } else {
-                        if (!zstd) { customAlert("ZSTD Engine is still loading. Wait a moment."); return; }
-                        const rawBuffer = Uint8Array.from(atob(val), c => c.charCodeAt(0));
-                        payloadToStore = JSON.parse(new TextDecoder().decode(zstd.decompress(rawBuffer)));
-                        if (!Array.isArray(payloadToStore)) payloadToStore = [payloadToStore];
-                    }
-                } catch (e) { customAlert("Invalid string format. Could not decode."); return; }
-
-                processWorkshopUpload(payloadToStore);
-            });
-            return;
-        }
-
-        uploadSelectMode = true; selectedNodes = []; document.getElementById('selection-banner').style.display = 'flex'; loadMove(activeIndex);
-    }
-
-    function confirmSelectionMode() {
-        if(!selectedNodes.length) { customAlert("No nodes selected."); return; }
-        const list = getActiveList();
-        
-        for(let idx of selectedNodes) {
-            let node = list[idx];
-            if(currentWorkshopTab === 'SFX' && node.K_NAME !== 'SFX') { customAlert("SFX category only accepts Sound nodes."); return; }
-            if(currentWorkshopTab === 'VFX' && (node.K_NAME !== 'VISUAL' || node.EFFECT === 'Mesh')) { customAlert("VFX accepts non-mesh visual nodes only."); return; }
-            if(currentWorkshopTab === 'Mesh VFX' && (node.K_NAME !== 'VISUAL' || node.EFFECT !== 'Mesh')) { customAlert("Mesh VFX requires visual nodes with the 'Mesh' effect."); return; }
-            if(currentWorkshopTab === 'Mixed VFX' && node.K_NAME !== 'VISUAL') { customAlert("Mixed VFX accepts any Visual nodes only."); return; }
-        }
-
-        const dataToUpload = selectedNodes.sort((a,b)=>a-b).map(i => list[i]);
-        cancelSelectionMode();
-        processWorkshopUpload(dataToUpload);
-    }
-
-    function cancelSelectionMode() { uploadSelectMode = false; document.getElementById('selection-banner').style.display = 'none'; selectedNodes=[]; loadMove(activeIndex); }
-
-    function processWorkshopUpload(dataPayload) {
-        openInputPrompt("Upload Title", "Enter title...", (title) => {
-            openInputPrompt("Description", "Enter short description...", async (desc) => {
-                await saveCustomTemplate(title, desc, dataPayload);
-                openWorkshop();
-            });
-        });
-    }
-
-    async function saveCustomTemplate(title, description, dataPayload) {
-        if (!authUser) return customAlert("You must sign in to save templates.");
-        try {
-            if (!Array.isArray(dataPayload)) dataPayload = [dataPayload];
-            
-            const row = { 
-                id: 'tmpl-' + Date.now() + '-' + Math.floor(Math.random()*1000),
-                title: title, 
-                category: currentWorkshopTab,
-                description: description || null, 
-                author: authUser.name, 
-                is_official: false, 
-                data: dataPayload,
-                owner_id: authUser.uid
-            };
-            
-            const { error } = await supabaseclient.from('workshop_templates').insert([row]);
-            if (error) throw error;
-            
-            customAlert("Successfully uploaded to Supabase!");
-            await loadWorkshopTemplates(currentWorkshopTab);
-        } catch (e) { console.error(e); customAlert("Failed to upload."); }
+    function cancelPlaceMode() { 
+        importPlaceMode = false; importPayload = null; 
+        document.getElementById('selection-banner').style.display = 'none'; 
+        document.getElementById('drag-indicator').style.display = 'none';
+        selectedNodes=[]; loadMove(activeIndex); 
     }
 
     function openCustomNodeBuilder() { customAlert("Custom Node Builder: Use Shift+A to spawn 'CUSTOM NODE', configuring it as a logical boundary marker for export loops."); }
