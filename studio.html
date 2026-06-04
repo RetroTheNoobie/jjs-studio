@@ -609,8 +609,15 @@
 
     document.addEventListener('mouseup', e => {
         if(importPlaceMode && currentDropIdx !== -1) {
-            pushHistory(); const list = getActiveList(); list.splice(currentDropIdx, 0, ...importPayload); saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
-            cancelPlaceMode(); loadMove(activeIndex); return;
+            pushHistory(); 
+            const list = getActiveList(); 
+            if(list) {
+                list.splice(currentDropIdx, 0, ...importPayload); 
+                saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
+            }
+            cancelPlaceMode(); 
+            loadMove(activeIndex); 
+            return;
         }
 
         if(!isDraggingNode) return;
@@ -806,8 +813,7 @@
     function applySavedTheme(idx) { const saved = JSON.parse(localStorage.getItem('jjs-saved-themes') || '[]'); localStorage.setItem('jjs-custom-colors', JSON.stringify(saved[idx])); localStorage.setItem('jjs-theme-pref', 'custom'); applyThemeFromStorage(); }
     function closeThemesModal(e) { if (!e || e.target === document.getElementById('jjs-themes-modal')) document.getElementById('jjs-themes-modal').style.display = 'none'; }
 
-
-    // --- Supabase Workshop System (Read-Only) ---
+    // --- Supabase Workshop System (Read-Only & Drag Drop Imports) ---
     function initWorkshopDragger() {
         const win = document.getElementById('workshop-window'); const header = document.getElementById('workshop-drag-header');
         let isDraggingWin = false; let offsetX, offsetY;
@@ -883,24 +889,52 @@
             const { data, error } = await supabaseclient.from('workshop_templates').select('code').eq('id', id).single();
             if (error) throw error;
             
-            let payload = data?.code || [];
-            if (typeof payload === 'string') {
-                try { payload = JSON.parse(payload); } catch(e) {}
+            let rawVal = data?.code || "";
+            let parsedPayload = [];
+            
+            if (typeof rawVal === 'string' && (rawVal.trim().startsWith('[') || rawVal.trim().startsWith('{'))) {
+                parsedPayload = JSON.parse(rawVal);
+            } else {
+                if (!zstd) { customAlert("Engine standby. Please wait for ZSTD to load."); return; }
+                const rawBuffer = Uint8Array.from(atob(rawVal), c => c.charCodeAt(0));
+                parsedPayload = JSON.parse(new TextDecoder().decode(zstd.decompress(rawBuffer)));
             }
+            if (!Array.isArray(parsedPayload)) parsedPayload = [parsedPayload];
             
             document.getElementById('workshop-window').style.display = 'none';
 
             if (tab === 'TEMPLATES') {
-                currentMoves = JSON.parse(JSON.stringify(payload));
-                activeIndex = currentMoves.length > 0 ? 0 : -1; activeBranch = 'Default'; activeTab = 'Timeline'; selectedNodes = [];
-                renderSidebar(); loadMove(activeIndex);
+                importPayload = parsedPayload;
+                if (currentMoves.length > 0) {
+                    showCustomPrompt("Conflict", "Workspace not empty. Import method?", [
+                        { text: "Merge", color: "#00ff66", action: () => { pushHistory(); currentMoves = currentMoves.concat(importPayload); finalizeImport(); } },
+                        { text: "Overwrite", color: "#ff4d4d", action: () => { pushHistory(); currentMoves = importPayload; finalizeImport(); } },
+                        { text: "Cancel", color: "#e2e8f0", action: () => { importPayload = null; } }
+                    ]);
+                } else {
+                    currentMoves = parsedPayload;
+                    finalizeImport();
+                }
             } else {
-                importPlaceMode = true; importPayload = payload;
+                // Find WS Container
+                let wsContainer = parsedPayload.find(c => c.NAME === "WS");
+                if (!wsContainer) { customAlert("Invalid Workshop Item: Could not find a container named 'WS' inside this export."); return; }
+                
+                let innerData = getInnerData(wsContainer);
+                let nodesToPlace = innerData.Line || []; 
+                if (nodesToPlace.length === 0) { customAlert("The 'WS' container is empty!"); return; }
+
+                if (activeIndex === -1 || activeTab === 'Properties') { customAlert("Please open a container's Timeline or Conditions first to place nodes."); return; }
+
+                importPlaceMode = true; 
+                importPayload = nodesToPlace;
+                
                 document.getElementById('selection-banner-text').innerText = "Click between nodes to place download...";
                 document.getElementById('selection-banner').style.display = 'flex';
-                document.getElementById('selection-banner').querySelector('button:last-child')?.style.setProperty('display', 'none');
+                const confirmBtn = document.getElementById('selection-banner').querySelector('button:last-child');
+                if (confirmBtn) confirmBtn.style.display = 'none';
             }
-        } catch (e) { console.error(e); customAlert("Failed to import."); }
+        } catch (e) { console.error(e); customAlert("Failed to fetch or decompress workshop item."); }
     }
 
     function cancelPlaceMode() { 
