@@ -58,12 +58,12 @@
         .item:hover { background: rgba(255,255,255,0.05); }
         .item.active { background: var(--accent); color: #000 !important; border-color: var(--border); }
         .item.active .type-tag, .item.active .move-name { color: #000 !important; }
-        .item .type-tag { font-size: 0.65rem; color: var(--accent); display: block; margin-bottom: 2px;}
+        .item .type-tag { font-size: 0.65rem; color: var(--cont-color, var(--accent)); display: block; margin-bottom: 2px; }
         .item .move-name { display: block; font-size: 1.1rem; color: var(--text); }
 
         .main { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 40px; height: 100%; display: block; background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px); background-size: 30px 30px; position: relative; }
 
-        .editor-header { display: flex; flex-direction: column; gap: 15px; border-left: var(--thickness) solid var(--accent); padding-left: 20px; margin-bottom: 25px; }
+        .editor-header { display: flex; flex-direction: column; gap: 15px; border-left: var(--thickness) solid var(--accent); padding-left: 20px; margin-bottom: 25px; transition: border-color 0.2s; }
         .btn-delete-container { background: #ff4d4d; color: #fff; border: var(--thickness) solid var(--border); padding: 10px 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.75rem; transition: 0.1s; }
         .btn-delete-container:hover { transform: translate(-2px, -2px); filter: brightness(1.1); }
         .container-fields-row { display: flex; gap: 15px; }
@@ -86,12 +86,12 @@
         .workspace-tab:hover { opacity: 0.8; background: rgba(255,255,255,0.05); }
         .workspace-tab.active { opacity: 1; color: var(--accent); border-bottom: 3px solid var(--accent); background: rgba(0,0,0,0.8); }
 
-        .node-card { background: var(--panel); border: var(--thickness) solid var(--border); margin-bottom: 20px; overflow: hidden; box-shadow: 6px 6px 0px rgba(0,0,0,0.6); transition: 0.1s; position: relative; }
-        .node-card.selected { border-color: var(--accent); box-shadow: 0 0 15px rgba(255, 204, 51, 0.5); transform: translateY(-2px); }
+        .node-card { background: var(--panel); border: var(--thickness) solid var(--border); border-left: 6px solid var(--node-color, var(--border)) !important; margin-bottom: 20px; overflow: hidden; box-shadow: 6px 6px 0px rgba(0,0,0,0.6); transition: 0.1s; position: relative; }
+        .node-card.selected { border-color: var(--node-color, var(--accent)); box-shadow: 0 0 15px var(--node-color, rgba(255, 204, 51, 0.5)); transform: translateY(-2px); }
         .node-head { background: rgba(0,0,0,0.3); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: var(--thickness) solid var(--border); user-select: none; cursor: pointer; }
         .node-head:hover { background: rgba(255,255,255,0.03); }
         .node-title-group { display: flex; align-items: center; gap: 12px; }
-        .node-title-group strong { color: var(--accent); font-size: 1rem; }
+        .node-title-group strong { color: var(--node-color, var(--accent)); font-size: 1rem; }
         .node-summary-tag { color: #8892b0; font-size: 0.8rem; }
         .btn-delete-node, .btn-comment-node { background: transparent; border: none; cursor: pointer; font-size: 1.1rem; padding: 5px; transition: color 0.1s; }
         .btn-delete-node { color: #ff4d4d; } .btn-delete-node:hover { color: #ff1a1a; }
@@ -110,8 +110,10 @@
 
         .context-menu { position: fixed; display: none; background: #090a0f; border: var(--thickness) solid var(--border); z-index: 10000; padding: 5px 0; min-width: 220px; max-height: 450px; overflow-y: auto; box-shadow: 0px 10px 30px rgba(0,0,0,0.5); }
         .context-menu .menu-label { padding: 6px 15px; font-size: 0.65rem; color: var(--accent); letter-spacing: 0.5px; background: rgba(255,255,255,0.02); }
-        .context-menu .menu-item { padding: 10px 15px; font-size: 0.75rem; color: #e2e8f0; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .context-menu .menu-item:hover { background: var(--accent); color: #000; }
+        .context-menu .menu-item { padding: 10px 15px; font-size: 0.75rem; color: var(--node-color, #e2e8f0); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.1s; }
+        .context-menu .menu-item i { color: var(--node-color, var(--accent)); opacity: 0.8; }
+        .context-menu .menu-item:hover { background: var(--node-color, var(--accent)); color: #000; }
+        .context-menu .menu-item:hover i { color: #000; }
         .context-menu .menu-separator { height: 1px; background: var(--border); margin: 5px 0; }
 
         /* Modals */
@@ -211,11 +213,11 @@
 
 <div id="shift-a-context-menu" class="context-menu">
     <div class="menu-label">Create Container</div>
-    <div class="menu-item" onclick="instantiateContainer('Skill')">Skill <i class="fa-solid fa-folder-plus"></i></div>
-    <div class="menu-item" onclick="instantiateContainer('Melee')">Melee <i class="fa-solid fa-folder-plus"></i></div>
-    <div class="menu-item" onclick="instantiateContainer('Special')">Special <i class="fa-solid fa-folder-plus"></i></div>
-    <div class="menu-item" onclick="instantiateContainer('Awakening')">Awakening <i class="fa-solid fa-folder-plus"></i></div>
-    <div class="menu-item" onclick="instantiateContainer('Chase')">Chase <i class="fa-solid fa-folder-plus"></i></div>
+    <div class="menu-item" style="--node-color: #FF6666;" onclick="instantiateContainer('Skill')">Skill <i class="fa-solid fa-folder-plus"></i></div>
+    <div class="menu-item" style="--node-color: #00FF00;" onclick="instantiateContainer('Melee')">Melee <i class="fa-solid fa-folder-plus"></i></div>
+    <div class="menu-item" style="--node-color: #FF9933;" onclick="instantiateContainer('Special')">Special <i class="fa-solid fa-folder-plus"></i></div>
+    <div class="menu-item" style="--node-color: #FFFF00;" onclick="instantiateContainer('Awakening')">Awakening <i class="fa-solid fa-folder-plus"></i></div>
+    <div class="menu-item" style="--node-color: #7FFFD4;" onclick="instantiateContainer('Chase')">Chase <i class="fa-solid fa-folder-plus"></i></div>
     <div class="menu-separator"></div>
     <div class="menu-label" id="context-menu-nodes-label">Add Node</div>
     <div id="context-menu-nodes-target"></div>
@@ -322,6 +324,37 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_2qxVQqhPZZy0Xw-3DSHaQA_AVfWamC6';
     const supabaseclient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     // ---------------------------
+    
+    // --- COLOR THEME MAPPINGS ---
+    const StudioTheme = {
+        nodes: {
+            "WAIT": { main: "#FFFFFF", accent: "rgba(255, 255, 255, 0.3)" },
+            "SKILL": { main: "#FF6666", accent: "rgba(255, 102, 102, 0.4)" },
+            "SPECIAL": { main: "#FF9933", accent: "rgba(255, 153, 51, 0.4)" },
+            "ANIM": { main: "#FFFF00", accent: "rgba(255, 255, 0, 0.3)" },
+            "SFX": { main: "#00FF00", accent: "rgba(0, 255, 0, 0.3)" },
+            "VELO": { main: "#7FFFD4", accent: "rgba(127, 255, 212, 0.4)" },
+            "CONNECT": { main: "#3399FF", accent: "rgba(51, 153, 255, 0.4)" },
+            "HITBOX": { main: "#800080", accent: "rgba(128, 0, 128, 0.5)" },
+            "BRANCH": { main: "#FFC0CB", accent: "rgba(255, 192, 203, 0.4)" },
+            "VISUAL": { main: "#FF00FF", accent: "rgba(255, 0, 255, 0.4)" },
+            "GRAB": { main: "#CC0000", accent: "rgba(204, 0, 0, 0.5)" },
+            "PROJ": { main: "#FF4500", accent: "rgba(255, 69, 0, 0.5)" },
+            "COUNTER": { main: "#E6D819", accent: "rgba(230, 216, 25, 0.3)" },
+            "TAG": { main: "#32CD32", accent: "rgba(50, 205, 50, 0.4)" },
+            "STATE": { main: "#ADD8E6", accent: "rgba(173, 216, 230, 0.4)" },
+            "TELEPORT": { main: "#ADA9F0", accent: "rgba(173, 169, 240, 0.4)" },
+            "DEFAULT": { main: "#4682B4", accent: "rgba(70, 130, 180, 0.3)" }
+        },
+        containers: {
+            "SKILL": { background: "#FF6666", glow: "0 0 15px rgba(255, 102, 102, 0.5)" },
+            "SPECIAL": { background: "#FF9933", glow: "0 0 15px rgba(255, 153, 51, 0.5)" },
+            "AWAKENING": { background: "#FFFF00", glow: "0 0 15px rgba(255, 255, 0, 0.4)" },
+            "MELEE": { background: "#00FF00", glow: "0 0 15px rgba(0, 255, 0, 0.4)" },
+            "CHASE": { background: "#7FFFD4", glow: "0 0 15px rgba(127, 255, 212, 0.6)" },
+            "DEFAULT": { background: "#4682B4", glow: "0 0 15px rgba(70, 130, 180, 0.5)" }
+        }
+    };
     
     const TRANSLATIONS = {
         "ULTGIB": "ADD AWAKENING", "HPGIB": "ADD HEALTH", "EVGIB": "ADD EVASION", "HITCNCL": "HIT CANCEL", "ATK": "ATTACK", "ANIM": "ANIMATION",
@@ -543,8 +576,11 @@
         const target = document.getElementById('context-menu-nodes-target'); if (!target) return;
         target.innerHTML = '';
         Object.keys(NODE_TEMPLATES).forEach(k => {
-            const item = document.createElement('div'); item.className = 'menu-item';
-            item.innerHTML = `${TRANSLATIONS[k] || k} <i class="fa-solid fa-plus" style="font-size:0.65rem; opacity:0.5;"></i>`;
+            let nTheme = StudioTheme.nodes[k] || StudioTheme.nodes.DEFAULT;
+            const item = document.createElement('div'); 
+            item.className = 'menu-item';
+            item.style.setProperty('--node-color', nTheme.main);
+            item.innerHTML = `${TRANSLATIONS[k] || k} <i class="fa-solid fa-plus" style="font-size:0.65rem;"></i>`;
             item.onclick = () => { appendNodeToActiveList(k); document.getElementById('shift-a-context-menu').style.display = 'none'; };
             target.appendChild(item);
         });
@@ -571,9 +607,13 @@
         target.innerHTML = '';
         if (currentMoves.length === 0) { target.innerHTML = `<div style="text-align:center; padding:20px; opacity:0.5; font-size:0.8rem;">No containers</div>`; return; }
         currentMoves.forEach((move, idx) => {
-            const el = document.createElement('div'); el.className = `item ${idx === activeIndex ? 'active' : ''}`; el.id = `btn-${idx}`;
+            let cTheme = StudioTheme.containers[move.K_NAME] || StudioTheme.containers.DEFAULT;
+            const el = document.createElement('div'); 
+            el.className = `item ${idx === activeIndex ? 'active' : ''}`; 
+            el.id = `btn-${idx}`;
+            el.style.setProperty('--cont-color', cTheme.background);
             el.onclick = () => { activeBranch = 'Default'; activeTab = 'Timeline'; selectedNodes = []; loadMove(idx); };
-            el.innerHTML = `<span class="type-tag">${move.K_NAME || 'SKILL'}</span><span class="move-name">${move.NAME || 'Unnamed'}</span>`;
+            el.innerHTML = `<span class="type-tag" style="color: var(--cont-color);">${move.K_NAME || 'SKILL'}</span><span class="move-name">${move.NAME || 'Unnamed'}</span>`;
             target.appendChild(el);
         });
     }
@@ -733,7 +773,9 @@
         const move = currentMoves[idx]; const innerData = getInnerData(move); const branchNames = innerData.Branch ? Object.keys(innerData.Branch).sort() : []; const canvas = document.getElementById('workspace-canvas-timeline');
         let displayKName = move.K_NAME ? (move.K_NAME.charAt(0).toUpperCase() + move.K_NAME.slice(1).toLowerCase()) : 'UNNAMED';
 
-        let html = `<div class="editor-header"><div style="display:flex; justify-content:space-between; align-items:center;"><h1 style="margin:0; font-size:2.2rem; letter-spacing:1px; color:var(--accent);">${displayKName}</h1><button class="btn-delete-container" onclick="deleteActiveContainer(${idx})"><i class="fa-solid fa-trash-can"></i> Delete Container</button></div><div class="container-fields-row"><div class="tooltip-field"><label for="container-core-name-field-${idx}">Name</label><input type="text" id="container-core-name-field-${idx}" name="containerCoreName" value="${move.NAME || ''}" oninput="alterContainerCoreName(${idx}, this.value)"></div></div></div>`;
+        let cTheme = StudioTheme.containers[move.K_NAME] || StudioTheme.containers.DEFAULT;
+
+        let html = `<div class="editor-header" style="border-left-color: ${cTheme.background};"><div style="display:flex; justify-content:space-between; align-items:center;"><h1 style="margin:0; font-size:2.2rem; letter-spacing:1px; color:${cTheme.background}; text-shadow:${cTheme.glow};">${displayKName}</h1><button class="btn-delete-container" onclick="deleteActiveContainer(${idx})"><i class="fa-solid fa-trash-can"></i> Delete Container</button></div><div class="container-fields-row"><div class="tooltip-field"><label for="container-core-name-field-${idx}">Name</label><input type="text" id="container-core-name-field-${idx}" name="containerCoreName" value="${move.NAME || ''}" oninput="alterContainerCoreName(${idx}, this.value)"></div></div></div>`;
 
         if (activeTab === 'Timeline' || activeTab === 'Conditions') {
             html += `<div class="branch-bar"><button class="branch-tab ${activeBranch === 'Default' ? 'active' : ''}" onclick="switchBranch('Default')">Default</button>`;
@@ -756,8 +798,10 @@
                     const isSelected = selectedNodes.includes(nodeIdx) ? 'selected' : '';
                     const cmt = node._COMMENT ? `<div style="font-size:0.6rem; color:#a0aec0; margin-top:2px;"><i class="fa-solid fa-quote-left"></i> ${node._COMMENT}</div>` : '';
                     
+                    let nTheme = StudioTheme.nodes[node.K_NAME] || StudioTheme.nodes.DEFAULT;
+
                     html += `
-                        <div class="node-card ${isSelected}" id="node-block-${nodeIdx}">
+                        <div class="node-card ${isSelected}" id="node-block-${nodeIdx}" style="--node-color: ${nTheme.main};">
                             <div class="node-head" onclick="handleNodeClick(event, ${nodeIdx})">
                                 <div class="node-title-group">
                                     <i class="fa-solid fa-grip-vertical" style="color: var(--accent); cursor: grab; margin-right: 5px; font-size: 1.1rem; padding: 5px;" onmousedown="initCustomDrag(event, ${nodeIdx})"></i>
