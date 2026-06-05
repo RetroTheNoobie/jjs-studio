@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JJS Studio - V1.3.1</title>
+    <title>JJS Studio - V1.3.1 (Read-Only Workshop)</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -304,7 +304,7 @@
         <h3 class="detail-title" id="dt-title">Template Name</h3>
         <button style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-size:1.4rem;" onclick="closeWorkshopDetail()"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <img id="dt-preview" src="" alt="Item Preview Asset" class="detail-preview-img" style="display:none;">
+    <img id="dt-preview" src="" alt="Item Preview Asset" class="detail-preview-img" crossorigin="anonymous" style="display:none;">
     <div class="detail-desc-container">
         <div class="detail-desc-text collapsed" id="dt-description">No Description provided.</div>
         <button class="detail-desc-toggle" id="dt-desc-toggle" onclick="toggleDetailDesc()">Show More</button>
@@ -419,6 +419,11 @@
         catch(e) { return { Line: [], Req: [], Branch: {}, Prop: {} }; }
     }
     function saveInnerData(move, inner) { if (move) move.DATA = typeof inner === 'string' ? inner : JSON.stringify(inner); }
+    
+    function getListFromInner(inner) {
+        if(activeTab === 'Properties') return null;
+        return (activeTab === 'Conditions') ? (activeBranch === 'Default' ? inner.Req : inner.Branch[activeBranch].Req) : (activeBranch === 'Default' ? inner.Line : inner.Branch[activeBranch].Line);
+    }
 
     async function initEngine() {
         const engine = window.ZstdWeb || window.zstd || window.Zstd;
@@ -501,32 +506,29 @@
         if (menu && !menu.contains(e.target)) menu.style.display = 'none';
     });
 
-    function getActiveList() {
-        if(activeIndex === -1 || activeTab === 'Properties') return null;
-        const inner = getInnerData(currentMoves[activeIndex]);
-        return (activeTab === 'Conditions') ? (activeBranch === 'Default' ? inner.Req : inner.Branch[activeBranch].Req) : (activeBranch === 'Default' ? inner.Line : inner.Branch[activeBranch].Line);
-    }
-
     function copySelected() {
         if(!selectedNodes.length) return;
-        const list = getActiveList(); if(!list) return;
+        const inner = getInnerData(currentMoves[activeIndex]);
+        const list = getListFromInner(inner); if(!list) return;
         clipboard = selectedNodes.sort((a,b)=>a-b).map(idx => JSON.parse(JSON.stringify(list[idx])));
     }
     function cutSelected() { copySelected(); deleteSelected(); }
     function pasteCopied() {
         if(!clipboard.length) return; pushHistory();
-        const list = getActiveList(); if(!list) return;
+        let inner = getInnerData(currentMoves[activeIndex]);
+        let list = getListFromInner(inner); if(!list) return;
         const insertIdx = selectedNodes.length ? Math.max(...selectedNodes) + 1 : list.length;
         clipboard.forEach((node, i) => list.splice(insertIdx + i, 0, JSON.parse(JSON.stringify(node))));
-        saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
+        saveInnerData(currentMoves[activeIndex], inner);
         selectedNodes = []; loadMove(activeIndex);
     }
     function deleteSelected() {
         if(!selectedNodes.length) return; pushHistory();
-        const list = getActiveList(); if(!list) return;
+        let inner = getInnerData(currentMoves[activeIndex]);
+        let list = getListFromInner(inner); if(!list) return;
         const toDelete = selectedNodes.sort((a,b)=>b-a);
         toDelete.forEach(idx => list.splice(idx, 1));
-        saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
+        saveInnerData(currentMoves[activeIndex], inner);
         selectedNodes = []; loadMove(activeIndex);
     }
 
@@ -558,8 +560,10 @@
             if(f === "Animation") nodeTemplate["ANIM_USE"] = [1,1];
             else nodeTemplate[f] = TYPE_OVERRIDES[type]?.[f] !== undefined ? TYPE_OVERRIDES[type][f] : DEFAULTS_LIB[f];
         });
-        const list = (activeTab === 'Conditions') ? (activeBranch === 'Default' ? inner.Req : inner.Branch[activeBranch].Req) : (activeBranch === 'Default' ? inner.Line : inner.Branch[activeBranch].Line);
-        list.push(nodeTemplate); saveInnerData(currentMoves[activeIndex], inner); loadMove(activeIndex);
+        const list = getListFromInner(inner);
+        if(list) list.push(nodeTemplate); 
+        saveInnerData(currentMoves[activeIndex], inner); 
+        loadMove(activeIndex);
     }
 
     function renderSidebar() {
@@ -612,9 +616,31 @@
     function switchTab(t) { activeTab = t; selectedNodes = []; loadMove(activeIndex); }
     function changeGuiScale(v) { currentGuiScale = parseFloat(v); document.getElementById('gui-scale-value-text').innerText = Math.round(currentGuiScale * 100) + '%'; const el = document.getElementById('nodes-scale-container-target'); if (el) { el.style.transform = `scale(${currentGuiScale})`; el.style.width = `${100 / currentGuiScale}%`; } }
 
-    function removeNode(idx) { pushHistory(); const list = getActiveList(); list.splice(idx, 1); saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex])); selectedNodes = selectedNodes.filter(i => i !== idx).map(i => i > idx ? i - 1 : i); loadMove(activeIndex); }
-    function alterNodeValue(nodeIdx, fieldKey, val) { const list = getActiveList(); if (!list || !list[nodeIdx]) return; list[nodeIdx][fieldKey] = val; saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex])); const summarySpan = document.getElementById(`summary-span-${nodeIdx}`); if (summarySpan) summarySpan.innerText = generateSummaryHeaderStr(list[nodeIdx]); }
-    function alterPropValue(key, val) { pushHistory(); const inner = getInnerData(currentMoves[activeIndex]); if (!inner.Prop || Array.isArray(inner.Prop)) inner.Prop = {}; inner.Prop[key] = val; saveInnerData(currentMoves[activeIndex], inner); }
+    function removeNode(idx) { 
+        pushHistory(); 
+        let inner = getInnerData(currentMoves[activeIndex]);
+        let list = getListFromInner(inner); 
+        if(list) list.splice(idx, 1); 
+        saveInnerData(currentMoves[activeIndex], inner); 
+        selectedNodes = selectedNodes.filter(i => i !== idx).map(i => i > idx ? i - 1 : i); 
+        loadMove(activeIndex); 
+    }
+    function alterNodeValue(nodeIdx, fieldKey, val) { 
+        let inner = getInnerData(currentMoves[activeIndex]);
+        let list = getListFromInner(inner); 
+        if (!list || !list[nodeIdx]) return; 
+        list[nodeIdx][fieldKey] = val; 
+        saveInnerData(currentMoves[activeIndex], inner); 
+        const summarySpan = document.getElementById(`summary-span-${nodeIdx}`); 
+        if (summarySpan) summarySpan.innerText = generateSummaryHeaderStr(list[nodeIdx]); 
+    }
+    function alterPropValue(key, val) { 
+        pushHistory(); 
+        const inner = getInnerData(currentMoves[activeIndex]); 
+        if (!inner.Prop || Array.isArray(inner.Prop)) inner.Prop = {}; 
+        inner.Prop[key] = val; 
+        saveInnerData(currentMoves[activeIndex], inner); 
+    }
 
     function renderWorkspaceEmpty() {
         const canvas = document.getElementById('workspace-canvas-timeline');
@@ -648,10 +674,11 @@
     document.addEventListener('mouseup', e => {
         if(importPlaceMode && currentDropIdx !== -1) {
             pushHistory(); 
-            const list = getActiveList(); 
+            let inner = getInnerData(currentMoves[activeIndex]);
+            let list = getListFromInner(inner); 
             if(list) {
                 list.splice(currentDropIdx, 0, ...importPayload); 
-                saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
+                saveInnerData(currentMoves[activeIndex], inner);
             }
             cancelPlaceMode(); 
             loadMove(activeIndex); 
@@ -662,9 +689,15 @@
         isDraggingNode = false; if(dragClone && dragClone.parentNode) document.body.removeChild(dragClone); dragClone = null; document.getElementById('drag-indicator').style.display = 'none';
         
         if(currentDropIdx !== -1 && currentDropIdx !== draggedNodeIdx && currentDropIdx !== draggedNodeIdx + 1) {
-            pushHistory(); const list = getActiveList(); const movingNode = list.splice(draggedNodeIdx, 1)[0];
-            let adjustedDropIdx = currentDropIdx > draggedNodeIdx ? currentDropIdx - 1 : currentDropIdx;
-            list.splice(adjustedDropIdx, 0, movingNode); saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
+            pushHistory(); 
+            let inner = getInnerData(currentMoves[activeIndex]);
+            let list = getListFromInner(inner); 
+            if(list) {
+                const movingNode = list.splice(draggedNodeIdx, 1)[0];
+                let adjustedDropIdx = currentDropIdx > draggedNodeIdx ? currentDropIdx - 1 : currentDropIdx;
+                list.splice(adjustedDropIdx, 0, movingNode); 
+                saveInnerData(currentMoves[activeIndex], inner);
+            }
             selectedNodes = []; loadMove(activeIndex);
         }
         draggedNodeIdx = -1; currentDropIdx = -1;
@@ -683,8 +716,14 @@
     }
     
     function promptComment(idx) {
-        const list = getActiveList();
-        openInputPrompt("Set Comment", "Type comment...", (val) => { pushHistory(); list[idx]._COMMENT = val; saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex])); loadMove(activeIndex); });
+        openInputPrompt("Set Comment", "Type comment...", (val) => { 
+            pushHistory(); 
+            let inner = getInnerData(currentMoves[activeIndex]);
+            let list = getListFromInner(inner);
+            if(list) list[idx]._COMMENT = val; 
+            saveInnerData(currentMoves[activeIndex], inner); 
+            loadMove(activeIndex); 
+        });
     }
 
     function loadMove(idx) {
@@ -871,6 +910,7 @@
         let content = `<div style="display:flex; justify-content:space-between; margin-bottom:15px;"><strong style="color:var(--accent);" class="uppercase-force">${tab} Hub</strong></div>`;
         content += `<div id="ws-dynamic-content" style="text-align:center; padding:50px; opacity:0.5;">Loading from Supabase...</div>`;
         document.getElementById('workshop-content').innerHTML = content;
+        
         await loadWorkshopTemplates(tab);
     }
 
@@ -885,12 +925,11 @@
         
         templates.forEach((item) => {
             let rawDesc = item.description || '';
-            // Prevent text shrinking: crop description manually if it is over 110 characters
             let descriptiveSummary = rawDesc.length > 110 ? rawDesc.substring(0, 107) + '...' : rawDesc;
             
             let thumbImageHtml = '';
             if (item.preview && item.preview.trim().startsWith('http')) {
-                thumbImageHtml = `<img src="${item.preview.trim()}" alt="Thumbnail preview img" style="width: 70px; height: 70px; object-fit: cover; border: 1px solid var(--border); background: #000; flex-shrink:0;">`;
+                thumbImageHtml = `<img src="${item.preview.trim()}" crossorigin="anonymous" alt="Thumbnail preview img" style="width: 70px; height: 70px; object-fit: cover; border: 1px solid var(--border); background: #000; flex-shrink:0;">`;
             }
 
             html += `<div style="background:rgba(0,0,0,0.4); border:1px solid var(--border); padding:15px; display:flex; gap:12px; align-items:flex-start;">
@@ -1001,6 +1040,7 @@
             userFavorites.push(id);
         }
         localStorage.setItem('jjs-workshop-favorites', JSON.stringify(userFavorites));
+        
         if (activeDetailedViewItem && activeDetailedViewItem.id === id) {
             viewItemDetails(activeDetailedViewItem);
         }
@@ -1052,12 +1092,14 @@
 
                 if (activeIndex === -1 || activeTab === 'Properties') { customAlert("Please open a container's Timeline or Conditions first to place nodes."); return; }
 
-                let destinationList = getActiveList();
+                let innerCurrent = getInnerData(currentMoves[activeIndex]);
+                let destinationList = getListFromInner(innerCurrent);
+                
                 // AUTOMATICALLY LOAD inside the skill container if it is currently empty instead of blue line method
                 if (destinationList && destinationList.length === 0) {
                     pushHistory();
                     destinationList.push(...JSON.parse(JSON.stringify(nodesToPlace)));
-                    saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
+                    saveInnerData(currentMoves[activeIndex], innerCurrent);
                     selectedNodes = []; 
                     loadMove(activeIndex);
                     customAlert("Container was empty. Automatically populated nodes successfully!");
