@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JJS Studio - V1.3.1 (Read-Only Workshop)</title>
+    <title>JJS Studio - V1.3.1</title>
     <link href="https://fonts.googleapis.com/css2?family=Finger+Paint&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -145,6 +145,23 @@
         .workshop-tab.active { opacity: 1; color: var(--accent); border-bottom-color: var(--accent); background: rgba(0,0,0,0.4); }
         .workshop-content { padding: 20px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
 
+        /* Detail Slide-out Notification Panel */
+        #workshop-detail-panel { position: fixed; top: 0; right: -40vw; width: 35vw; height: 100vh; background: var(--panel); border-left: var(--thickness) solid var(--border); z-index: 9500; display: flex; flex-direction: column; box-shadow: -10px 0 30px rgba(0,0,0,0.5); transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1); overflow-y: auto; padding: 30px; }
+        #workshop-detail-panel.open { right: 0; }
+        .detail-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; margin-bottom: 20px; }
+        .detail-title { font-size: 1.8rem; color: var(--accent); margin: 0; line-height: 1.2; word-break: break-word; text-transform: uppercase !important; }
+        .detail-preview-img { width: 100%; height: auto; max-height: 320px; object-fit: contain; background: #000; border: var(--thickness) solid var(--border); margin-bottom: 20px; display: block; }
+        .detail-desc-container { background: rgba(0,0,0,0.3); border: 1px solid var(--border); padding: 15px; margin-bottom: 15px; position: relative; }
+        .detail-desc-text { line-height: 1.6; color: #cbd5e0; word-break: break-word; overflow: hidden; transition: max-height 0.2s ease; }
+        .detail-desc-text.collapsed { max-height: 75px; }
+        .detail-desc-toggle { background: transparent; border: none; color: var(--accent); font-size: 0.75rem; cursor: pointer; padding: 4px 0 0 0; margin-top: 5px; display: inline-block; text-transform: uppercase !important; }
+        .detail-author { font-size: 0.85rem; color: #a0aec0; margin-bottom: 30px; }
+        .detail-actions { display: flex; gap: 12px; align-items: center; margin-top: auto; }
+        .btn-detail-load { flex: 1; background: #00ff66; color: #000; font-size: 1rem; padding: 15px; border: var(--thickness) solid var(--border); font-weight: bold; cursor: pointer; transition: 0.1s; text-transform: uppercase !important; }
+        .btn-detail-load:hover { filter: brightness(1.1); }
+        .btn-detail-fav { width: 54px; height: 54px; min-width: 54px; background: rgba(0,0,0,0.4); border: var(--thickness) solid var(--border); color: var(--accent); font-size: 1.4rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.1s; }
+        .btn-detail-fav:hover { background: rgba(255,255,255,0.05); }
+
         #selection-banner { position: fixed; top: 50px; left: 380px; right: 0; height: 50px; background: rgba(255, 204, 51, 0.9); color: #000; display: none; align-items: center; justify-content: space-between; padding: 0 30px; z-index: 80; font-weight: bold; text-transform: uppercase; font-size: 1.1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
     </style>
 </head>
@@ -219,11 +236,11 @@
 <div class="jjs-modal-overlay" id="jjs-input-modal" style="z-index: 10005;">
     <div class="jjs-modal-box" style="width: 450px;">
         <div class="jjs-modal-header">
-            <h3 class="jjs-modal-title prompt-title" id="input-modal-title">Input</h3>
+            <label for="input-modal-field" class="jjs-modal-title prompt-title" id="input-modal-title">Input</label>
             <button class="jjs-modal-close" onclick="document.getElementById('jjs-input-modal').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="jjs-modal-body">
-            <input type="text" id="input-modal-field" class="jjs-modal-input" placeholder="...">
+            <input type="text" id="input-modal-field" name="modalInput" class="jjs-modal-input" placeholder="...">
         </div>
         <div class="jjs-modal-footer">
             <button class="btn-modal-confirm" id="input-modal-confirm">Confirm</button>
@@ -234,11 +251,11 @@
 <div class="jjs-modal-overlay" id="jjs-io-modal" onclick="closeIOModal(event)">
     <div class="jjs-modal-box" onclick="event.stopPropagation()">
         <div class="jjs-modal-header">
-            <h3 class="jjs-modal-title prompt-title" id="io-modal-title-text"><i class="fa-solid fa-terminal"></i> Data Center</h3>
+            <label for="io-terminal-textarea" class="jjs-modal-title prompt-title" id="io-modal-title-text"><i class="fa-solid fa-terminal"></i> Data Center</label>
             <button class="jjs-modal-close" onclick="closeIOModal(null)"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="jjs-modal-body">
-            <textarea class="jjs-modal-textarea" id="io-terminal-textarea"></textarea>
+            <textarea class="jjs-modal-textarea" id="io-terminal-textarea" name="terminalData"></textarea>
         </div>
         <div class="jjs-modal-footer">
             <button class="btn-modal-confirm" id="io-action-button" onclick="executeIOAction()">Process</button>
@@ -277,8 +294,26 @@
         <button class="workshop-tab" onclick="setWorkshopTab('Mesh VFX')">Mesh VFX</button>
         <button class="workshop-tab" onclick="setWorkshopTab('Mixed VFX')">Mixed VFX</button>
         <button class="workshop-tab" onclick="setWorkshopTab('TEMPLATES')">TEMPLATES</button>
+        <button class="workshop-tab" onclick="setWorkshopTab('Favorited')">Favorited</button>
     </div>
     <div class="workshop-content" id="workshop-content"></div>
+</div>
+
+<div id="workshop-detail-panel">
+    <div class="detail-header">
+        <h3 class="detail-title" id="dt-title">Template Name</h3>
+        <button style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-size:1.4rem;" onclick="closeWorkshopDetail()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <img id="dt-preview" src="" alt="Item Preview Asset" class="detail-preview-img" style="display:none;">
+    <div class="detail-desc-container">
+        <div class="detail-desc-text collapsed" id="dt-description">No Description provided.</div>
+        <button class="detail-desc-toggle" id="dt-desc-toggle" onclick="toggleDetailDesc()">Show More</button>
+    </div>
+    <div class="detail-author" id="dt-author">Uploaded by - Anonymous</div>
+    <div class="detail-actions">
+        <button class="btn-detail-load" id="dt-load-btn">Load Template</button>
+        <button class="btn-detail-fav" id="dt-fav-btn" title="Toggle Favorite State"><i class="fa-regular fa-star"></i></button>
+    </div>
 </div>
 
 <script>
@@ -374,6 +409,9 @@
     let dragClone = null;
     let currentDropIdx = -1;
     let activeAnimPickNodeIdx = -1;
+
+    // Persisted favorites array
+    let userFavorites = JSON.parse(localStorage.getItem('jjs-workshop-favorites') || '[]');
 
     function getInnerData(move) {
         if (!move || !move.DATA) return { Line: [], Req: [], Branch: {}, Prop: {} };
@@ -656,7 +694,7 @@
         const move = currentMoves[idx]; const innerData = getInnerData(move); const branchNames = innerData.Branch ? Object.keys(innerData.Branch).sort() : []; const canvas = document.getElementById('workspace-canvas-timeline');
         let displayKName = move.K_NAME ? (move.K_NAME.charAt(0).toUpperCase() + move.K_NAME.slice(1).toLowerCase()) : 'UNNAMED';
 
-        let html = `<div class="editor-header"><div style="display:flex; justify-content:space-between; align-items:center;"><h1 style="margin:0; font-size:2.2rem; letter-spacing:1px; color:var(--accent);">${displayKName}</h1><button class="btn-delete-container" onclick="deleteActiveContainer(${idx})"><i class="fa-solid fa-trash-can"></i> Delete Container</button></div><div class="container-fields-row"><div class="tooltip-field"><label>Name</label><input type="text" value="${move.NAME || ''}" oninput="alterContainerCoreName(${idx}, this.value)"></div></div></div>`;
+        let html = `<div class="editor-header"><div style="display:flex; justify-content:space-between; align-items:center;"><h1 style="margin:0; font-size:2.2rem; letter-spacing:1px; color:var(--accent);">${displayKName}</h1><button class="btn-delete-container" onclick="deleteActiveContainer(${idx})"><i class="fa-solid fa-trash-can"></i> Delete Container</button></div><div class="container-fields-row"><div class="tooltip-field"><label for="container-core-name-field-${idx}">Name</label><input type="text" id="container-core-name-field-${idx}" name="containerCoreName" value="${move.NAME || ''}" oninput="alterContainerCoreName(${idx}, this.value)"></div></div></div>`;
 
         if (activeTab === 'Timeline' || activeTab === 'Conditions') {
             html += `<div class="branch-bar"><button class="branch-tab ${activeBranch === 'Default' ? 'active' : ''}" onclick="switchBranch('Default')">Default</button>`;
@@ -667,7 +705,7 @@
         html += `<div class="workspace-tabs"><button class="workspace-tab ${activeTab === 'Timeline' ? 'active' : ''}" onclick="switchTab('Timeline')">Timeline</button><button class="workspace-tab ${activeTab === 'Conditions' ? 'active' : ''}" onclick="switchTab('Conditions')">Conditions</button><button class="workspace-tab ${activeTab === 'Properties' ? 'active' : ''}" onclick="switchTab('Properties')">Properties</button></div>`;
 
         if (activeTab === 'Timeline' || activeTab === 'Conditions') {
-            html += `<div class="gui-scale-bar"><label style="color: var(--accent); font-weight: bold;">GUI SCALE:</label><input type="range" min="0.6" max="1.1" step="0.05" value="${currentGuiScale}" oninput="changeGuiScale(this.value)"><span id="gui-scale-value-text" style="font-weight: bold; width: 45px; text-align: right;">${Math.round(currentGuiScale *100)}%</span></div><div id="nodes-scale-container-target" style="transform: scale(${currentGuiScale}); transform-origin: top left; width: ${100 / currentGuiScale}%; position:relative;">`;
+            html += `<div class="gui-scale-bar"><label for="gui-scale-slider-range" style="color: var(--accent); font-weight: bold;">GUI SCALE:</label><input type="range" id="gui-scale-slider-range" name="guiScaleRange" min="0.6" max="1.1" step="0.05" value="${currentGuiScale}" oninput="changeGuiScale(this.value)"><span id="gui-scale-value-text" style="font-weight: bold; width: 45px; text-align: right;">${Math.round(currentGuiScale *100)}%</span></div><div id="nodes-scale-container-target" style="transform: scale(${currentGuiScale}); transform-origin: top left; width: ${100 / currentGuiScale}%; position:relative;">`;
             
             const currentNodesList = (activeTab === 'Timeline') ? ((activeBranch === 'Default') ? innerData.Line : innerData.Branch[activeBranch]?.Line) : ((activeBranch === 'Default') ? innerData.Req : innerData.Branch[activeBranch]?.Req);
             
@@ -702,8 +740,9 @@
             html += `<div class="node-card"><div class="node-head" style="cursor:default;"><div class="node-title-group"><strong>Global Container Settings</strong></div></div><div class="node-grid" style="display:grid;">`;
             PROPERTY_ORDER.forEach(key => {
                 let val = innerData.Prop[key] !== undefined ? innerData.Prop[key] : PROPERTY_DEFAULTS[key];
-                let inputHtml = typeof PROPERTY_DEFAULTS[key] === 'boolean' ? `<input type="checkbox" ${val === true || val === 'true' ? 'checked' : ''} onchange="alterPropValue('${key}', this.checked)">` : (typeof PROPERTY_DEFAULTS[key] === 'number' ? `<input type="number" step="0.1" value="${val}" oninput="alterPropValue('${key}', parseFloat(this.value) || 0)">` : `<input type="text" value="${val}" oninput="alterPropValue('${key}', this.value)">`);
-                html += `<div class="field"><label>${PROPERTY_LABELS[key]}</label>${inputHtml}</div>`;
+                let fldId = `prop-field-input-${key}`;
+                let inputHtml = typeof PROPERTY_DEFAULTS[key] === 'boolean' ? `<input type="checkbox" id="${fldId}" name="${key}" ${val === true || val === 'true' ? 'checked' : ''} onchange="alterPropValue('${key}', this.checked)">` : (typeof PROPERTY_DEFAULTS[key] === 'number' ? `<input type="number" id="${fldId}" name="${key}" step="0.1" value="${val}" oninput="alterPropValue('${key}', parseFloat(this.value) || 0)">` : `<input type="text" id="${fldId}" name="${key}" value="${val}" oninput="alterPropValue('${key}', this.value)">`);
+                html += `<div class="field"><label for="${fldId}">${PROPERTY_LABELS[key]}</label>${inputHtml}</div>`;
             });
             html += `</div></div>`;
         }
@@ -714,11 +753,12 @@
         let fieldsHtml = ''; const schemaFields = (context === 'Conditions' ? CONDITION_TEMPLATES[node.K_NAME] : NODE_TEMPLATES[node.K_NAME]) || Object.keys(node);
         schemaFields.forEach(fieldKey => {
             if (fieldKey === 'K_NAME' || fieldKey === '_COMMENT') return;
+            let randomizedInputId = `fld-node-${nodeIdx}-${fieldKey.replace(/\s+/g, '-')}`;
             
             if (fieldKey === 'Animation' || fieldKey === 'ANIM_USE') {
                 let currentVal = node.ANIM_USE || [1, 1]; let matchedLabel = "Select Animation Asset";
                 for (let cat in ANIMATION_DICTIONARY) { let match = ANIMATION_DICTIONARY[cat].animations.find(a => a.val[0] === currentVal[0] && a.val[1] === currentVal[1]); if (match) { matchedLabel = match.name; break; } }
-                fieldsHtml += `<div class="field" style="grid-column: span 2;"><label>Animation Asset Lookup</label><button class="branch-tab" style="width: 100%; border: 1px solid var(--border); background: rgba(0,0,0,0.5); text-transform:none !important;" onclick="triggerAnimMenu(${nodeIdx})"><i class="fa-solid fa-clapperboard"></i> ${matchedLabel} [${currentVal.join(', ')}]</button></div>`;
+                fieldsHtml += `<div class="field" style="grid-column: span 2;"><label for="${randomizedInputId}">Animation Asset Lookup</label><button id="${randomizedInputId}" class="branch-tab" style="width: 100%; border: 1px solid var(--border); background: rgba(0,0,0,0.5); text-transform:none !important;" onclick="triggerAnimMenu(${nodeIdx})"><i class="fa-solid fa-clapperboard"></i> ${matchedLabel} [${currentVal.join(', ')}]</button></div>`;
                 return;
             }
 
@@ -726,16 +766,16 @@
                 const availableBranches = ["", "Default", ...(getInnerData(currentMoves[activeIndex]).Branch ? Object.keys(getInnerData(currentMoves[activeIndex]).Branch) : [])];
                 let val = node[fieldKey] !== undefined ? node[fieldKey] : "";
                 let opts = availableBranches.map(b => `<option value="${b}" ${val === b ? 'selected' : ''}>${b || 'None'}</option>`).join('');
-                fieldsHtml += `<div class="field"><label>RANDOM (Existing Target Branch)</label><select style="width:100%; color:#fff; background:transparent; border:none; border-bottom:1px solid var(--border);" onchange="alterNodeValue(${nodeIdx}, 'RANDOM', this.value)">${opts}</select></div>`;
+                fieldsHtml += `<div class="field"><label for="${randomizedInputId}">RANDOM (Existing Target Branch)</label><select id="${randomizedInputId}" name="randomBranchSelection" style="width:100%; color:#fff; background:transparent; border:none; border-bottom:1px solid var(--border);" onchange="alterNodeValue(${nodeIdx}, 'RANDOM', this.value)">${opts}</select></div>`;
                 return;
             }
 
             const currentVal = node[fieldKey] !== undefined ? node[fieldKey] : DEFAULTS_LIB[fieldKey]; let markup = '';
-            if (typeof currentVal === 'boolean' || currentVal === 'true' || currentVal === 'false') { markup = `<input type="checkbox" ${(currentVal === true || currentVal === 'true') ? 'checked' : ''} onchange="pushHistory(); alterNodeValue(${nodeIdx}, '${fieldKey}', this.checked)">`; } 
-            else if (Array.isArray(currentVal)) { markup = `<input type="text" value="${currentVal.join(', ')}" oninput="pushHistory(); alterNodeValue(${nodeIdx}, '${fieldKey}', this.value.split(',').map(n => parseFloat(n.trim()) || n.trim()))">`; } 
-            else if (typeof currentVal === 'number' || (!isNaN(currentVal) && currentVal !== '')) { markup = `<input type="number" step="0.01" value="${currentVal}" oninput="pushHistory(); alterNodeValue(${nodeIdx}, '${fieldKey}', parseFloat(this.value) || 0)">`; } 
-            else { markup = `<input type="text" value="${currentVal ?? ''}" oninput="pushHistory(); alterNodeValue(${nodeIdx}, '${fieldKey}', this.value)">`; }
-            fieldsHtml += `<div class="field"><label>${fieldKey}</label>${markup}</div>`;
+            if (typeof currentVal === 'boolean' || currentVal === 'true' || currentVal === 'false') { markup = `<input type="checkbox" id="${randomizedInputId}" name="${fieldKey}" ${(currentVal === true || currentVal === 'true') ? 'checked' : ''} onchange="pushHistory(); alterNodeValue(${nodeIdx}, '${fieldKey}', this.checked)">`; } 
+            else if (Array.isArray(currentVal)) { markup = `<input type="text" id="${randomizedInputId}" name="${fieldKey}" value="${currentVal.join(', ')}" oninput="pushHistory(); alterNodeValue(${nodeIdx}, '${fieldKey}', this.value.split(',').map(n => parseFloat(n.trim()) || n.trim()))">`; } 
+            else if (typeof currentVal === 'number' || (!isNaN(currentVal) && currentVal !== '')) { markup = `<input type="number" id="${randomizedInputId}" name="${fieldKey}" step="0.01" value="${currentVal}" oninput="pushHistory(); alterNodeValue(${nodeIdx}, '${fieldKey}', parseFloat(this.value) || 0)">`; } 
+            else { markup = `<input type="text" id="${randomizedInputId}" name="${fieldKey}" value="${currentVal ?? ''}" oninput="pushHistory(); alterNodeValue(${nodeIdx}, '${fieldKey}', this.value)">`; }
+            fieldsHtml += `<div class="field"><label for="${randomizedInputId}">${fieldKey}</label>${markup}</div>`;
         });
         return fieldsHtml;
     }
@@ -790,15 +830,15 @@
         content.innerHTML = `
             <button class="btn-jjs-action" style="margin-bottom:15px; background:transparent;" onclick="openThemesUI()"><i class="fa-solid fa-arrow-left"></i> Back</button><strong style="color:var(--accent); font-size:0.8rem; margin-bottom:10px;" class="uppercase-force">Theme Editor</strong>
             <div style="display:flex; flex-direction:column; gap:10px;">
-                <div class="tooltip-field" style="display:flex; align-items:center; justify-content:space-between;"><label>Theme Name</label><input type="text" id="ct-name" value="${s.name||'Custom'}" style="width:60%; text-align:right;"></div>
-                <div class="tooltip-field" style="display:flex; align-items:center; justify-content:space-between;"><label>BG Image URL</label><input type="text" id="ct-bgimg" value="${s.bgimg||''}" style="width:60%; text-align:right;"></div>
-                <div class="tooltip-field" style="display:flex; align-items:center; justify-content:space-between;"><label>BG Opacity</label><input type="range" id="ct-bgop" min="0" max="1" step="0.05" value="${s.bgop||1}" style="width:60%;"></div>
-                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Background</label><input type="color" id="ct-bg" value="${s.bg}"></div>
-                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Panel</label><input type="color" id="ct-panel" value="${s.panel}"></div>
-                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Node Card</label><input type="color" id="ct-card" value="${s.card}"></div>
-                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Accent</label><input type="color" id="ct-accent" value="${s.accent}"></div>
-                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Text</label><input type="color" id="ct-text" value="${s.text}"></div>
-                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label style="font-size:0.75rem; color:#fff;">Border</label><input type="color" id="ct-border" value="${s.border}"></div>
+                <div class="tooltip-field" style="display:flex; align-items:center; justify-content:space-between;"><label for="ct-name">Theme Name</label><input type="text" id="ct-name" name="themeName" value="${s.name||'Custom'}" style="width:60%; text-align:right;"></div>
+                <div class="tooltip-field" style="display:flex; align-items:center; justify-content:space-between;"><label for="ct-bgimg">BG Image URL</label><input type="text" id="ct-bgimg" name="themeBgImg" value="${s.bgimg||''}" style="width:60%; text-align:right;"></div>
+                <div class="tooltip-field" style="display:flex; align-items:center; justify-content:space-between;"><label for="ct-bgop">BG Opacity</label><input type="range" id="ct-bgop" name="themeBgOp" min="0" max="1" step="0.05" value="${s.bgop||1}" style="width:60%;"></div>
+                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label for="ct-bg" style="font-size:0.75rem; color:#fff;">Background</label><input type="color" id="ct-bg" name="themeBgColor" value="${s.bg}"></div>
+                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label for="ct-panel" style="font-size:0.75rem; color:#fff;">Panel</label><input type="color" id="ct-panel" name="themePanelColor" value="${s.panel}"></div>
+                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label for="ct-card" style="font-size:0.75rem; color:#fff;">Node Card</label><input type="color" id="ct-card" name="themeCardColor" value="${s.card}"></div>
+                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label for="ct-accent" style="font-size:0.75rem; color:#fff;">Accent</label><input type="color" id="ct-accent" name="themeAccentColor" value="${s.accent}"></div>
+                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label for="ct-text" style="font-size:0.75rem; color:#fff;">Text</label><input type="color" id="ct-text" name="themeTextColor" value="${s.text}"></div>
+                <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px; border:1px solid var(--border);"><label for="ct-border" style="font-size:0.75rem; color:#fff;">Border</label><input type="color" id="ct-border" name="themeBorderColor" value="${s.border}"></div>
             </div>
             <button class="btn-modal-confirm" style="margin-top:20px; width:100%;" onclick="saveCustomTheme()">Save & Apply</button>
         `;
@@ -829,58 +869,143 @@
         document.querySelectorAll('.workshop-tab').forEach(t => { if (t.innerText.trim() === tab) t.classList.add('active'); });
 
         let content = `<div style="display:flex; justify-content:space-between; margin-bottom:15px;"><strong style="color:var(--accent);" class="uppercase-force">${tab} Hub</strong></div>`;
-
-        if (tab === 'TEMPLATES') {
-            content += `<div style="text-align:center; padding:50px; opacity:0.5;">Loading templates from Supabase...</div>`;
-            document.getElementById('workshop-content').innerHTML = content;
-            await loadWorkshopTemplates(tab); return;
-        }
-
         content += `<div id="ws-dynamic-content" style="text-align:center; padding:50px; opacity:0.5;">Loading from Supabase...</div>`;
         document.getElementById('workshop-content').innerHTML = content;
         await loadWorkshopTemplates(tab);
     }
 
     function renderTemplateList(templates, tab) {
-        const container = tab === 'TEMPLATES' ? document.getElementById('workshop-content') : document.getElementById('ws-dynamic-content');
+        const container = document.getElementById('workshop-content');
         if (!container) return;
 
-        if (!templates.length) { container.innerHTML = `<div style="text-align:center; padding:50px; opacity:0.5;">No templates yet in ${tab}.</div>`; return; }
+        if (!templates.length) { container.innerHTML = `<div style="text-align:center; padding:50px; opacity:0.5;">No items found here.</div>`; return; }
         
-        let html = tab === 'TEMPLATES' ? `<div style="display:flex; justify-content:space-between; margin-bottom:15px;"><strong style="color:var(--accent);" class="uppercase-force">TEMPLATES Hub</strong></div>` : '';
-        html += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">`;
+        let html = `<div style="display:flex; justify-content:space-between; margin-bottom:15px;"><strong style="color:var(--accent);" class="uppercase-force">${tab} Hub</strong></div>`;
+        html += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">`;
+        
         templates.forEach((item) => {
-            html += `<div style="background:rgba(0,0,0,0.4); border:1px solid var(--border); padding:15px;">
-                <div style="font-weight:bold; color:#fff; font-size:1.1rem; margin-bottom:5px;">${item.title || 'Untitled'}</div>
-                <div style="font-size:0.75rem; opacity:0.7; margin-bottom:10px;">By: ${item.author || 'Anonymous'}</div>
-                <div style="font-size:0.85rem; margin-bottom:15px; color:#aaa;">${item.description || ''}</div>
-                <button class="btn-modal-confirm" style="width:100%; font-size:0.7rem;" onclick="importTemplateToWorkspace('${item.id}', '${tab}')"><i class="fa-solid fa-download"></i> Get</button>
+            let rawDesc = item.description || '';
+            // Prevent text shrinking: crop description manually if it is over 110 characters
+            let descriptiveSummary = rawDesc.length > 110 ? rawDesc.substring(0, 107) + '...' : rawDesc;
+            
+            let thumbImageHtml = '';
+            if (item.preview && item.preview.trim().startsWith('http')) {
+                thumbImageHtml = `<img src="${item.preview.trim()}" alt="Thumbnail preview img" style="width: 70px; height: 70px; object-fit: cover; border: 1px solid var(--border); background: #000; flex-shrink:0;">`;
+            }
+
+            html += `<div style="background:rgba(0,0,0,0.4); border:1px solid var(--border); padding:15px; display:flex; gap:12px; align-items:flex-start;">
+                ${thumbImageHtml}
+                <div style="flex-grow:1; min-width:0;">
+                    <div style="font-weight:bold; color:#fff; font-size:1.1rem; margin-bottom:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.title || 'Untitled'}</div>
+                    <div style="font-size:0.7rem; opacity:0.6; margin-bottom:6px;">By: ${item.author || 'Anonymous'}</div>
+                    <div style="font-size:0.8rem; margin-bottom:12px; color:#babbc2; height: 2.4em; overflow:hidden; line-height:1.2;">${descriptiveSummary}</div>
+                    <button class="btn-modal-confirm" style="width:100%; font-size:0.75rem; background:#00f0ff; color:#000; border-color:#00f0ff;" onclick="viewItemDetails(${JSON.stringify(item).replace(/"/g, '&quot;')})"><i class="fa-solid fa-folder-open"></i> Open</button>
+                </div>
             </div>`;
         });
         html += `</div>`;
-
-        if (tab === 'TEMPLATES') {
-            container.innerHTML = html;
-        } else {
-            container.outerHTML = html; 
-        }
+        container.innerHTML = html;
     }
 
     async function loadWorkshopTemplates(tab) {
         try {
-            const { data, error } = await supabaseclient
-                .from('workshop_templates')
-                .select('id, title, category, description, author, code, created_at')
-                .eq('category', tab)
-                .order('created_at', { ascending: false });
+            let data = [];
+            let error = null;
+
+            if (tab === 'Favorited') {
+                if (userFavorites.length === 0) {
+                    renderTemplateList([], tab); return;
+                }
+                let response = await supabaseclient
+                    .from('workshop_templates')
+                    .select('id, title, category, description, author, code, preview, created_at')
+                    .in('id', userFavorites)
+                    .order('created_at', { ascending: false });
+                data = response.data; error = response.error;
+            } else {
+                let response = await supabaseclient
+                    .from('workshop_templates')
+                    .select('id, title, category, description, author, code, preview, created_at')
+                    .eq('category', tab)
+                    .order('created_at', { ascending: false });
+                data = response.data; error = response.error;
+            }
 
             if (error) throw error;
-            const templates = Array.isArray(data) ? data : [];
-            renderTemplateList(templates, tab);
+            renderTemplateList(data || [], tab);
         } catch (e) {
             console.error("Supabase load error:", e);
-            const dyn = document.getElementById('ws-dynamic-content') || document.getElementById('workshop-content');
-            if(dyn) dyn.innerHTML = `<div style="text-align:center; padding:50px; opacity:0.5;">Failed to load templates. Are Supabase credentials correct?</div>`;
+            const dyn = document.getElementById('workshop-content');
+            if(dyn) dyn.innerHTML = `<div style="text-align:center; padding:50px; opacity:0.5;">Failed to query from workshop database.</div>`;
+        }
+    }
+
+    // --- Dynamic 1/3 Length Expanded Preview Flow ---
+    let activeDetailedViewItem = null;
+    function viewItemDetails(item) {
+        activeDetailedViewItem = item;
+        document.getElementById('dt-title').innerText = item.title || 'Untitled';
+        document.getElementById('dt-author').innerText = `Uploaded by - ${item.author || 'Anonymous'}`;
+        
+        const descriptionBlock = document.getElementById('dt-description');
+        descriptionBlock.innerText = item.description || 'No description specified.';
+        descriptionBlock.classList.add('collapsed');
+        document.getElementById('dt-desc-toggle').innerText = "Show More";
+
+        const imagePreview = document.getElementById('dt-preview');
+        if (item.preview && item.preview.trim().startsWith('http')) {
+            imagePreview.src = item.preview.trim();
+            imagePreview.style.display = 'block';
+        } else {
+            imagePreview.style.display = 'none';
+        }
+
+        const favBtn = document.getElementById('dt-fav-btn');
+        if (userFavorites.includes(item.id)) {
+            favBtn.innerHTML = '<i class="fa-solid fa-star"></i>';
+            favBtn.style.background = 'var(--accent)';
+            favBtn.style.color = '#000';
+        } else {
+            favBtn.innerHTML = '<i class="fa-regular fa-star"></i>';
+            favBtn.style.background = 'rgba(0,0,0,0.4)';
+            favBtn.style.color = 'var(--accent)';
+        }
+
+        favBtn.onclick = () => toggleItemFavoriteState(item.id);
+        document.getElementById('dt-load-btn').onclick = () => importTemplateToWorkspace(item.id, item.category);
+
+        document.getElementById('workshop-detail-panel').classList.add('open');
+    }
+
+    function toggleDetailDesc() {
+        const textElement = document.getElementById('dt-description');
+        const toggleBtn = document.getElementById('dt-desc-toggle');
+        if (textElement.classList.contains('collapsed')) {
+            textElement.classList.remove('collapsed');
+            toggleBtn.innerText = "Show Less";
+        } else {
+            textElement.classList.add('collapsed');
+            toggleBtn.innerText = "Show More";
+        }
+    }
+
+    function closeWorkshopDetail() {
+        document.getElementById('workshop-detail-panel').classList.remove('open');
+        activeDetailedViewItem = null;
+    }
+
+    function toggleItemFavoriteState(id) {
+        if (userFavorites.includes(id)) {
+            userFavorites = userFavorites.filter(favId => favId !== id);
+        } else {
+            userFavorites.push(id);
+        }
+        localStorage.setItem('jjs-workshop-favorites', JSON.stringify(userFavorites));
+        if (activeDetailedViewItem && activeDetailedViewItem.id === id) {
+            viewItemDetails(activeDetailedViewItem);
+        }
+        if (document.getElementById('workshop-window').style.display === 'flex') {
+            loadWorkshopTemplates(currentWorkshopTab);
         }
     }
 
@@ -902,6 +1027,7 @@
             if (!Array.isArray(parsedPayload)) parsedPayload = [parsedPayload];
             
             document.getElementById('workshop-window').style.display = 'none';
+            closeWorkshopDetail();
 
             if (tab === 'TEMPLATES') {
                 importPayload = parsedPayload;
@@ -916,7 +1042,7 @@
                     finalizeImport();
                 }
             } else {
-                // Find WS Container
+                // Look for the "WS" container
                 let wsContainer = parsedPayload.find(c => c.NAME === "WS");
                 if (!wsContainer) { customAlert("Invalid Workshop Item: Could not find a container named 'WS' inside this export."); return; }
                 
@@ -926,6 +1052,19 @@
 
                 if (activeIndex === -1 || activeTab === 'Properties') { customAlert("Please open a container's Timeline or Conditions first to place nodes."); return; }
 
+                let destinationList = getActiveList();
+                // AUTOMATICALLY LOAD inside the skill container if it is currently empty instead of blue line method
+                if (destinationList && destinationList.length === 0) {
+                    pushHistory();
+                    destinationList.push(...JSON.parse(JSON.stringify(nodesToPlace)));
+                    saveInnerData(currentMoves[activeIndex], getInnerData(currentMoves[activeIndex]));
+                    selectedNodes = []; 
+                    loadMove(activeIndex);
+                    customAlert("Container was empty. Automatically populated nodes successfully!");
+                    return;
+                }
+
+                // Fallback to manual placing via blue lines if container already has items inside
                 importPlaceMode = true; 
                 importPayload = nodesToPlace;
                 
